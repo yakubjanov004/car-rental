@@ -1,7 +1,8 @@
 import axios from 'axios';
 
+const BASE_ORIGIN = 'http://127.0.0.1:8000';
 const apiClient = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: `${BASE_ORIGIN}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -15,4 +16,5 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+export { BASE_ORIGIN };
 export default apiClient;

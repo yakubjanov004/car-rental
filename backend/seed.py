@@ -53,14 +53,34 @@ def seed_db():
         {"brand": "Chevrolet", "model": "Captiva", "year": 2024, "uzatma": "automatic", "yoqilgi": "benzin", "narx": 500000, "depozit": 2500000, "tuman": "Mirobod", "rasm": "captiva.jpg", "color": "Oq"},
         {"brand": "Chevrolet", "model": "Equinox", "year": 2024, "uzatma": "automatic", "yoqilgi": "benzin", "narx": 550000, "depozit": 3000000, "tuman": "Yakkasaroy", "rasm": "equinox.jpg", "color": "Qora"},
         {"brand": "BYD", "model": "Atto 3", "year": 2024, "uzatma": "automatic", "yoqilgi": "elektro", "narx": 480000, "depozit": 2200000, "tuman": "Mirzo Ulug'bek", "rasm": "byd-atto3.jpg", "color": "Moviy"},
+        {"brand": "Kia", "model": "Sonet", "year": 2024, "uzatma": "automatic", "yoqilgi": "benzin", "narx": 350000, "depozit": 1500000, "tuman": "Chilonzor", "rasm": "kia-sonet.jpg", "color": "Qizil"},
+        {"brand": "BYD", "model": "Song Plus", "year": 2024, "uzatma": "automatic", "yoqilgi": "gibrid", "narx": 550000, "depozit": 2500000, "tuman": "Yunusobod", "rasm": "byd-song.jpg", "color": "Oq"},
+        {"brand": "BYD", "model": "Han", "year": 2024, "uzatma": "automatic", "yoqilgi": "elektro", "narx": 800000, "depozit": 5000000, "tuman": "Mirobod", "rasm": "byd-han.jpg", "color": "Qora"},
+        {"brand": "Chery", "model": "Tiggo 7 Pro", "year": 2023, "uzatma": "automatic", "yoqilgi": "benzin", "narx": 380000, "depozit": 1600000, "tuman": "Shayxontohur", "rasm": "chery-tiggo.jpg", "color": "Kumush"},
+        {"brand": "Haval", "model": "Jolion", "year": 2024, "uzatma": "automatic", "yoqilgi": "benzin", "narx": 360000, "depozit": 1500000, "tuman": "Olmazor", "rasm": "haval-jolion.jpg", "color": "Yashil"},
+        {"brand": "Kia", "model": "EV6", "year": 2024, "uzatma": "automatic", "yoqilgi": "elektro", "narx": 900000, "depozit": 6000000, "tuman": "Yakkasaroy", "rasm": "kia-ev6.jpg", "color": "Qora"},
+        {"brand": "Toyota", "model": "Camry 75", "year": 2023, "uzatma": "automatic", "yoqilgi": "benzin", "narx": 600000, "depozit": 3000000, "tuman": "Yangihayot", "rasm": "camry.jpg", "color": "Oq"},
+        {"brand": "Hyundai", "model": "Tucson", "year": 2024, "uzatma": "automatic", "yoqilgi": "benzin", "narx": 480000, "depozit": 2200000, "tuman": "Sergeli", "rasm": "tucson.jpg", "color": "Havorang"},
     ]
 
     for c in cars_data:
+        # Infer category
+        cat = 'sedan'
+        if c['model'] in ['Tracker 2', 'Captiva', 'Equinox', 'Atto 3', 'Song Plus', 'Tiggo 7 Pro', 'Jolion', 'Tucson']:
+            cat = 'crossover'
+        elif c['model'] in ['Damas']:
+            cat = 'minivan'
+        elif c['model'] in ['Han', 'EV6']:
+            cat = 'premium'
+        elif c['model'] in ['Malibu 2', 'Camry 75']:
+            cat = 'premium'
+
         Car.objects.get_or_create(
             brand=c['brand'],
             model=c['model'],
             year=c['year'],
             defaults={
+                'category': cat,
                 'transmission': c['uzatma'],
                 'fuel_type': c['yoqilgi'],
                 'seats': 7 if c['model'] in ['Damas', 'Captiva'] else 5,

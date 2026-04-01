@@ -37,6 +37,7 @@ const Footer = () => {
             <h4 className="text-lg font-bold mb-6">Tezkor havolalar</h4>
             <ul className="flex flex-col gap-4">
               <li><Link to="/mashinalar" className="text-white/50 hover:text-primary transition-colors">Barcha mashinalar</Link></li>
+              <li><Link to="/elektromobillar" className="text-white/50 hover:text-primary transition-colors">⚡ Elektromobillar</Link></li>
               <li><Link to="/biz-haqimizda" className="text-white/50 hover:text-primary transition-colors">Biz haqimizda</Link></li>
               <li><Link to="/aloqa" className="text-white/50 hover:text-primary transition-colors">Aloqa</Link></li>
               <li><Link to="/royxatdan" className="text-white/50 hover:text-primary transition-colors">Ro'yxatdan o'tish</Link></li>
@@ -46,11 +47,11 @@ const Footer = () => {
           {/* Services */}
           <div>
             <h4 className="text-lg font-bold mb-6">Xizmatlar</h4>
-            <ul className="flex flex-col gap-4 text-white/50">
-              <li>Kafolatli sug'urta</li>
-              <li>Tezkor yetkazish</li>
-              <li>24/7 qo'llab-quvvatlash</li>
-              <li>Hujjatlarni rasmiylashtirish</li>
+            <ul className="flex flex-col gap-4">
+              <li><Link to="/haydovchi-bilan" className="text-white/50 hover:text-primary transition-colors">Haydovchi bilan ijara</Link></li>
+              <li><Link to="/savollar" className="text-white/50 hover:text-primary transition-colors">Tez-tez so'raladigan savollar (FAQ)</Link></li>
+              <li><Link to="/shartlar" className="text-white/50 hover:text-primary transition-colors">Ijara shartlari</Link></li>
+              <li className="text-white/50">24/7 qo'llab-quvvatlash</li>
             </ul>
           </div>
 

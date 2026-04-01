@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Star, MapPin, Users, Fuel, Settings2, Calendar, CheckCircle2, ChevronRight, Phone, User, Info, ShieldCheck } from 'lucide-react';
+import { Star, MapPin, Users, Fuel, Settings2, Calendar, CheckCircle2, ChevronRight, Phone, User, Info, ShieldCheck, Send, MessageSquare } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { DEMO_MASHINALAR } from '../data/mashinalar';
 import { formatNarx, formatJamiNarx } from '../utils/formatPrice';
 import { kunlarFarqi } from '../utils/dateUtils';
 import { useAuth } from '../context/AuthContext';
+
+import apiClient, { BASE_ORIGIN } from '../services/api/apiClient';
 
 const MashinaTafsilot = () => {
   const { id } = useParams();
@@ -23,12 +26,32 @@ const MashinaTafsilot = () => {
   });
 
   useEffect(() => {
-    // Simulate API fetch
-    const foundCar = DEMO_MASHINALAR.find(c => c.id === parseInt(id));
-    if (foundCar) {
-      setCar(foundCar);
-    }
-    setLoading(false);
+    // API data fetch by ID
+    apiClient.get(`/cars/${id}/`).then(res => {
+      const c = res.data;
+      setCar({
+        id: c.id,
+        brend: c.brand,
+        model: c.model,
+        yil: c.year,
+        uzatma: c.transmission,
+        yoqilgi: c.fuel_type,
+        orinlar: c.seats,
+        kunlik_narx: parseInt(c.daily_price),
+        depozit: parseInt(c.deposit),
+        rasm: c.main_image 
+          ? (c.main_image.startsWith('http') ? c.main_image : `${BASE_ORIGIN}${c.main_image}`)
+          : "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800",
+        reyting: c.rating,
+        sharhlar_soni: c.review_count,
+        manzil: c.address,
+        xususiyatlar: c.features || ["Konditsioner", "Multimedia"]
+      });
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
   }, [id]);
 
   if (loading) return <div className="pt-40 text-center uppercase tracking-tighter font-black text-4xl">Yuklanmoqda...</div>;
@@ -37,10 +60,31 @@ const MashinaTafsilot = () => {
   const totalDays = bookingData.startDate && bookingData.endDate ? kunlarFarqi(bookingData.startDate, bookingData.endDate) : 0;
   const totalPrice = totalDays * car.kunlik_narx;
 
-  const handleBooking = () => {
-    // In real app, call API
-    alert('Bron muvaffaqiyatli amalga oshirildi!');
-    navigate('/kabinet');
+  const handleBooking = async () => {
+    try {
+      if (!user) {
+        alert('Iltimos, avval tizimga kiring!');
+        navigate('/kirish');
+        return;
+      }
+
+      const data = {
+        car: car.id,
+        start_date: bookingData.startDate,
+        end_date: bookingData.endDate,
+        total_price: totalPrice,
+        full_name: bookingData.fullName,
+        phone_number: bookingData.phone,
+        status: 'pending'
+      };
+
+      await apiClient.post('/bookings/', data);
+      alert('Bron muvaffaqiyatli amalga oshirildi! Tez orada operatorlarimiz bog\'lanishadi.');
+      navigate('/kabinet');
+    } catch (err) {
+      console.error('Bron qilishda xato:', err);
+      alert('Bron qilishda xatolik yuz berdi. Iltimos, qaytadan urinib ko\'ring.');
+    }
   };
 
   return (
@@ -276,11 +320,39 @@ const MashinaTafsilot = () => {
                    )}
                 </div>
 
-                {/* Help Panel */}
-                <div className="glass-panel p-8 text-center">
-                   <p className="text-sm text-white/50 mb-4">Savollaringiz bormi?</p>
-                   <p className="text-2xl font-black">+998 90 123 45 67</p>
-                </div>
+        {/* Help Panel */}
+        <div className="glass-panel p-8 text-center space-y-6">
+            <div>
+                <p className="text-sm text-white/50 mb-4 font-bold uppercase tracking-widest">Savollaringiz bormi?</p>
+                <p className="text-3xl font-black text-primary tracking-tighter transition-all hover:scale-110 cursor-pointer">+998 90 123 45 67</p>
+            </div>
+            
+            <div className="flex gap-3">
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                        const matn = encodeURIComponent(`Salom! ${car.brend} ${car.model} (${car.yil}) mashinasini ijaraga olmoqchiman. Kunlik narx: ${formatNarx(car.kunlik_narx)}`);
+                        window.open(`https://wa.me/+998901234567?text=${matn}`, '_blank');
+                    }}
+                    className="flex-1 py-4 bg-green-600 hover:bg-green-500 rounded-2xl font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-green-600/20"
+                >
+                    <MessageSquare className="w-4 h-4" />
+                    WhatsApp
+                </motion.button>
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                        window.open(`https://t.me/carrentaluz`, '_blank');
+                    }}
+                    className="flex-1 py-4 bg-blue-500 hover:bg-blue-400 rounded-2xl font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+                >
+                    <Send className="w-4 h-4" />
+                    Telegram
+                </motion.button>
+            </div>
+        </div>
              </div>
           </div>
         </div>

@@ -13,6 +13,12 @@ import Kabinet from './pages/Kabinet';
 import AdminBoshqaruv from './pages/AdminBoshqaruv';
 import Sahifa404 from './pages/Sahifa404';
 
+// New Pages
+import Elektromobillar from './pages/Elektromobillar';
+import Savollar from './pages/Savollar';
+import Shartlar from './pages/Shartlar';
+import HaydovchiBilan from './pages/HaydovchiBilan';
+
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -28,6 +34,13 @@ function App() {
           <Route path="/aloqa" element={<Aloqa />} />
           <Route path="/kirish" element={<Kirish />} />
           <Route path="/royxatdan" element={<Royxatdan />} />
+          
+          {/* New Routes */}
+          <Route path="/elektromobillar" element={<Elektromobillar />} />
+          <Route path="/savollar" element={<Savollar />} />
+          <Route path="/shartlar" element={<Shartlar />} />
+          <Route path="/haydovchi-bilan" element={<HaydovchiBilan />} />
+
           <Route path="/kabinet" element={
             <ProtectedRoute>
                <Kabinet />
@@ -45,6 +58,5 @@ function App() {
     </div>
   );
 }
-
 
 export default App;

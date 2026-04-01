@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, LogOut, Car, Heart, LayoutDashboard } from 'lucide-react';
+import { Menu, X, User, LogOut, Car, LayoutDashboard } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SAYT } from '../data/constants';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,7 +12,7 @@ const Navbar = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -19,14 +20,24 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Bosh sahifa', path: '/' },
     { name: 'Mashinalar', path: '/mashinalar' },
+    { name: '⚡ Elektr', path: '/elektromobillar' },
     { name: 'Biz haqimizda', path: '/biz-haqimizda' },
-    { name: 'Aloqa', path: '/aloqa' },
+    { name: 'Savollar', path: '/savollar' },
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
-      scrolled ? 'bg-bg-dark/80 backdrop-blur-xl py-3 border-b border-white/5' : 'bg-transparent py-5'
-    }`}>
+    <motion.nav
+      initial={false}
+      animate={{
+        backgroundColor: scrolled ? 'rgba(10, 10, 10, 0.95)' : 'rgba(10, 10, 10, 0)',
+        backdropFilter: scrolled ? 'blur(20px)' : 'blur(0px)',
+        borderBottomColor: scrolled ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0)',
+        paddingTop: scrolled ? '0.75rem' : '1.25rem',
+        paddingBottom: scrolled ? '0.75rem' : '1.25rem',
+      }}
+      transition={{ duration: 0.3 }}
+      className="fixed top-0 left-0 w-full z-50 border-b transition-colors"
+    >
       <div className="container mx-auto px-6 flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
@@ -88,39 +99,46 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      {isOpen && (
-        <div className="lg:hidden absolute top-full left-0 w-full bg-bg-dark border-b border-white/5 animate-fade-in">
-          <div className="flex flex-col p-6 gap-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setIsOpen(false)}
-                className={`text-lg font-medium ${location.pathname === link.path ? 'text-primary' : 'text-white/70'}`}
-              >
-                {link.name}
-              </Link>
-            ))}
-            <div className="h-px bg-white/5 my-2" />
-            {user ? (
-              <>
-                <Link to="/kabinet" onClick={() => setIsOpen(false)} className="flex items-center gap-3 py-2 text-white/70">
-                  <User className="w-5 h-5" /> Kabinet
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="lg:hidden absolute top-full left-0 w-full bg-bg-dark border-b border-white/5 overflow-hidden"
+          >
+            <div className="flex flex-col p-6 gap-4">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setIsOpen(false)}
+                  className={`text-lg font-medium ${location.pathname === link.path ? 'text-primary' : 'text-white/70'}`}
+                >
+                  {link.name}
                 </Link>
-                <button onClick={() => { logout(); setIsOpen(false); }} className="flex items-center gap-3 py-2 text-red-500">
-                  <LogOut className="w-5 h-5" /> Chiqish
-                </button>
-              </>
-            ) : (
-              <div className="flex flex-col gap-3 pt-2">
-                <Link to="/kirish" onClick={() => setIsOpen(false)} className="btn-secondary">Kirish</Link>
-                <Link to="/royxatdan" onClick={() => setIsOpen(false)} className="btn-primary">Ro'yxatdan o'tish</Link>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </nav>
+              ))}
+              <div className="h-px bg-white/5 my-2" />
+              {user ? (
+                <>
+                  <Link to="/kabinet" onClick={() => setIsOpen(false)} className="flex items-center gap-3 py-2 text-white/70">
+                    <User className="w-5 h-5" /> Kabinet
+                  </Link>
+                  <button onClick={() => { logout(); setIsOpen(false); }} className="flex items-center gap-3 py-2 text-red-500">
+                    <LogOut className="w-5 h-5" /> Chiqish
+                  </button>
+                </>
+              ) : (
+                <div className="flex flex-col gap-3 pt-2">
+                  <Link to="/kirish" onClick={() => setIsOpen(false)} className="btn-secondary">Kirish</Link>
+                  <Link to="/royxatdan" onClick={() => setIsOpen(false)} className="btn-primary">Ro'yxatdan o'tish</Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   );
 };
 

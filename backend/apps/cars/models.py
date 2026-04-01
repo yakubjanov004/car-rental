@@ -8,6 +8,7 @@ class Car(models.Model):
 
     brand = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
+    category = models.CharField(max_length=50, default='sedan')
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     year = models.PositiveIntegerField()
     transmission = models.CharField(max_length=20, choices=TRANSMISSION_CHOICES)
