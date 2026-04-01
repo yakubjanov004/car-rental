@@ -4,7 +4,7 @@ import { Star, MapPin, Users, Fuel, Settings2, Calendar, CheckCircle2, ChevronRi
 import { DEMO_MASHINALAR } from '../data/mashinalar';
 import { formatNarx, formatJamiNarx } from '../utils/formatPrice';
 import { kunlarFarqi } from '../utils/dateUtils';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext';
 
 const MashinaTafsilot = () => {
   const { id } = useParams();

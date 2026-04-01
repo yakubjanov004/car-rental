@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Heart, Calendar, LogOut, ChevronRight, Settings, Clock, CheckCircle, XCircle, Info, Star } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext';
 import { formatNarx } from '../utils/formatPrice';
 import { DEMO_MASHINALAR } from '../data/mashinalar';
 import { BRON_STATUSLARI } from '../data/constants';

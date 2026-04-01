@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, Car, Calendar, MessageSquare, Plus, Edit2, Trash2, CheckCircle2, XCircle, Search, TrendingUp, Users, DollarSign, Filter, RefreshCcw } from 'lucide-react';
 import { DEMO_MASHINALAR } from '../data/mashinalar';
 import { formatNarx } from '../utils/formatPrice';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext';
 import Skeleton from '../components/Skeleton';
 
 const AdminBoshqaruv = () => {
