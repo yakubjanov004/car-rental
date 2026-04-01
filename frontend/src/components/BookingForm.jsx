@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { formatNarx } from '../utils/formatPrice';
 
 const OLISH_JOYLARI = [
-  { id: 'ofis', icon: <Building className="w-4 h-4" />, nomi: 'Ofisimiz — Amir Temur 15' },
-  { id: 'airport', icon: <Plane className="w-4 h-4" />, nomi: 'Toshkent Aeroporti' },
-  { id: 'yetkazib', icon: <MapPin className="w-4 h-4" />, nomi: "Manzilga yetkazish (+50 000 so'm)" },
+  { id: 'ofis', icon: <Building className="w-4 h-4" />, nomi: 'Our Office — Amir Temur 15' },
+  { id: 'airport', icon: <Plane className="w-4 h-4" />, nomi: 'Tashkent Airport' },
+  { id: 'yetkazib', icon: <MapPin className="w-4 h-4" />, nomi: "Delivery to Address (+50 000 UZS)" },
 ];
 
 const BookingForm = ({ carPrice = 400000 }) => {
@@ -22,7 +22,7 @@ const BookingForm = ({ carPrice = 400000 }) => {
     if (olishJoyi) params.set('location', olishJoyi);
     if (boshlanish) params.set('start', boshlanish);
     if (tugash) params.set('end', tugash);
-    navigate(`/mashinalar?${params.toString()}`);
+    navigate(`/fleet?${params.toString()}`);
   };
 
   const calculateDays = () => {
@@ -48,14 +48,14 @@ const BookingForm = ({ carPrice = 400000 }) => {
       
       <h3 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
         <Clock className="w-6 h-6 text-primary" />
-        Mashinani band qiling
+        Book a Car
       </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Olish joyi */}
         <div className="space-y-2">
           <label className="text-xs text-white/40 uppercase font-black tracking-widest flex items-center gap-1.5 ml-1">
-            <MapPin className="w-3 h-3 text-primary" /> Olish joyi
+            <MapPin className="w-3 h-3 text-primary" /> Pick-up Location
           </label>
           <div className="relative">
             <select 
@@ -63,7 +63,7 @@ const BookingForm = ({ carPrice = 400000 }) => {
                 onChange={(e) => setOlishJoyi(e.target.value)}
                 value={olishJoyi}
             >
-                <option value="" disabled>Tanlang...</option>
+                <option value="" disabled>Select...</option>
                 {OLISH_JOYLARI.map(j => (
                 <option key={j.id} value={j.id}>{j.nomi}</option>
                 ))}
@@ -77,7 +77,7 @@ const BookingForm = ({ carPrice = 400000 }) => {
         {/* Qaytarish joyi */}
         <div className="space-y-2">
           <label className="text-xs text-white/40 uppercase font-black tracking-widest flex items-center gap-1.5 ml-1">
-            <MapPin className="w-3 h-3 text-primary" /> Qaytarish joyi
+            <MapPin className="w-3 h-3 text-primary" /> Return Location
           </label>
           <div className="relative">
             <select 
@@ -85,7 +85,7 @@ const BookingForm = ({ carPrice = 400000 }) => {
                 onChange={(e) => setQaytarishJoyi(e.target.value)}
                 value={qaytarishJoyi}
             >
-                <option value="" disabled>Tanlang...</option>
+                <option value="" disabled>Select...</option>
                 {OLISH_JOYLARI.map(j => (
                 <option key={j.id} value={j.id}>{j.nomi}</option>
                 ))}
@@ -99,7 +99,7 @@ const BookingForm = ({ carPrice = 400000 }) => {
         {/* Boshlanish sanasi */}
         <div className="space-y-2">
           <label className="text-xs text-white/40 uppercase font-black tracking-widest flex items-center gap-1.5 ml-1">
-            <Calendar className="w-3 h-3 text-primary" /> Olish sanasi va vaqti
+            <Calendar className="w-3 h-3 text-primary" /> Pick-up Date and Time
           </label>
           <input
             type="datetime-local"
@@ -111,7 +111,7 @@ const BookingForm = ({ carPrice = 400000 }) => {
         {/* Tugash sanasi */}
         <div className="space-y-2">
           <label className="text-xs text-white/40 uppercase font-black tracking-widest flex items-center gap-1.5 ml-1">
-            <Clock className="w-3 h-3 text-primary" /> Qaytarish sanasi va vaqti
+            <Clock className="w-3 h-3 text-primary" /> Return Date and Time
           </label>
           <input
             type="datetime-local"
@@ -129,11 +129,11 @@ const BookingForm = ({ carPrice = 400000 }) => {
           className="mb-8 p-6 bg-primary/10 border border-primary/20 rounded-[24px] flex justify-between items-center"
         >
           <div>
-            <p className="text-xs text-white/40 uppercase font-bold mb-1">Ijara muddati</p>
-            <p className="text-lg font-bold">{days} kun</p>
+            <p className="text-xs text-white/40 uppercase font-bold mb-1">Rental Duration</p>
+            <p className="text-lg font-bold">{days} days</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-white/40 uppercase font-bold mb-1">Umumiy summa</p>
+            <p className="text-xs text-white/40 uppercase font-bold mb-1">Total Amount</p>
             <p className="text-3xl font-black text-primary tracking-tighter">
               {formatNarx(total)}
             </p>
@@ -148,12 +148,12 @@ const BookingForm = ({ carPrice = 400000 }) => {
         className="btn-primary w-full py-5 text-xl font-black rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary/20"
       >
         <Search className="w-6 h-6" />
-        Mashinalarni band qilish
+        BOOK NOW
       </motion.button>
       
       <p className="text-[10px] text-center text-white/30 mt-4 uppercase tracking-tighter font-medium flex items-center justify-center gap-1">
         <Info className="w-3 h-3" />
-        Hujjatlar: Pasport va Haydovchilik guvohnomasi talab qilinadi
+        Documents: Passport and Driving License required
       </p>
     </motion.div>
   );

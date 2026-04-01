@@ -1,142 +1,149 @@
 import React, { useState } from 'react';
-import apiClient from '../services/api/apiClient';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Phone, Mail, Send, CheckCircle, Info, ShieldCheck, Heart } from 'lucide-react';
+import { Send, MapPin, Phone, Mail, Instagram, Facebook, Clock, Plus, Minus, ArrowRight, MessageSquare, Twitter } from 'lucide-react';
+import { motion } from 'framer-motion';
+import ScrollReveal from '../components/ScrollReveal';
+
+const contactInfo = [
+  { icon: MapPin, label: 'Manzil', val: 'Toshkent sh., Chilonzor tumani', color: '#3B82F6' },
+  { icon: Phone, label: 'Telefon', val: '+998 90 123 45 67', color: '#00D97E' },
+  { icon: Mail, label: 'Email', val: 'info@ridelux.uz', color: '#F59E0B' },
+  { icon: Clock, label: 'Ish vaqti', val: '24/7 Xizmat', color: '#EF4444' },
+];
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-    subject: "Car Rental Inquiry"
-  });
-  const [status, setStatus] = useState(null); // 'submitting', 'success', 'error'
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setStatus('submitting');
-    try {
-      await apiClient.post('/contact/', formData);
-      setStatus('success');
-      setFormData({ name: "", email: "", message: "", subject: "Car Rental Inquiry" });
-    } catch (err) {
-      console.error(err);
-      setStatus('error');
-    }
-  };
-
   return (
-    <div className="bg-[#121212] min-h-screen pt-24 pb-20">
-      {/* Header */}
-      <div className="relative h-[350px] lg:h-[450px] flex items-center justify-center overflow-hidden px-[8%] lg:px-[12%]">
-        <div className="absolute inset-0 bg-[url('/Image/contact-hero.jpg')] bg-cover bg-center bg-fixed opacity-30 scale-110"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#121212]/0 via-[#121212]/60 to-[#121212]"></div>
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="relative z-10 text-center">
-            <h6 className="uppercase font-black text-xs lg:text-sm text-red-600 tracking-[8px] mb-6">- Get in Touch</h6>
-            <h1 className="text-5xl lg:text-8xl font-black text-white bricolage-font tracking-tighter uppercase mb-4 leading-none">Contact <span className="text-red-600">Uz</span></h1>
-            <p className="text-gray-400 text-sm lg:text-lg max-w-2xl mx-auto font-medium opacity-80 italic italic">Our dedicated concierge is available 24/7 to assist with your premium automotive requirements.</p>
-        </motion.div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-[8%] lg:px-[12%] mt-[-50px] relative z-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          
-          {/* Contact Details */}
-          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
-            <div className="space-y-12">
-               <div>
-                  <h2 className="text-4xl lg:text-5xl font-black text-white bricolage-font uppercase tracking-tighter mb-8 leading-none">Global Presence <br /><span className="text-red-600">Local Support.</span></h2>
-                  <p className="text-gray-500 font-medium max-w-md leading-relaxed italic opacity-80">Whether you need a chauffeur, a luxury sedan, or a customized fleet package, our experts are ready to deliver excellence.</p>
-               </div>
-
-               <div className="space-y-8">
-                  {[
-                    { icon: <MapPin size={24} />, title: "Headquarters", info: "45 Amir Temur Street, Tashkent, Uzbekistan", col: "text-red-600" },
-                    { icon: <Phone size={24} />, title: "Voice & Support", info: "+998 99 123 45 67", col: "text-red-600" },
-                    { icon: <Mail size={24} />, title: "Electronic Mail", info: "concierge@ridelux.com", col: "text-red-600" }
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-start gap-6 group">
-                        <div className={`p-4 rounded-2xl bg-white/5 border border-white/5 group-hover:border-red-600/50 group-hover:bg-red-600/10 transition-all ${item.col}`}>
-                           {item.icon}
-                        </div>
-                        <div>
-                           <p className="text-gray-600 text-[10px] uppercase font-black tracking-widest mb-1">{item.title}</p>
-                           <p className="text-white font-bold text-lg">{item.info}</p>
-                        </div>
-                    </div>
-                  ))}
-               </div>
-
-               <div className="pt-10 border-t border-gray-800 flex gap-6">
-                  <div className="bg-red-600/10 p-6 rounded-3xl border border-red-600/20 max-w-[280px]">
-                      <Heart size={20} className="text-red-600 mb-4" />
-                      <h4 className="text-white font-black text-xs uppercase tracking-widest mb-2">Socially Engaged</h4>
-                      <p className="text-gray-600 text-[10px] font-bold leading-relaxed mb-4">Follow us for exclusive fleet updates and luxury automotive events across Tashkent.</p>
-                      <div className="flex gap-3">
-                         <div className="w-8 h-8 rounded-lg bg-gray-800"></div>
-                         <div className="w-8 h-8 rounded-lg bg-gray-800"></div>
-                         <div className="w-8 h-8 rounded-lg bg-gray-800"></div>
-                      </div>
-                  </div>
-               </div>
+    <div className="bg-[#0A0A0A] min-h-screen pt-32 pb-32 overflow-hidden">
+      
+      {/* === HERO === */}
+      <section className="px-6 mb-32 relative">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-primary/[0.05] blur-[120px] rounded-full pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto text-center">
+          <ScrollReveal direction="up">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-8">
+              <MessageSquare className="w-3.5 h-3.5" />
+              Biz har doim aloqadamiz
             </div>
-          </motion.div>
+            <h1 className="font-display text-6xl md:text-8xl font-extrabold tracking-tighter mb-8 leading-none">
+              Biz bilan <span className="text-white/40 italic">Bog'laning</span>
+            </h1>
+            <p className="max-w-2xl mx-auto text-white/40 text-lg md:text-xl font-light leading-relaxed mb-12">
+              Savollaringiz bormi? Jamoamiz istalgan vaqtda yordam berishga tayyor.
+              Quyidagi formani to'ldiring yoki bizga qo'ng'iroq qiling.
+            </p>
+          </ScrollReveal>
+        </div>
+      </section>
 
-          {/* Form */}
-          <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
-            <div className="bg-[#1e1f22] p-10 lg:p-14 rounded-[40px] border border-gray-800 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-red-600/5 blur-[80px] rounded-full"></div>
-                
-                <h3 className="text-3xl font-black text-white bricolage-font uppercase tracking-tighter mb-10 border-b border-gray-800 pb-6">Direct Message</h3>
-
-                {status === 'success' ? (
-                   <div className="text-center py-20">
-                      <div className="bg-green-500/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
-                          <CheckCircle size={48} className="text-green-500" />
-                      </div>
-                      <h3 className="text-3xl font-bold text-white mb-4 bricolage-font">Message Sent!</h3>
-                      <p className="text-gray-400 mb-10 text-sm leading-relaxed max-w-xs mx-auto">Thank you for reaching out. Our concierge will review your message and reply via email within 24 hours.</p>
-                      <button onClick={() => setStatus(null)} className="text-red-600 font-black uppercase text-xs tracking-widest hover:underline decoration-red-600/30 underline-offset-8">Send another message</button>
-                   </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-8">
-                    <div>
-                        <label className="block text-gray-600 text-[10px] font-black uppercase tracking-widest mb-4">Full Identity</label>
-                        <input type="text" name="name" placeholder="John Doe" value={formData.name} onChange={handleChange} className="w-full bg-[#121212] border border-gray-700 rounded-2xl px-6 py-5 text-white outline-none focus:border-red-600 transition-all font-bold text-sm" required />
+      {/* === CONTACT GRID === */}
+      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-16 items-start">
+        
+        {/* Left Side: Info & Form */}
+        <div className="lg:col-span-12 space-y-24">
+          
+          {/* Info Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {contactInfo.map((item, i) => (
+              <ScrollReveal key={i} direction="up" delay={i * 0.1}>
+                 <div className="card p-8 md:p-10 flex flex-col items-center justify-center text-center group hover:border-primary/20">
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                       <item.icon className="w-5 h-5 text-primary" />
                     </div>
-                    <div>
-                        <label className="block text-gray-600 text-[10px] font-black uppercase tracking-widest mb-4">Email Address</label>
-                        <input type="email" name="email" placeholder="john@example.com" value={formData.email} onChange={handleChange} className="w-full bg-[#121212] border border-gray-700 rounded-2xl px-6 py-5 text-white outline-none focus:border-red-600 transition-all font-bold text-sm" required />
-                    </div>
-                    <div>
-                        <label className="block text-gray-600 text-[10px] font-black uppercase tracking-widest mb-4">Message Details</label>
-                        <textarea rows="5" name="message" placeholder="Describe your request..." value={formData.message} onChange={handleChange} className="w-full bg-[#121212] border border-gray-700 rounded-2xl px-6 py-5 text-white outline-none focus:border-red-600 transition-all font-bold text-sm" required></textarea>
-                    </div>
+                    <div className="text-[10px] text-white/30 uppercase font-bold tracking-widest mb-2">{item.label}</div>
+                    <div className="text-sm font-bold">{item.val}</div>
+                 </div>
+              </ScrollReveal>
+            ))}
+          </div>
 
-                    {status === 'error' && <p className="text-red-500 text-xs font-black text-center animate-shake">Error sending message! Please verify your information.</p>}
-
-                    <button type="submit" disabled={status === 'submitting'} className="w-full bg-red-600 hover:bg-white hover:text-black text-white font-black py-5 rounded-[22px] transition-all shadow-xl shadow-red-600/30 flex items-center justify-center gap-4 uppercase tracking-[4px] text-xs disabled:opacity-50 active:scale-[0.98]">
-                      {status === 'submitting' ? 'Transmitting...' : 'Dispatch Message'} <Send size={16} />
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            {/* Form */}
+            <ScrollReveal direction="left">
+               <div className="glass p-10 md:p-16 relative overflow-hidden border-white/10 border shardow-2xl">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[60px] pointer-events-none" />
+                  
+                  <h2 className="font-display text-3xl font-extrabold mb-10 tracking-tight">Xabar yuborish</h2>
+                  
+                  <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                    <div className="space-y-2">
+                       <label className="text-[10px] text-white/30 uppercase font-bold tracking-widest ml-1">Ism</label>
+                       <input 
+                         type="text" 
+                         className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 px-4 text-sm focus:border-primary/50 outline-none transition-colors"
+                         placeholder="Ismingiz..."
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] text-white/30 uppercase font-bold tracking-widest ml-1">Email</label>
+                       <input 
+                         type="email" 
+                         className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 px-4 text-sm focus:border-primary/50 outline-none transition-colors"
+                         placeholder="email@example.com"
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] text-white/30 uppercase font-bold tracking-widest ml-1">Xabar</label>
+                       <textarea 
+                         rows="5"
+                         className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 px-4 text-sm focus:border-primary/50 outline-none transition-colors"
+                         placeholder="Xabaringiz..."
+                       />
+                    </div>
+                    <button className="btn-primary w-full py-4 rounded-2xl text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 group">
+                       XABAR YUBORISH
+                       <Send className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </button>
                   </form>
-                )}
+               </div>
+            </ScrollReveal>
 
-                <div className="mt-12 flex items-center justify-center gap-6 border-t border-gray-800 pt-8">
-                    <div className="flex items-center gap-2 text-gray-600 hover:text-red-600 transition-all cursor-help"><Info size={16} /> <span className="text-[9px] font-bold uppercase tracking-widest">Privacy Guard</span></div>
-                    <div className="w-px h-3 bg-gray-800"></div>
-                    <div className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-all cursor-help"><ShieldCheck size={16} /> <span className="text-[9px] font-bold uppercase tracking-widest">Verified Contact</span></div>
-                </div>
+            {/* Socials & CTA */}
+            <div className="space-y-12">
+               <ScrollReveal direction="right">
+                  <h3 className="font-display text-2xl font-extrabold mb-8 tracking-tight">Bizni <span className="text-white/40">Kuzating</span></h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { icon: Send, label: 'Telegram', link: '#', color: '#0088CC' },
+                      { icon: Instagram, label: 'Instagram', link: '#', color: '#E1306C' },
+                      { icon: Facebook, label: 'Facebook', link: '#', color: '#1877F2' },
+                      { icon: Twitter, label: 'Twitter', link: '#', color: '#1DA1F2' },
+                    ].map((s, i) => (
+                      <a 
+                        key={i} href={s.link} 
+                        className="flex items-center gap-4 p-6 rounded-3xl bg-white/[0.03] border border-white/5 hover:border-white/10 hover:bg-white/[0.05] transition-all group"
+                      >
+                        <s.icon className="w-5 h-5 text-white/40 group-hover:text-primary transition-colors" />
+                        <span className="text-sm font-bold text-white/60">{s.label}</span>
+                      </a>
+                    ))}
+                  </div>
+               </ScrollReveal>
+
+               <ScrollReveal direction="right" delay={0.2}>
+                  <div className="p-10 rounded-[32px] bg-primary/5 border border-primary/20 flex flex-col items-center text-center">
+                     <p className="text-xs text-primary font-bold uppercase tracking-widest mb-4">Tezkor Bog'lanish</p>
+                     <h4 className="font-display text-3xl font-extrabold mb-6">+998 (90) 123-45-67</h4>
+                     <a href="tel:+998901234567" className="btn-primary px-8 py-4 text-xs font-bold uppercase">Hozir qo'ng'iroq qilish</a>
+                  </div>
+               </ScrollReveal>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
+
+      {/* === MAP SECTION === */}
+      <section className="mt-40 px-6">
+        <div className="max-w-7xl mx-auto h-[500px] rounded-[48px] overflow-hidden border border-white/10 shadow-2xl relative grayscale invert opacity-60">
+           <iframe 
+             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d191885.2529851457!2d69.11410148705032!3d41.28259744654941!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38ae8b0cc379e9c3%3A0xa5a997690eda4fe7!2sTashkent%2C%20Uzbekistan!5e0!3m2!1sen!2s!4v1711883651842!5m2!1sen!2s" 
+             width="100%" 
+             height="100%" 
+             style={{ border: 0 }} 
+             loading="lazy" 
+           />
+        </div>
+      </section>
+
     </div>
   );
 };

@@ -1,90 +1,62 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Car, Send, Instagram, Facebook, Mail, Phone, MapPin } from 'lucide-react';
-import { SAYT } from '../data/constants';
 
-const Footer = () => {
-  const yil = new Date().getFullYear();
-
-  return (
-    <footer className="bg-card-dark pt-20 pb-10 border-t border-white/5">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          {/* Brand */}
-          <div className="col-span-1 lg:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-6 group">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center rotate-12 group-hover:rotate-0 transition-transform duration-300">
-                <Car className="text-white w-6 h-6" />
-              </div>
-              <span className="text-2xl font-heading font-black tracking-tighter uppercase">{SAYT.nomi}</span>
-            </Link>
-            <p className="text-white/50 mb-8 max-w-xs">{SAYT.shiori}</p>
-            <div className="flex gap-4">
-              <a href={SAYT.ijtimoiy.telegram} className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-colors duration-300">
-                <Send className="w-5 h-5" />
-              </a>
-              <a href={SAYT.ijtimoiy.instagram} className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-colors duration-300">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href={SAYT.ijtimoiy.facebook} className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-colors duration-300">
-                <Facebook className="w-5 h-5" />
-              </a>
+const Footer = () => (
+  <footer className="border-t border-white/[0.05] mt-auto" style={{ background: '#080808' }}>
+    <div className="max-w-7xl mx-auto px-6 py-16">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+        {/* Logo + tavsif */}
+        <div className="md:col-span-2">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
+              <span className="text-white font-black text-sm font-display">R</span>
             </div>
+            <span className="font-display font-extrabold text-lg tracking-tight">
+              Ride<span className="text-primary">Lux</span>
+            </span>
           </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-lg font-bold mb-6">Tezkor havolalar</h4>
-            <ul className="flex flex-col gap-4">
-              <li><Link to="/mashinalar" className="text-white/50 hover:text-primary transition-colors">Barcha mashinalar</Link></li>
-              <li><Link to="/elektromobillar" className="text-white/50 hover:text-primary transition-colors">⚡ Elektromobillar</Link></li>
-              <li><Link to="/biz-haqimizda" className="text-white/50 hover:text-primary transition-colors">Biz haqimizda</Link></li>
-              <li><Link to="/aloqa" className="text-white/50 hover:text-primary transition-colors">Aloqa</Link></li>
-              <li><Link to="/royxatdan" className="text-white/50 hover:text-primary transition-colors">Ro'yxatdan o'tish</Link></li>
-            </ul>
-          </div>
-
-          {/* Services */}
-          <div>
-            <h4 className="text-lg font-bold mb-6">Xizmatlar</h4>
-            <ul className="flex flex-col gap-4">
-              <li><Link to="/haydovchi-bilan" className="text-white/50 hover:text-primary transition-colors">Haydovchi bilan ijara</Link></li>
-              <li><Link to="/savollar" className="text-white/50 hover:text-primary transition-colors">Tez-tez so'raladigan savollar (FAQ)</Link></li>
-              <li><Link to="/shartlar" className="text-white/50 hover:text-primary transition-colors">Ijara shartlari</Link></li>
-              <li className="text-white/50">24/7 qo'llab-quvvatlash</li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="text-lg font-bold mb-6">Bog'lanish</h4>
-            <ul className="flex flex-col gap-6">
-              <li className="flex gap-4 items-start text-white/50">
-                <MapPin className="w-6 h-6 text-primary shrink-0" />
-                <span>{SAYT.manzil}</span>
-              </li>
-              <li className="flex gap-4 items-start text-white/50">
-                <Phone className="w-6 h-6 text-primary shrink-0" />
-                <span>{SAYT.telefon}</span>
-              </li>
-              <li className="flex gap-4 items-start text-white/50">
-                <Mail className="w-6 h-6 text-primary shrink-0" />
-                <span>{SAYT.email}</span>
-              </li>
-            </ul>
+          <p className="text-sm text-white/35 leading-relaxed max-w-xs">
+            Toshkentdagi eng ishonchli avtomobil ijarasi xizmati. 50+ ta mashina, 24/7 yordam.
+          </p>
+          {/* Socials */}
+          <div className="flex gap-3 mt-6">
+            {['Telegram', 'Instagram', 'WhatsApp'].map((s) => (
+              <a key={s} href="#" className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all text-xs font-bold">
+                {s[0]}
+              </a>
+            ))}
           </div>
         </div>
-
-        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-white/30 text-sm">
-          <p>© {yil} {SAYT.nomi}. Barcha huquqlar himoyalangan.</p>
-          <div className="flex gap-8">
-            <a href="#" className="hover:text-white transition-colors">Maxfiylik siyosati</a>
-            <a href="#" className="hover:text-white transition-colors">Foydalanish shartlari</a>
+        {/* Links */}
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-white/30 font-semibold mb-4">Sahifalar</div>
+          {[
+            ['/fleet','Katalog'],
+            ['/about-us','Biz haqimizda'],
+            ['/terms','Ijara shartlari'],
+            ['/faq','FAQ'],
+            ['/contact','Aloqa']
+          ].map(([to, label]) => (
+            <Link key={to} to={to} className="block text-sm text-white/40 hover:text-white mb-2.5 transition-colors">{label}</Link>
+          ))}
+        </div>
+        {/* Aloqa */}
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-white/30 font-semibold mb-4">Aloqa</div>
+          <div className="space-y-3 text-sm text-white/40">
+            <div>📞 <a href="tel:+998901234567" className="hover:text-white transition-colors">+998 90 123-45-67</a></div>
+            <div>✉️ <a href="mailto:info@rideluz.uz" className="hover:text-white transition-colors">info@ridelux.uz</a></div>
+            <div>📍 Toshkent, Amir Temur 15</div>
+            <div>🕐 Dushanba–Yakshanba: 8:00–22:00</div>
           </div>
         </div>
       </div>
-    </footer>
-  );
-};
+      <div className="border-t border-white/[0.05] mt-12 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-white/20">
+        <span>© {new Date().getFullYear()} RideLux. Barcha huquqlar himoyalangan.</span>
+        <span>Tashkent, Uzbekistan 🇺🇿</span>
+      </div>
+    </div>
+  </footer>
+);
 
 export default Footer;

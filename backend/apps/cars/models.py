@@ -20,6 +20,18 @@ class Car(models.Model):
     district = models.ForeignKey(District, on_delete=models.CASCADE, related_name='cars')
     address = models.TextField()
     main_image = models.ImageField(upload_to='cars/', null=True, blank=True)
+
+    @property
+    def get_image_url(self):
+        if self.main_image:
+            url = str(self.main_image)
+            if url.startswith('http'):
+                # Sleshlar sonini tekshirish (https: / vs https://)
+                if "https:/" in url and "https://" not in url:
+                    return url.replace("https:/", "https://")
+                return url
+            return self.main_image.url
+        return None
     features = models.JSONField(default=list)
     is_available = models.BooleanField(default=True)
     rating = models.FloatField(default=0.0)

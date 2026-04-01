@@ -1,22 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { fetchCars } from '../utils/api';
 
-const SLIDER_CARS = [
-  { rasm: '/images/cars/tracker.jpg', nomi: 'Chevrolet Tracker 2' },
-  { rasm: '/images/cars/malibu.jpg', nomi: 'Chevrolet Malibu 2' },
-  { rasm: '/images/cars/byd-atto3.jpg', nomi: 'BYD Atto 3' },
-  { rasm: '/images/cars/captiva.jpg', nomi: 'Chevrolet Captiva' },
-  { rasm: '/images/cars/equinox.jpg', nomi: 'Chevrolet Equinox' },
-];
-
-// Mashinalar chap-o'ng yo'nalishida animatsiya bilan o'tadigan slider
 const CarSlider = () => {
+  const [sliderCars, setSliderCars] = useState([]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const all = await fetchCars();
+        if (all && all.length > 0) {
+          setSliderCars(all.slice(0, 5));
+        }
+      } catch (err) {
+        console.error("Slider fetch error", err);
+      }
+    };
+    load();
+  }, []);
+
+  if (sliderCars.length === 0) return null;
+
   return (
     <div className="absolute right-0 top-0 w-full md:w-3/4 h-full overflow-hidden opacity-40 pointer-events-none select-none">
       <div className="relative w-full h-full">
-        {SLIDER_CARS.map((car, i) => (
+        {sliderCars.map((car, i) => (
           <motion.div
-            key={i}
+            key={car.id}
             className="absolute inset-0 flex items-center justify-center"
             initial={{ x: '100%', opacity: 0 }}
             animate={{ 
@@ -24,16 +34,16 @@ const CarSlider = () => {
               opacity: [0, 1, 0]
             }}
             transition={{
-              duration: 6,
-              delay: i * 6,        // har biri 6 soniyadan keyin
+              duration: 10,
+              delay: i * 8,
               repeat: Infinity,
-              repeatDelay: (SLIDER_CARS.length - 1) * 6,
+              repeatDelay: (sliderCars.length - 1) * 8,
               ease: "easeInOut"
             }}
           >
             <img 
-              src={car.rasm} 
-              alt={car.nomi} 
+              src={car.main_image || "/images/cars/car-fallback.jpg"} 
+              alt={car.model} 
               className="w-full h-full object-contain md:object-cover scale-110 lg:scale-125" 
             />
           </motion.div>

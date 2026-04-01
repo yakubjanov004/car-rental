@@ -1,29 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { motion, useSpring, useTransform, useMotionValue } from 'framer-motion';
+import { useEffect, useState, useRef } from 'react';
+import { useInView } from 'framer-motion';
 
-const StatsCounter = ({ count, suffix = "", label }) => {
-  const value = useMotionValue(0);
-  const springValue = useSpring(value, {
-    damping: 30,
-    stiffness: 100,
-  });
-
-  const displayValue = useTransform(springValue, (latest) => Math.floor(latest).toLocaleString() + suffix);
+const StatsCounter = ({ count, suffix = '', prefix = '' }) => {
+  const [val, setVal] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
 
   useEffect(() => {
-    value.set(count);
-  }, [count, value]);
+    if (!isInView) return;
+    let start = 0;
+    const duration = 1800;
+    const step = (timestamp) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      setVal(Math.floor(progress * count));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [isInView, count]);
 
   return (
-    <div className="text-center group">
-       <motion.div 
-         className="text-6xl md:text-7xl font-heading font-black text-primary mb-2 tracking-tighter"
-       >
-         <motion.span>{displayValue}</motion.span>
-       </motion.div>
-       <p className="text-white/40 uppercase text-xs font-bold tracking-widest group-hover:text-white transition-colors">
-         {label}
-       </p>
+    <div ref={ref} className="font-display font-extrabold text-3xl md:text-4xl text-white">
+      {prefix}{val.toLocaleString()}{suffix}
     </div>
   );
 };

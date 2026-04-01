@@ -190,7 +190,7 @@ const AdminPanel = () => {
                      {cars.map(car => (
                        <div key={car.id} className="bg-[#1e1f22] rounded-3xl overflow-hidden border border-gray-800 group hover:border-red-600/30 transition-all shadow-2xl">
                           <div className="h-[200px] overflow-hidden relative">
-                             <img src={car.main_image || "/Image/car-1.jpg"} alt={car.model} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" />
+                             <img src={car.main_image || "/images/cars/car-fallback.jpg"} alt={car.model} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" />
                              <div className="absolute bottom-4 left-4 bg-black/40 backdrop-blur-md px-4 py-1 rounded-xl text-white font-bold text-xs">
                                 {car.daily_price} so'm
                              </div>
