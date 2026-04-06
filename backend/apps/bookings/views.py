@@ -1,8 +1,18 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Booking
-from .serializers import BookingSerializer
+from .models import Booking, Fine, Waitlist
+from .serializers import BookingSerializer, FineSerializer, WaitlistSerializer
+
+class WaitlistViewSet(viewsets.ModelViewSet):
+    serializer_class = WaitlistSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        return Waitlist.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 from apps.cars.models import Car
 from datetime import datetime
 
@@ -10,6 +20,24 @@ from datetime import datetime
 class BookingCreateView(generics.CreateAPIView):
     serializer_class = BookingSerializer
     permission_classes = (permissions.IsAuthenticated,)
+
+    def perform_create(self, serializer):
+        booking = serializer.save(user=self.request.user)
+        
+        # Award loyalty points: 1 point for every 100,000 UZS
+        points = int(booking.total_price // 100000)
+        if points > 0:
+            user = self.request.user
+            user.loyalty_points += points
+            user.save()
+            
+            # Send notification about points (Simulated)
+            from apps.users.models import Notification
+            Notification.objects.create(
+                user=user,
+                title="Sodiqlik ballari!",
+                message=f"Tabriklaymiz! Ushbu buyurtma uchun siz {points} ball to'pladingiz."
+            )
 
 
 class MyBookingsView(generics.ListAPIView):
@@ -119,4 +147,12 @@ class BookingCancelView(APIView):
         booking.save()
         serializer = BookingSerializer(booking)
         return Response(serializer.data)
+
+
+class MyFinesView(generics.ListAPIView):
+    serializer_class = FineSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        return Fine.objects.filter(booking__user=self.request.user).order_by('-issued_at')
 

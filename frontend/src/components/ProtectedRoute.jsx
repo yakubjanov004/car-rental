@@ -9,7 +9,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   if (loading) return null;
 
   if (!user) {
-    return <Navigate to="/kirish" state={{ from: location }} replace />;
+    return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
   if (adminOnly && !user.is_staff) {

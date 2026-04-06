@@ -1,0 +1,78 @@
+[
+  {
+    "model": "pricing.pricingrule",
+    "pk": 1,
+    "fields": {
+      "name": "Weekend Surge",
+      "rule_type": "weekend_surge",
+      "applies_to_weekdays": "5,6",
+      "date_from": null,
+      "date_to": null,
+      "min_days": null,
+      "days_before_start": null,
+      "modifier_type": "multiply",
+      "modifier_value": "1.15",
+      "applies_to_all": true,
+      "applies_to_categories": "",
+      "priority": 100,
+      "is_active": true
+    }
+  },
+  {
+    "model": "pricing.pricingrule",
+    "pk": 2,
+    "fields": {
+      "name": "Long Rental Discount",
+      "rule_type": "long_rental",
+      "applies_to_weekdays": "",
+      "date_from": null,
+      "date_to": null,
+      "min_days": 7,
+      "days_before_start": null,
+      "modifier_type": "multiply",
+      "modifier_value": "0.92",
+      "applies_to_all": true,
+      "applies_to_categories": "",
+      "priority": 70,
+      "is_active": true
+    }
+  },
+  {
+    "model": "pricing.pricingrule",
+    "pk": 3,
+    "fields": {
+      "name": "Advance Booking Discount",
+      "rule_type": "advance_booking",
+      "applies_to_weekdays": "",
+      "date_from": null,
+      "date_to": null,
+      "min_days": null,
+      "days_before_start": 14,
+      "modifier_type": "multiply",
+      "modifier_value": "0.95",
+      "applies_to_all": true,
+      "applies_to_categories": "",
+      "priority": 60,
+      "is_active": true
+    }
+  },
+  {
+    "model": "pricing.pricingrule",
+    "pk": 4,
+    "fields": {
+      "name": "Premium Category Adjustment",
+      "rule_type": "peak_season",
+      "applies_to_weekdays": "",
+      "date_from": null,
+      "date_to": null,
+      "min_days": null,
+      "days_before_start": null,
+      "modifier_type": "multiply",
+      "modifier_value": "1.08",
+      "applies_to_all": false,
+      "applies_to_categories": "premium,suv",
+      "priority": 40,
+      "is_active": true
+    }
+  }
+]

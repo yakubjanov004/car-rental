@@ -1,428 +1,634 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
-  Star, MapPin, Users, Fuel, Settings2, Calendar, 
-  CheckCircle2, ChevronLeft, Phone, User, Info, 
-  ShieldCheck, Send, MessageSquare, ArrowRight, X, Clock, AlertCircle
+  Users, Fuel, Settings2, Calendar, 
+  CheckCircle2, ChevronLeft, 
+  ShieldCheck, ArrowRight, Clock, AlertCircle, Zap, Sparkles,
+  LayoutGrid, Gauge, Car
 } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-// import { DEMO_MASHINALAR } from '../data/cars';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { formatNarx } from '../utils/formatPrice';
 import { kunlarFarqi } from '../utils/dateUtils';
 import { useAuth } from '../context/AuthContext';
 import ScrollReveal from '../components/ScrollReveal';
-import { fetchCarDetail, MEDIA_BASE_URL, createBooking } from '../utils/api';
+import CheckoutModal from '../components/payment/CheckoutModal';
+import { fetchCarDetail, MEDIA_BASE_URL, createBooking, fetchCarAvailability } from '../utils/api';
+import './CarDetail.css';
 
+/* ─── Reveal wrapper using IntersectionObserver ─── */
+const Reveal = ({ children, className = '', delay = 0 }) => {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      initial={{ opacity: 0, y: 40 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+/* ─── Info Card (specs) ─── */
+const InfoCard = ({ icon: Icon, label, val, delay = 0 }) => (
+  <Reveal delay={delay}>
+    <div className="cd-info-card">
+      <div className="cd-info-card__icon">
+        <Icon size={18} color="#E8372A" />
+      </div>
+      <div>
+        <div className="cd-info-card__label">{label}</div>
+        <div className="cd-info-card__value">{val}</div>
+      </div>
+    </div>
+  </Reveal>
+);
+
+/* ─── Floating Spec Badge ─── */
+const FloatingBadge = ({ label, value, className = '' }) => (
+  <div className={`cd-hero__badge ${className}`}>
+    <div className="cd-hero__badge-label">{label}</div>
+    <div className="cd-hero__badge-value">{value}</div>
+  </div>
+);
+
+/* ─── Bento Grid Cell ─── */
+const BentoCell = ({ icon: Icon, label, value, delay = 0 }) => (
+  <Reveal delay={delay}>
+    <div className="cd-bento__cell">
+      <div className="cd-bento__cell-icon">
+        <Icon size={20} />
+      </div>
+      <div>
+        <div className="cd-bento__cell-label">{label}</div>
+        <div className="cd-bento__cell-value">{value}</div>
+      </div>
+    </div>
+  </Reveal>
+);
+
+
+/* ═══════════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════════ */
 const CarDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [availability, setAvailability] = useState({ booked_dates: [], booked_ranges: [] });
   
-  const [step, setStep] = useState(1);
   const [bookingData, setBookingData] = useState({
     startDate: '',
     endDate: '',
     fullName: user?.first_name ? `${user.first_name} ${user.last_name || ''}` : '',
-    phone_number: user?.phone_number || '',
+    phone_number: user?.phone || '',
   });
 
-  const [myBookings, setMyBookings] = useState([]);
-  const [favorites, setFavorites] = useState([]);
+  const [dateError, setDateError] = useState('');
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [currentBooking, setCurrentBooking] = useState(null);
 
+  /* Scroll-driven transforms */
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+
+  const heroCarY = useTransform(scrollYProgress, [0, 0.15], [0, 150]);
+  const heroCarScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.88]);
+  const heroCarOpacity = useTransform(scrollYProgress, [0.08, 0.2], [1, 0]);
+  const heroContentY = useTransform(scrollYProgress, [0, 0.2], [0, -100]);
+  
+  const detailBgY = useTransform(scrollYProgress, [0.1, 0.4], [100, -100]);
+  const rearY = useTransform(scrollYProgress, [0.3, 0.6], [120, -120]);
+
+  const [isScrolled, setIsScrolled] = useState(false);
   useEffect(() => {
-    const loadCar = async () => {
+    return scrollYProgress.on("change", v => setIsScrolled(v > 0.05));
+  }, [scrollYProgress]);
+
+  /* Media resolver */
+  const resolveMediaUrl = (url) => {
+    if (!url || typeof url !== 'string') return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    
+    // Ensure one slash between base and path
+    const base = MEDIA_BASE_URL.replace(/\/$/, '');
+    const path = url.startsWith('/') ? url : `/${url}`;
+    
+    return `${base}${path}`;
+  };
+
+  /* Build gallery from all 5 slots */
+  const gallery = useMemo(() => {
+    if (!car) return {};
+    const images = {};
+    
+    // Base image
+    if (car.main_image) images.card_main = resolveMediaUrl(car.main_image);
+    
+    // Car media slots
+    if (car.media) {
+      Object.entries(car.media).forEach(([slot, url]) => {
+        if (url && typeof url === 'string') images[slot] = resolveMediaUrl(url);
+      });
+    }
+
+    // Model specific images (overrides)
+    const modelImages = Array.isArray(car.model_info?.images) ? car.model_info.images : [];
+    modelImages.forEach(img => {
+      if (img.slot && img.image) images[img.slot] = resolveMediaUrl(img.image);
+    });
+
+    // Final hero fallback
+    if (!images.card_main) {
+      images.card_main = resolveMediaUrl(car.media?.card_main || car.main_image) || '/images/assets/car_fallback.jpg';
+    }
+    
+    return images;
+  }, [car]);
+
+  /* Data fetching */
+  useEffect(() => {
+    const loadCarData = async () => {
+      if (!id || id === 'undefined') {
+        setError("Noto'g'ri URL");
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
-        const data = await fetchCarDetail(id);
-        if (data) {
-          setCar(data);
+        const [carData, availData] = await Promise.all([
+          fetchCarDetail(id),
+          fetchCarAvailability(id)
+        ]);
+        if (carData) {
+          setCar(carData);
+          setAvailability(availData || { booked_dates: [], booked_ranges: [] });
         } else {
           setError("Mashina topilmadi");
         }
       } catch (err) {
-        setError("Mashina topilmadi");
+        setError("Ma'lumotlarni yuklashda xatolik");
       } finally {
         setLoading(false);
       }
     };
-    loadCar();
+    loadCarData();
     window.scrollTo(0, 0);
   }, [id]);
 
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"]
-  });
+  /* ─── Date validation & booking ─── */
+  const isDateBooked = (dateStr) => availability.booked_dates.includes(dateStr);
 
-  const imgY = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const imgOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.1]);
-
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
-      <motion.div 
-        animate={{ scale: [1, 1.2, 1], rotate: 360 }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full shadow-[0_0_20px_rgba(232,55,42,0.3)]" 
-      />
-    </div>
-  );
-  
-  if (error || !car) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0A0A0A] text-center px-6">
-      <AlertCircle className="w-16 h-16 text-white/10 mb-6" />
-      <h2 className="text-4xl font-display font-extrabold mb-8 tracking-tighter">Mashina <span className="text-white/30 italic">topilmadi</span></h2>
-      <Link to="/mashinalar" className="btn-primary px-10">Katalogga qaytish</Link>
-    </div>
-  );
-
-  // Normalize data
-  const brand = car.brand || car.brend || "Chevrolet";
-  const model = car.model || "Unknown";
-  const year = car.year || car.yil || 2024;
-  const price = car.daily_price || car.kunlik_narx || 0;
-  const fuelType = car.fuel_type || car.yoqilgi || 'benzin';
-  const transmission = car.transmission || car.uzatma || 'automatic';
-  const seats = car.seats || car.orinlar || 5;
-  const rating = car.rating || car.reyting || 4.9;
-  const reviewsCount = car.review_count || car.sharhlar_soni || 0;
-  const features = car.features || car.xususiyatlar || [];
-  
-  let mainImage = car.main_image || car.rasm;
-  if (mainImage && !mainImage.startsWith('http') && !mainImage.startsWith('/images')) {
-    mainImage = `${MEDIA_BASE_URL}${mainImage}`;
-  }
-
-  const totalDays = bookingData.startDate && bookingData.endDate ? kunlarFarqi(bookingData.startDate, bookingData.endDate) : 0;
-  const totalPrice = totalDays * price;
-
-  const handleBooking = async () => {
-    if (!user) {
-      alert('Iltimos, avval ro\'yxatdan o\'ting yoki tizimga kiring.');
-      navigate('/kirish');
-      return;
+  const validateDates = (start, end) => {
+    if (!start || !end) return true;
+    const s = new Date(start), e = new Date(end);
+    if (e <= s) { setDateError("Qaytarish sanasi olish sanasidan keyin bo'lishi kerak."); return false; }
+    let cur = new Date(s);
+    while (cur <= e) {
+      if (isDateBooked(cur.toISOString().split('T')[0])) {
+        setDateError(`${cur.toISOString().split('T')[0]} sanasi allaqachon band.`);
+        return false;
+      }
+      cur.setDate(cur.getDate() + 1);
     }
-
-    try {
-       await createBooking({
-         car: car.id,
-         start_date: bookingData.startDate,
-         end_date: bookingData.endDate,
-         total_price: totalPrice,
-         full_name: bookingData.fullName,
-         phone_number: bookingData.phone_number,
-       });
-       alert('Bron so\'rovi muvaffaqiyatli yuborildi!');
-       navigate('/kabinet');
-    } catch (err) {
-       alert('Xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.');
-    }
+    setDateError('');
+    return true;
   };
 
-  return (
-    <div ref={containerRef} className="bg-[#0A0A0A] min-h-screen pb-32 overflow-hidden">
-      
-      {/* === HERO AREA === */}
-      <section className="relative h-[75vh] md:h-[90vh] flex items-center justify-center overflow-hidden">
-        {/* Ambient background */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/4 left-1/3 w-[600px] h-[600px] rounded-full bg-primary/[0.08] blur-[150px] pointer-events-none" />
-          <motion.div style={{ y: imgY, opacity: imgOpacity }} className="w-full h-full">
-            <img 
-              src={mainImage} 
-              className="w-full h-full object-contain md:object-cover scale-110 opacity-30 blur-[4px]" 
-              alt="" 
-            />
-          </motion.div>
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/60 via-transparent to-[#0A0A0A]" />
-        </div>
+  const handleBooking = async () => {
+    if (!user) { navigate('/signin'); return; }
+    if (!validateDates(bookingData.startDate, bookingData.endDate)) return;
+    try {
+      const res = await createBooking({
+        car: car.id,
+        start_date: bookingData.startDate,
+        end_date: bookingData.endDate,
+        total_price: (car.daily_price || 0) * (kunlarFarqi(bookingData.startDate, bookingData.endDate) || 1),
+        full_name: bookingData.fullName,
+        phone_number: bookingData.phone_number,
+      });
+      if (res?.id) { setCurrentBooking(res); setIsCheckoutOpen(true); }
+    } catch { alert("Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring."); }
+  };
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full text-center">
+  /* Loading / Error states */
+  if (loading) return (
+    <div className="cd-loader">
+      <div className="cd-loader__spinner" />
+    </div>
+  );
+
+  if (error || !car) return (
+    <div className="cd-error">
+      <AlertCircle size={64} className="cd-error__icon" />
+      <h2 className="cd-error__title">Mashina <span>topilmadi</span></h2>
+      <Link to="/fleet" className="cd-error__btn">Katalogga qaytish</Link>
+    </div>
+  );
+
+  const brand = car.brand || "CHEVROLET";
+  const model = car.model || "Unknown";
+  const year = car.year || 2024;
+  const price = car.daily_price || 0;
+
+  /* ═══════════════════════════════════════════
+     RENDER
+     ═══════════════════════════════════════════ */
+  return (
+    <div ref={containerRef} className={`cd-root ${isScrolled ? 'scrolled' : ''}`}>
+
+      {/* ──────────────────────────────────────
+          1. HERO — White Studio
+          ────────────────────────────────────── */}
+      <section className="cd-hero">
+        <div className="cd-hero__grid" />
+        
+        {/* Floating Specs */}
+        <FloatingBadge label="Power Output" value={`${car.power || '460'} HP`} className="cd-hero__badge--top-left" />
+        <FloatingBadge label="Top Speed" value={`${car.top_speed || '250'} KMH`} className="cd-hero__badge--top-right" />
+        <FloatingBadge label="Engine Type" value={car.engine_type?.toUpperCase() || car.fuel_type?.toUpperCase() || 'V8 BITURBO'} className="cd-hero__badge--bottom-left" />
+
+        {/* Dropping Car */}
+        <div className="cd-hero__car-wrap">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="cd-hero__car-inner"
+            style={{ y: heroCarY, scale: heroCarScale, opacity: heroCarOpacity }}
           >
-            <Link to="/mashinalar" className="inline-flex items-center gap-2 text-white/30 hover:text-white transition-colors mb-10 group text-[10px] uppercase font-bold tracking-[0.2em]">
-              <ChevronLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-              Katalogga qaytish
-            </Link>
-            <div className="text-primary font-bold uppercase tracking-[0.4em] text-[10px] mb-6">— {brand}</div>
-            <h1 className="font-display text-7xl md:text-[10rem] font-extrabold tracking-tighter mb-8 leading-none">
-              {model}
-            </h1>
-            <div className="flex flex-wrap justify-center gap-6">
-              <span className="glass px-6 py-2.5 rounded-full border-white/5 text-[11px] font-bold uppercase tracking-widest">{year} yil</span>
-              <span className="glass px-6 py-2.5 rounded-full border-white/5 text-[11px] font-bold uppercase tracking-widest text-primary">{fuelType === 'elektro' ? '⚡ Elektro' : fuelType}</span>
-              <span className="glass px-6 py-2.5 rounded-full border-white/5 text-[11px] font-bold uppercase tracking-widest">{transmission === 'automatic' ? 'Avtomat' : 'Mexanika'}</span>
+            <div className="cd-hero__car-anim">
+              <img src={gallery.card_main} className="cd-hero__car-img" alt={model} />
             </div>
           </motion.div>
+          <div className="cd-hero__shadow" />
         </div>
 
-        {/* Floating main car image */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9, y: 150 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 1.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute bottom-[-10%] md:bottom-[-20%] left-1/2 -translate-x-1/2 w-full max-w-5xl px-6 pointer-events-none z-20"
+        {/* Title overlay */}
+        <motion.div className="cd-hero__content" style={{ y: heroContentY }}>
+          <h1 className="cd-hero__title">
+            {brand}<span>{model}</span>
+          </h1>
+          <p className="cd-hero__subtitle">
+            {car.model_info?.detail_title || "Premium sport sedan — yuqori tezlik va barqarorlik ramzi."}
+          </p>
+        </motion.div>
+
+        {/* Gradient to black */}
+        <div className="cd-hero__gradient" />
+
+        {/* Scroll indicator */}
+        <div className="cd-hero__scroll">
+          <span className="cd-hero__scroll-label">Scroll</span>
+          <div className="cd-hero__scroll-line">
+            <div className="cd-hero__scroll-dot" />
+          </div>
+        </div>
+
+        {/* Back button */}
+        <motion.div
+          initial={{ x: 20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.8 }}
         >
-          <img 
-            src={mainImage} 
-            alt={model} 
-            className="w-full object-contain filter drop-shadow-[0_60px_120px_rgba(0,0,0,1)]" 
-          />
+          <Link to="/fleet" className="cd-back-btn">
+            <span>Back to fleet</span>
+            <ChevronLeft size={16} />
+          </Link>
         </motion.div>
       </section>
 
-      {/* === CONTENT AREA === */}
-      <div className="max-w-7xl mx-auto px-6 mt-40 md:mt-60 grid lg:grid-cols-12 gap-20 items-start relative">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] pointer-events-none" />
-        
-        {/* Left Side: Details */}
-        <div className="lg:col-span-7 space-y-24">
-          
-          {/* Main Info */}
-          <section>
-            <ScrollReveal direction="up">
-              <div className="text-[11px] text-primary font-bold uppercase tracking-[0.2em] mb-4">— Showroom</div>
-              <h2 className="font-display text-4xl md:text-5xl font-extrabold mb-10 tracking-tighter">Mukammallik har bir <span className="text-white/40 italic">detalda</span></h2>
-              <p className="text-lg text-white/50 leading-relaxed font-light mb-12 italic">
-                Ushbu {brand} {model} xizmat ko'rsatish sohasida o'z xavfsizligi va qulayligi bilan ajralib turadi. 
-                Sizning har qanday sayohatingiz uchun ideal hamroh. Biz har bir mijoz uchun individual yondashuvni kafolatlaymiz.
+      {/* ──────────────────────────────────────
+          2. DESCRIPTION — detail_background
+          ────────────────────────────────────── */}
+      <section className="cd-desc">
+        <motion.div className="cd-desc__bg" style={{ y: detailBgY }}>
+          {gallery.detail_background && (
+            <>
+              <img src={gallery.detail_background} alt="" />
+              <div className="cd-desc__bg-overlay" />
+            </>
+          )}
+        </motion.div>
+
+        <div className="cd-desc__grid">
+          <Reveal className="cd-desc__hero">
+            <div>
+              <div className="cd-desc__accent" />
+              <h2 className="cd-desc__title">
+                {car.model_info?.detail_title || `${brand} ${model} — bu kuch, texnologiya va dizayn uyg'unligi.`}
+              </h2>
+              <p className="cd-desc__text">
+                {car.model_info?.detail_summary || "Zamonaviy klassika bilan boyitilgan tizim va maksimal darajadagi komfort."}
               </p>
-            </ScrollReveal>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { icon: Zap, label: 'Dvigatel', val: '2.0T / 245 HP', color: '#00D97E' },
-                { icon: ShieldCheck, label: 'Sug\'urta', val: 'To\'liq KASKO', color: '#3B82F6' },
-                { icon: Clock, label: 'Yosh limiti', val: '21 Yosh', color: '#F59E0B' },
-                { icon: Star, label: 'Reyting', val: '4.95 / 5.0', color: '#EF4444' },
-              ].map((item, i) => (
-                <ScrollReveal key={i} direction="up" delay={i * 0.1}>
-                  <div className="glass p-8 flex flex-col items-center justify-center text-center group border-white/5 hover:border-primary/30 transition-all">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                      <item.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="text-[9px] text-white/30 uppercase font-black tracking-[0.2em] mb-2">{item.label}</div>
-                    <div className="text-sm font-extrabold font-display uppercase">{item.val}</div>
-                  </div>
-                </ScrollReveal>
-              ))}
             </div>
-          </section>
+          </Reveal>
 
-          <section>
-            <ScrollReveal direction="up">
-              <h3 className="font-display text-3xl font-extrabold mb-10 tracking-tight">Qulaylik va <span className="text-white/40">Texnologiya</span></h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(features || []).map((feat, i) => (
-                  <div key={i} className="flex gap-5 p-6 rounded-3xl bg-white/[0.02] border border-white/5 items-center hover:bg-white/[0.04] transition-colors">
-                    <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <CheckCircle2 className="w-4 h-4 text-primary" />
-                    </div>
-                    <span className="text-sm font-bold text-white/70 tracking-wide">{feat}</span>
-                  </div>
-                ))}
-              </div>
-            </ScrollReveal>
-          </section>
-
-          <section>
-            <ScrollReveal direction="up">
-              <div className="p-10 rounded-[48px] bg-white/[0.01] border border-white/5 flex flex-col md:flex-row gap-10 items-center relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] pointer-events-none" />
-                <div className="w-20 h-20 rounded-[32px] bg-primary/10 flex items-center justify-center shrink-0 text-primary group-hover:scale-110 transition-transform duration-700">
-                  <MapPin className="w-10 h-10" />
-                </div>
-                <div>
-                  <h3 className="font-display text-4xl font-extrabold mb-8 tracking-tighter">Band qilish <span className="text-white/40 italic">Jarayoni</span></h3>
-                  <div className="space-y-6">
-                    {[
-                      { step: '01', t: 'So\'rov yuborish', d: 'Platforma orqali o\'z so\'rovingizni qoldiring.' },
-                      { step: '02', t: 'Tasdiqlash', d: 'Menejerimiz siz bilan bog\'lanib barchasini tasdiqlaydi.' },
-                      { step: '03', t: 'Mashinani olish', d: 'Mashinani ofisimizdan olib keting yoki yetkazib berishga buyurtma bering.' },
-                    ].map((s, i) => (
-                      <div key={i} className="flex gap-6 group">
-                        <div className="text-xl font-display font-black text-primary/40 group-hover:text-primary transition-colors">{s.step}</div>
-                        <div>
-                          <h4 className="font-bold text-base mb-1">{s.t}</h4>
-                          <p className="text-xs text-white/30 font-light leading-relaxed">{s.d}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </ScrollReveal>
-          </section>
-        </div>
-
-        <div className="lg:col-span-5">
-          <div className="sticky top-32">
-            <ScrollReveal direction="right">
-              <div className="glass p-12 relative overflow-hidden border-white/10 border-2 shadow-2xl rounded-[48px]">
-                <div className="absolute top-0 left-0 w-full h-full bg-primary/[0.02] -z-10" />
-                
-                <div className="flex items-end justify-between border-b border-white/5 pb-10 mb-12">
-                  <div>
-                    <div className="text-[10px] text-white/20 uppercase font-black tracking-[0.2em] mb-2">Kunlik ijara</div>
-                    <div className="font-display text-5xl font-extrabold text-primary shadow-primary/20">{formatNarx(price)}</div>
-                  </div>
-                  <div className="flex flex-col items-end">
-                     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[9px] font-bold text-primary uppercase tracking-widest mb-6">
-                        <Sparkles className="w-3 h-3" />
-                        Eksklyuziv Imkoniyat
-                     </div>
-                     <h4 className="text-2xl font-bold mb-4 tracking-tight">Maxsus Taklif</h4>
-                     <p className="text-white/40 text-sm font-light leading-relaxed mb-10">
-                        3+ kunga bron qiling va umumiy narxdan 10% chegirmaga ega bo'ling.
-                     </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 mb-12">
-                  {[1, 2, 3].map(s => (
-                    <div key={s} className={`h-1.5 flex-1 rounded-full transition-all duration-700 ${step >= s ? 'bg-primary' : 'bg-white/5'}`} />
-                  ))}
-                </div>
-
-                <div className="min-h-[300px]">
-                  <AnimatePresence mode="wait">
-                    {step === 1 && (
-                      <motion.div
-                        key="step1"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="space-y-8"
-                      >
-                        <h4 className="text-xl font-bold tracking-tight mb-6">Ijara <span className="text-white/40 italic">Muddati</span></h4>
-                        <div className="grid grid-cols-1 gap-6">
-                          <div className="space-y-3">
-                             <label className="text-[9px] text-white/20 uppercase font-black tracking-widest ml-1">Olish sanasi</label>
-                             <input 
-                               type="date" 
-                               className="w-full bg-[#111] border border-white/5 rounded-2xl p-5 text-sm focus:border-primary/50 outline-none transition-all"
-                               value={bookingData.startDate}
-                               onFocus={(e) => e.target.showPicker && e.target.showPicker()}
-                               onChange={(e) => setBookingData({...bookingData, startDate: e.target.value})}
-                             />
-                          </div>
-                          <div className="space-y-3">
-                             <label className="text-[9px] text-white/20 uppercase font-black tracking-widest ml-1">Qaytarish sanasi</label>
-                             <input 
-                               type="date" 
-                               className="w-full bg-[#111] border border-white/5 rounded-2xl p-5 text-sm focus:border-primary/50 outline-none transition-all"
-                               value={bookingData.endDate}
-                               onFocus={(e) => e.target.showPicker && e.target.showPicker()}
-                               onChange={(e) => setBookingData({...bookingData, endDate: e.target.value})}
-                             />
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {step === 2 && (
-                      <motion.div
-                        key="step2"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="space-y-6"
-                      >
-                        <h4 className="text-xl font-bold tracking-tight mb-6">Aloqa <span className="text-white/40 italic">Ma'lumotlari</span></h4>
-                        <div className="space-y-4">
-                          <input 
-                            type="text" 
-                            placeholder="To'liq ism..."
-                            className="w-full bg-[#111] border border-white/5 rounded-2xl p-5 text-sm focus:border-primary/50 outline-none"
-                            value={bookingData.fullName}
-                            onChange={(e) => setBookingData({...bookingData, fullName: e.target.value})}
-                          />
-                          <input 
-                            type="tel" 
-                            placeholder="+998 00 000-00-00"
-                            className="w-full bg-[#111] border border-white/5 rounded-2xl p-5 text-sm focus:border-primary/50 outline-none"
-                            value={bookingData.phone_number}
-                            onChange={(e) => setBookingData({...bookingData, phone_number: e.target.value})}
-                          />
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {step === 3 && (
-                      <motion.div
-                        key="step3"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="space-y-8"
-                      >
-                        <h4 className="text-xl font-bold tracking-tight mb-6">Yakuniy <span className="text-white/40 italic">Tasdiqlash</span></h4>
-                        <div className="glass bg-white/[0.02] border-white/5 rounded-3xl p-8 space-y-6">
-                          <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest">
-                            <span className="text-white/20">Davomiyligi:</span>
-                            <span>{totalDays} kun</span>
-                          </div>
-                          <div className="h-px bg-white/5" />
-                          <div className="flex flex-col items-center">
-                            <h4 className="font-display text-2xl font-extrabold mb-2 text-white italic">Savollaringiz bormi?</h4>
-                            <p className="text-xs text-white/30 mb-10 uppercase tracking-widest">Qo'llab-quvvatlash markazi</p>
-                          </div>
-                          <Link to="/contact" className="btn-secondary group px-8 flex justify-center">
-                              Bog'lanish
-                              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                          </Link>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <div className="mt-12 flex flex-wrap gap-3 mb-12">
-                   {['Klimat Kontrol', 'Charm Salon', 'Apple CarPlay', '360° Kamera', 'O\'rindiq isitgich'].map((f, i) => (
-                      <span key={i} className="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-widest text-white/40">
-                         {f}
-                      </span>
-                   ))}
-                </div>
-
-                <div className="flex gap-4">
-                  {step > 1 && (
-                    <button 
-                      onClick={() => setStep(step - 1)}
-                      className="glass px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/5"
-                    >
-                      Orqaga
-                    </button>
-                  )}
-                  <button 
-                    onClick={() => step < 3 ? setStep(step + 1) : handleBooking()}
-                    disabled={step === 1 && (!bookingData.startDate || !bookingData.endDate)}
-                    className="btn-primary flex-1 py-5 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3 animate-pulse-slow"
-                  >
-                    {step < 3 ? 'Davom etish' : 'Hozir bron qilish'}
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                <div className="mt-12 pt-8 border-t border-white/5 flex items-center justify-between">
-                   <div className="flex -space-x-3">
-                      {[1, 2, 3].map(i => <img key={i} src={`https://i.pravatar.cc/100?img=${20+i}`} className="w-8 h-8 rounded-full border-2 border-bg-dark" alt="" />)}
-                   </div>
-                   <div className="text-[9px] text-white/20 uppercase font-bold tracking-widest">
-                      Hoziroq biz bilan bog'laning
-                   </div>
-                </div>
-              </div>
-            </ScrollReveal>
+          <div className="cd-info-grid">
+            <InfoCard icon={Zap} label="KUCH" val={`${car.power || '600'} OT`} delay={0} />
+            <InfoCard icon={ShieldCheck} label="TEZLANISH" val={car.acceleration || "4.5s"} delay={0.1} />
+            <InfoCard icon={Fuel} label="SARF" val={car.fuel_consumption || "12.5 L"} delay={0.15} />
+            <InfoCard icon={Users} label="O'RINLAR" val={`${car.seats || 5} TA`} delay={0.2} />
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* ──────────────────────────────────────
+          3. REAR VIEW — gallery_rear (Parallax)
+          ────────────────────────────────────── */}
+      <section className="cd-rear">
+        <motion.div className="cd-rear__img-wrap" style={{ y: rearY }}>
+          {gallery.gallery_rear && <img src={gallery.gallery_rear} alt="Rear view" />}
+        </motion.div>
+        <div className="cd-rear__overlay" />
+
+        <div className="cd-rear__content">
+          <Reveal>
+            <div style={{ maxWidth: '32rem' }}>
+              <div className="cd-rear__tag">
+                <div className="cd-rear__tag-line" />
+                REAR PROFILE
+              </div>
+              <h3 className="cd-rear__heading">
+                {car.rear_title ? (
+                  <>
+                    {car.rear_title.split(' ').slice(0, -1).join(' ')}<br />
+                    <span>{car.rear_title.split(' ').slice(-1)}</span>
+                  </>
+                ) : (
+                  <>XARAKTER VA<br /><span>BARQARORLIK</span></>
+                )}
+              </h3>
+              <p className="cd-rear__body">
+                {car.rear_description || "Har bir detal mukammallikka intilgan. RideLux faqat eng yaxshi xususiyatlarni taqdim etadi."}
+              </p>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ──────────────────────────────────────
+          4. BENTO GRID — gallery_front + specs
+          ────────────────────────────────────── */}
+      <section className="cd-bento">
+        <div className="cd-bento__header">
+          <Reveal>
+            <div>
+              <h2 className="cd-bento__heading">Asosiy <span>xususiyatlar</span></h2>
+              <div className="cd-bento__accent" />
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <p className="cd-bento__subtitle">
+              TEXNIK KO'RSATKICHLAR VA QULAYLIKLARNING ENG YUQORI DARAJASI
+            </p>
+          </Reveal>
+        </div>
+
+        <div className="cd-bento__grid">
+          {/* Left: image + spec cells */}
+          <div className="cd-bento__main">
+            <Reveal>
+              <div className="cd-bento__img-card">
+                {gallery.gallery_front && <img src={gallery.gallery_front} alt="Front view" />}
+                <div className="cd-bento__img-overlay" />
+                <div className="cd-bento__img-label">
+                  <span>Dynamic View</span>
+                  <h4>AERODINAMIK DIZAYN</h4>
+                </div>
+              </div>
+            </Reveal>
+
+            <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: '1.5rem' }}>
+              <BentoCell icon={Settings2} label="Yuritma" value={car.drive_type?.toUpperCase() || 'AWD'} delay={0.05} />
+              <BentoCell icon={Fuel} label="Hajmi" value={car.cargo_capacity || '500 L'} delay={0.1} />
+            </div>
+          </div>
+
+          {/* Right: sidebar details */}
+          <Reveal delay={0.15}>
+            <div className="cd-bento__sidebar">
+              <div>
+                <h5 className="cd-bento__sidebar-title">
+                  <Sparkles size={14} color="#E8372A" /> MODEL INFO
+                </h5>
+                <div>
+                  <div className="cd-bento__sidebar-row">
+                    <span className="cd-bento__sidebar-row-label">Variant</span>
+                    <span className="cd-bento__sidebar-row-value">{car.color_name}</span>
+                  </div>
+                  <div className="cd-bento__sidebar-row">
+                    <span className="cd-bento__sidebar-row-label">Yil</span>
+                    <span className="cd-bento__sidebar-row-value">{year}</span>
+                  </div>
+                  <div className="cd-bento__sidebar-row">
+                    <span className="cd-bento__sidebar-row-label">Status</span>
+                    <span className="cd-bento__sidebar-row-value" style={{ color: '#22c55e' }}>ACTIVE</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h5 className="cd-bento__sidebar-title">LOYIHA UNITLARI</h5>
+                <div className="cd-bento__colors">
+                  {car.same_model_units?.map((unit) => (
+                    <motion.button
+                      key={unit.id}
+                      whileHover={{ scale: 1.1, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate(`/car/${unit.slug}`)}
+                      className={`cd-bento__color-btn ${unit.id === car.id ? 'cd-bento__color-btn--active' : ''}`}
+                      style={{ backgroundColor: unit.color_hex }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ──────────────────────────────────────
+          5. INTERIOR — gallery_interior
+          ────────────────────────────────────── */}
+      <section className="cd-interior">
+        <div className="cd-interior__ghost">CHANCE LUXURY</div>
+
+        <div style={{ maxWidth: '80rem', margin: '0 auto', position: 'relative', zIndex: 10 }}>
+          <Reveal>
+            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+              <h2 className="cd-interior__heading">
+                {car.interior_title ? (
+                  <>
+                    {car.interior_title.split(' ').slice(0, -1).join(' ')} <span>{car.interior_title.split(' ').slice(-1)}</span>
+                  </>
+                ) : (
+                  <>SALON <span>PREMIUM KLASS</span></>
+                )}
+              </h2>
+              <p className="cd-interior__body">
+                {car.interior_description || "Har bir harakatda qulaylikni his eting. Yuqori sifatli materiallar va eng zamonaviy elektronika."}
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <div className="cd-interior__frame">
+              {gallery.gallery_interior && (
+                <motion.img 
+                  src={gallery.gallery_interior} 
+                  alt="Interior"
+                  initial={{ scale: 1.1 }}
+                  whileInView={{ scale: 1 }}
+                  transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
+                />
+              )}
+              <div className="cd-interior__frame-overlay" />
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ──────────────────────────────────────
+          6. BOOKING & CALENDAR
+          ────────────────────────────────────── */}
+      <section className="cd-booking">
+        <div className="cd-booking__grid">
+          {/* Calendar Side */}
+          <div className="cd-booking__calendar-side">
+            <Reveal>
+              <div>
+                <h3 className="cd-booking__heading">
+                  BANDLIK <span>KALENDARI</span>
+                </h3>
+                <p className="cd-booking__sub">
+                  Sayohat rejasini hoziroq tuzing. Mashina bo'sh sanalarini ko'rib chiqing.
+                </p>
+
+                <div className="cd-calendar">
+                  {['Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan', 'Yak'].map(d => (
+                    <div key={d} className="cd-calendar__day-header">{d}</div>
+                  ))}
+                  {Array.from({ length: 35 }).map((_, i) => {
+                    const day = i - 3;
+                    const booked = i > 10 && i < 15;
+                    if (day < 1 || day > 31) return <div key={i} />;
+                    return (
+                      <div
+                        key={i}
+                        className={`cd-calendar__day ${booked ? 'cd-calendar__day--booked' : ''}`}
+                      >
+                        {day}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="cd-calendar__legend">
+                  <div className="cd-calendar__legend-item">
+                    <div className="cd-calendar__legend-dot cd-calendar__legend-dot--booked" />
+                    <span className="cd-calendar__legend-text">BAND QILINGAN</span>
+                  </div>
+                  <div className="cd-calendar__legend-item">
+                    <div className="cd-calendar__legend-dot cd-calendar__legend-dot--free" />
+                    <span className="cd-calendar__legend-text">BO'SH SANALAR</span>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+
+          {/* Booking Form Side */}
+          <div className="cd-booking__form-side">
+            <div className="cd-form-card">
+              <Reveal delay={0.1}>
+                <div className="cd-form">
+                  <div className="cd-form__glow" />
+
+                  <div className="cd-form__header">
+                    <div>
+                      <div className="cd-form__price-label">Kunlik Narxi</div>
+                      <div className="cd-form__price">{formatNarx(price)}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div className="cd-form__location-label">Manzil</div>
+                      <div className="cd-form__location">TOSHKENT, UZ</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="cd-form__section-title">RESERVATION DETAILS</h4>
+                    <div className="cd-form__row" style={{ marginBottom: '1rem' }}>
+                      <input
+                        type="date"
+                        className="cd-form__input"
+                        value={bookingData.startDate}
+                        onChange={(e) => setBookingData({ ...bookingData, startDate: e.target.value })}
+                      />
+                      <input
+                        type="date"
+                        className="cd-form__input"
+                        value={bookingData.endDate}
+                        onChange={(e) => setBookingData({ ...bookingData, endDate: e.target.value })}
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="FULL NAME"
+                      className="cd-form__input cd-form__input--full"
+                      value={bookingData.fullName}
+                      onChange={(e) => setBookingData({ ...bookingData, fullName: e.target.value })}
+                      style={{ marginBottom: '1rem' }}
+                    />
+                    <input
+                      type="tel"
+                      placeholder="+998 90 123 45 67"
+                      className="cd-form__input cd-form__input--full"
+                      value={bookingData.phone_number}
+                      onChange={(e) => setBookingData({ ...bookingData, phone_number: e.target.value })}
+                      style={{ marginBottom: '1.5rem' }}
+                    />
+
+                    {dateError && <p className="cd-form__error">{dateError}</p>}
+
+                    <motion.button 
+                      className="cd-form__submit" 
+                      onClick={handleBooking}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <span className="cd-form__submit-text">RESERVE THIS ASSET</span>
+                      <ArrowRight size={20} className="cd-form__submit-icon" />
+                    </motion.button>
+                  </div>
+
+                  <div className="cd-form__footer">
+                    <p>RIDE LUXURY · SECURED TRANSACTION</p>
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="cd-footer">
+        <div className="cd-footer__text">{brand} {model} / {year} EDITION</div>
+      </footer>
+
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => { setIsCheckoutOpen(false); navigate('/profile'); }}
+        booking={currentBooking}
+      />
     </div>
   );
 };

@@ -1,0 +1,42 @@
+[
+  {
+    "model": "maintenance.maintenancetype",
+    "pk": 1,
+    "fields": {
+      "name": "Yog' almashtirish",
+      "code": "oil-change",
+      "description": "Dvigatel moyini almashtirish",
+      "icon_name": "droplets"
+    }
+  },
+  {
+    "model": "maintenance.maintenancetype",
+    "pk": 2,
+    "fields": {
+      "name": "Shina xizmati",
+      "code": "tire-service",
+      "description": "Shina tekshiruvi va almashtirish",
+      "icon_name": "circle"
+    }
+  },
+  {
+    "model": "maintenance.maintenancetype",
+    "pk": 3,
+    "fields": {
+      "name": "Tormoz tekshiruvi",
+      "code": "brake-check",
+      "description": "Tormoz tizimini to'liq diagnostika",
+      "icon_name": "shield"
+    }
+  },
+  {
+    "model": "maintenance.maintenancetype",
+    "pk": 4,
+    "fields": {
+      "name": "Yillik texnik ko'rik",
+      "code": "annual-inspection",
+      "description": "Majburiy davriy texnik ko'rik",
+      "icon_name": "calendar"
+    }
+  }
+]

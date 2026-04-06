@@ -13,4 +13,4 @@ class Favorite(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user.username} ❤ {self.car.brand} {self.car.model}"
+        return f"{self.user.username} ❤ {self.car.model_info.brand} {self.car.model_info.model_name}"

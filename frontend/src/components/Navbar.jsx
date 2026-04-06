@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Phone, ChevronDown, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Phone, ChevronDown, User, LogOut, LayoutDashboard, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { fetchNotifications } from '../utils/api';
 
 const NAV_LINKS = [
   { to: '/', label: 'Bosh sahifa' },
@@ -24,6 +25,9 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [lang, setLang] = useState('UZ');
+  const [langOpen, setLangOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const { user, logout } = useAuth();
   const location = useLocation();
 
@@ -34,9 +38,17 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    setMobileOpen(false);
-    setDropdownOpen(false);
-  }, [location]);
+    if (user) {
+      const getNotifications = async () => {
+        try {
+          const data = await fetchNotifications();
+          const unread = data.filter(n => !n.is_read).length;
+          setUnreadCount(unread);
+        } catch (e) {}
+      };
+      getNotifications();
+    }
+  }, [user, location]);
 
   return (
     <>
@@ -62,7 +74,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1 relative">
             {NAV_LINKS.map((link, i) =>
               link.children ? (
                 <div key={i} className="relative">
@@ -111,15 +123,15 @@ const Navbar = () => {
                   }
                 >
                   {({ isActive }) => (
-                    <>
+                    <span className="relative inline-flex flex-col items-center">
                       {link.label}
                       {isActive && (
                         <motion.span
                           layoutId="nav-indicator"
-                          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full"
+                          className="absolute bottom-[-10px] left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full shadow-[0_0_8px_rgba(255,107,1,0.5)]"
                         />
                       )}
-                    </>
+                    </span>
                   )}
                 </NavLink>
               )
@@ -128,23 +140,47 @@ const Navbar = () => {
 
           {/* Right actions */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Language Switcher */}
+            <div className="relative mr-2">
+              <button onClick={() => setLangOpen(!langOpen)} className="flex items-center gap-1 text-sm text-white/55 hover:text-white transition-colors uppercase font-bold">
+                {lang} <ChevronDown className={`w-3.5 h-3.5 transition-transform ${langOpen ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {langOpen && (
+                  <motion.div initial={{opacity:0, y:8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:8}} className="absolute top-full right-0 mt-2 bg-[#111] backdrop-blur-md rounded-xl border border-white/10 overflow-hidden w-24 shadow-2xl">
+                     <button onClick={() => {setLang('UZ'); setLangOpen(false)}} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white/70 hover:text-white">UZ</button>
+                     <button onClick={() => {setLang('RU'); setLangOpen(false)}} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white/70 hover:text-white">RU</button>
+                     <button onClick={() => {setLang('EN'); setLangOpen(false)}} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white/70 hover:text-white">EN</button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <a href="tel:+998901234567" className="flex items-center gap-2 text-sm text-white/55 hover:text-white transition-colors">
               <Phone className="w-4 h-4" />
               <span className="font-medium">+998 90 123-45-67</span>
             </a>
             
             {user ? (
-              <div className="flex items-center gap-2">
-                <Link to="/profile" className="btn-secondary text-xs px-4 py-2.5">
+              <div className="flex items-center gap-3">
+                <Link to="/profile?tab=notifications" className="relative p-2 text-white/40 hover:text-white transition-colors group">
+                   <Bell className="w-5 h-5" />
+                   {unreadCount > 0 && (
+                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border border-bg-dark" />
+                   )}
+                </Link>
+
+                <Link to="/profile" className="btn-secondary text-[10px] uppercase font-black tracking-widest px-4 py-2.5">
                   <User className="w-3.5 h-3.5" />
                   Profil
                 </Link>
                 {user.is_staff && (
-                  <Link to="/admin-management" className="btn-secondary text-xs px-4 py-2.5">
+                  <Link to="/admin" className="btn-primary text-[10px] font-black uppercase tracking-widest px-4 py-2.5 flex items-center gap-2">
                     <LayoutDashboard className="w-3.5 h-3.5" />
+                    Admin
                   </Link>
                 )}
-                <button onClick={logout} className="p-2 text-white/40 hover:text-primary">
+                <button onClick={logout} className="p-2 text-white/40 hover:text-primary transition-colors">
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>

@@ -4,11 +4,11 @@ import {
   Search, SlidersHorizontal, LayoutGrid, List, 
   X, ChevronDown, ArrowUpDown, Filter, RotateCcw, AlertCircle
 } from 'lucide-react';
-// import { DEMO_MASHINALAR } from '../data/cars';
 import { TOSHKENT_TUMANLARI } from '../data/districts';
 import CarCard from '../components/CarCard';
 import ScrollReveal from '../components/ScrollReveal';
-import { fetchCars } from '../utils/api';
+import { fetchCarModels } from '../utils/api';
+import { BASE_ORIGIN as MEDIA_BASE_URL } from '../services/api/apiClient';
 
 const CATEGORIES = [
   { id: 'all', label: 'Barchasi' },
@@ -30,25 +30,24 @@ const Fleet = () => {
     tuman: '',
     brend: '',
     yoqilgi: '',
-    priceRange: [0, 5000000],
+    priceRange: [0, 30000000],
     sortBy: 'reyting', 
     viewMode: 'grid',
   });
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Fetch cars from backend
+  // Fetch car models from backend
   useEffect(() => {
     const loadCars = async () => {
       setLoading(true);
       try {
-        const data = await fetchCars();
-        // If backend is empty, use DEMO
+        const data = await fetchCarModels();
         if (data && data.length > 0) {
           setCars(data);
         } else {
           setCars([]);
-          setError("Database is empty. Please run seed.py.");
+          setError("Database is empty. Please check admin panel car models.");
         }
       } catch (err) {
         console.error("Backend fetch failed:", err);
@@ -61,48 +60,55 @@ const Fleet = () => {
     loadCars();
   }, []);
 
-  // Filterlash logikasi
   const filteredCars = useMemo(() => {
     let result = [...cars];
 
+    // 1. Qidiruv (Search)
     if (filters.search) {
       const s = filters.search.toLowerCase();
       result = result.filter(c => 
-        (c.brand || c.brend || "").toLowerCase().includes(s) || 
+        (c.brand || "").toLowerCase().includes(s) || 
         (c.model || "").toLowerCase().includes(s)
       );
     }
 
+    // 2. Kategoriya (Category)
     if (filters.kategoriya !== 'all') {
       if (filters.kategoriya === 'elektro') {
-        result = result.filter(c => (c.fuel_type || c.yoqilgi) === 'elektro' || c.elektr);
+        result = result.filter(c => c.fuel_type === 'elektro');
       } else if (filters.kategoriya === 'premium') {
-        result = result.filter(c => (c.daily_price || c.kunlik_narx) >= 600000 || c.category === 'premium' || c.kategoriya === 'premium');
+        result = result.filter(c => c.daily_price >= 1000000 || c.category === 'premium');
       } else {
-        result = result.filter(c => (c.category || c.kategoriya) === filters.kategoriya);
+        result = result.filter(c => c.category === filters.kategoriya);
       }
     }
 
+    // 3. Tuman (District) - Models that have units in this district
     if (filters.tuman) {
-      result = result.filter(c => (c.district || c.tuman_id) === parseInt(filters.tuman));
+      const tId = parseInt(filters.tuman);
+      result = result.filter(c => 
+        c.available_districts && c.available_districts.includes(tId)
+      );
     }
 
+    // 4. Yoqilgi (Fuel Type)
     if (filters.yoqilgi) {
-      result = result.filter(c => (c.fuel_type || c.yoqilgi) === filters.yoqilgi);
+      result = result.filter(c => c.fuel_type === filters.yoqilgi);
     }
 
+    // 5. Narx oralig'i (Price Range)
     result = result.filter(c => 
-      (c.daily_price || c.kunlik_narx) >= filters.priceRange[0] && 
-      (c.daily_price || c.kunlik_narx) <= filters.priceRange[1]
+      c.daily_price >= filters.priceRange[0] && 
+      c.daily_price <= filters.priceRange[1]
     );
 
-    // Saralash
+    // 6. Saralash (Sorting)
     if (filters.sortBy === 'reyting') {
-      result.sort((a, b) => (b.rating || b.reyting || 0) - (a.rating || a.reyting || 0));
+      result.sort((a, b) => (b.rating || 4.5) - (a.rating || 4.5));
     } else if (filters.sortBy === 'narx_osh') {
-      result.sort((a, b) => (a.daily_price || a.kunlik_narx) - (b.daily_price || b.kunlik_narx));
+      result.sort((a, b) => a.daily_price - b.daily_price);
     } else if (filters.sortBy === 'narx_tush') {
-      result.sort((a, b) => (b.daily_price || b.kunlik_narx) - (a.daily_price || a.kunlik_narx));
+      result.sort((a, b) => b.daily_price - a.daily_price);
     }
 
     return result;
@@ -115,63 +121,78 @@ const Fleet = () => {
       tuman: '',
       brend: '',
       yoqilgi: '',
-      priceRange: [0, 5000000],
+      priceRange: [0, 30000000],
       sortBy: 'reyting',
       viewMode: 'grid',
     });
   };
 
   return (
-    <div className="pt-32 pb-32 min-h-screen bg-[#0A0A0A] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
+    <div className="pt-32 pb-48 min-h-screen bg-[#0A0A0A] relative overflow-hidden">
+      {/* Immersive Atmospheric Glows */}
+      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 blur-[200px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-white/3 blur-[180px] rounded-full pointer-events-none translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(0,217,126,0.02)_0%,transparent_50%)] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
         
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 relative">
-          {/* Ambient light */}
-          <div className="absolute top-0 left-0 w-64 h-64 bg-primary/5 blur-[100px] pointer-events-none" />
-          
-          <ScrollReveal direction="left">
-            <div className="text-[10px] text-primary font-bold uppercase tracking-[0.2em] mb-4">— Katalog</div>
-            <h1 className="font-display text-5xl md:text-8xl font-extrabold tracking-tighter leading-none mb-4">
-              Premium <span className="text-white/40 italic">Avto</span> park
-            </h1>
-            <p className="text-white/40 text-sm font-light max-w-md">Barcha ehtiyojlaringiz uchun eng sara avtomobillar to'plami.</p>
-          </ScrollReveal>
-          
-          <div className="flex items-center gap-4">
-             <div className="glass flex p-1 rounded-2xl border-white/5">
-               <button 
-                 onClick={() => setFilters(f => ({...f, viewMode: 'grid'}))}
-                 className={`p-3 rounded-xl transition-all ${filters.viewMode === 'grid' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-white/30 hover:text-white'}`}
-               >
-                 <LayoutGrid className="w-5 h-5" />
-               </button>
-               <button 
-                 onClick={() => setFilters(f => ({...f, viewMode: 'list'}))}
-                 className={`p-3 rounded-xl transition-all ${filters.viewMode === 'list' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-white/30 hover:text-white'}`}
-               >
-                 <List className="w-5 h-5" />
-               </button>
-             </div>
-             <button 
-               onClick={() => setIsFilterOpen(!isFilterOpen)}
-               className="glass p-4 rounded-2xl md:hidden text-white/50 border-white/5"
-             >
-               <Filter className="w-5 h-5" />
-             </button>
+        {/* Header Section with Hero Background */}
+        <div className="relative mb-24 rounded-[48px] overflow-hidden group">
+          {/* Hero Image Background */}
+          <div className="absolute inset-0 z-0">
+             <img 
+               src={`${MEDIA_BASE_URL}/media/hero_fleet.png`}
+               alt="Fleet Hero" 
+               className="w-full h-full object-cover opacity-50 scale-105 group-hover:scale-100 transition-transform duration-[3s] ease-out"
+             />
+             <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/60 to-transparent" />
+             <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent" />
+          </div>
+
+          <div className="relative z-10 p-12 md:p-20 flex flex-col md:flex-row md:items-end justify-between gap-12">
+            <ScrollReveal direction="left">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-8 h-px bg-primary" />
+                <div className="text-[11px] text-primary font-black uppercase tracking-[0.4em]">RideLux Fleet 2026</div>
+              </div>
+              <h1 className="font-display text-7xl md:text-[120px] font-extrabold tracking-tighter leading-[0.8] mb-8">
+                Tanlov <br />
+                <span className="text-white/20 italic">Erkinligi</span>
+              </h1>
+              <p className="text-white/40 text-[14px] font-medium max-w-sm leading-relaxed border-l-2 border-primary/30 pl-8">
+                O'zbekistondagi eng sara premium va elektro avtomobillar to'plami. Har bir safar — yangi hissiyot va to'liq erkinlik.
+              </p>
+            </ScrollReveal>
+            
+            <div className="flex items-center gap-4 relative z-20">
+               <div className="bg-white/5 backdrop-blur-3xl flex p-2 rounded-[24px] border border-white/10 shadow-2xl">
+                 <button 
+                   onClick={() => setFilters(f => ({...f, viewMode: 'grid'}))}
+                   className={`p-4 rounded-[18px] transition-all duration-500 ${filters.viewMode === 'grid' ? 'bg-primary text-white shadow-xl shadow-primary/30' : 'text-white/20 hover:text-white/50 hover:bg-white/5'}`}
+                 >
+                   <LayoutGrid className="w-5 h-5" />
+                 </button>
+                 <button 
+                   onClick={() => setFilters(f => ({...f, viewMode: 'list'}))}
+                   className={`p-4 rounded-[18px] transition-all duration-500 ${filters.viewMode === 'list' ? 'bg-primary text-white shadow-xl shadow-primary/30' : 'text-white/20 hover:text-white/50 hover:bg-white/5'}`}
+                 >
+                   <List className="w-5 h-5" />
+                 </button>
+               </div>
+            </div>
           </div>
         </div>
 
         {/* Categories Bar */}
-        <div className="flex overflow-x-auto no-scrollbar gap-4 mb-16 pb-2">
+        <div className="flex items-center overflow-x-auto no-scrollbar gap-3 mb-20 pb-4">
           {CATEGORIES.map(cat => (
             <button
               key={cat.id}
               onClick={() => setFilters(f => ({...f, kategoriya: cat.id}))}
-              className={`px-8 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all border ${
+              className={`px-10 py-5 rounded-[24px] text-[11px] font-black uppercase tracking-[0.15em] whitespace-nowrap transition-all duration-500 border ${
                 filters.kategoriya === cat.id 
-                ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' 
-                : 'bg-white/5 border-white/5 text-white/40 hover:border-white/10 hover:text-white'
+                ? 'bg-primary border-primary text-white shadow-[0_15px_35px_rgba(0,217,126,0.25)] scale-105' 
+                : 'bg-white/[0.03] border-white/5 text-white/40 hover:border-white/20 hover:bg-white/[0.06] hover:text-white'
               }`}
             >
               {cat.label}
@@ -179,10 +200,11 @@ const Fleet = () => {
           ))}
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-16">
+        <div className="flex flex-col lg:flex-row gap-20">
           
           {/* Sidebar Filters */}
-          <aside className={`lg:w-80 shrink-0 space-y-10 ${isFilterOpen ? 'block' : 'hidden lg:block'}`}>
+          <aside className={`lg:w-80 shrink-0 space-y-12 ${isFilterOpen ? 'block' : 'hidden lg:block'}`}>
+            <div className="sticky top-32 space-y-12">
             
             {/* Search */}
             <div className="space-y-4">
@@ -212,6 +234,29 @@ const Fleet = () => {
                   <option key={t.id} value={t.id} className="bg-[#111]">{t.nomi}</option>
                 ))}
               </select>
+            </div>
+
+            {/* Narx Oralig'i */}
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] ml-1">Narx (kunlik)</label>
+                <span className="text-[10px] text-primary font-bold">{filters.priceRange[1].toLocaleString()} so'm</span>
+              </div>
+              <div className="px-2">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="10000000" 
+                  step="100000"
+                  value={filters.priceRange[1]}
+                  onChange={(e) => setFilters(f => ({...f, priceRange: [0, parseInt(e.target.value)]}))}
+                  className="w-full h-1.5 bg-white/5 rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+                <div className="flex justify-between mt-2 text-[8px] text-white/20 font-bold uppercase">
+                  <span>0</span>
+                  <span>10M+</span>
+                </div>
+              </div>
             </div>
 
             {/* Price Sorting */}
@@ -265,13 +310,55 @@ const Fleet = () => {
               <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
               Filtrlarni tozalash
             </button>
+          </div>
           </aside>
 
           {/* Catalog Grid */}
           <main className="flex-1">
-             <div className="flex items-center justify-between mb-10">
-              <div className="text-[10px] text-white/30 font-bold uppercase tracking-[0.2em]">
-                Topildi: <span className="text-white">{filteredCars.length}</span> ta mashina
+             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+               <div className="text-[11px] text-white/30 font-bold uppercase tracking-[0.2em] flex items-center gap-3">
+                 <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                 Topildi: <span className="text-white">{filteredCars.length}</span> ta premium model
+               </div>
+
+               {/* Active Filter Chips */}
+               <div className="flex flex-wrap items-center gap-2">
+                 {filters.kategoriya !== 'all' && (
+                   <button 
+                     onClick={() => setFilters(f => ({...f, kategoriya: 'all'}))}
+                     className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/60 hover:text-white flex items-center gap-2 transition-all hover:bg-white/10"
+                   >
+                     <span>Kategoriya: {filters.kategoriya}</span>
+                     <X className="w-3 h-3" />
+                   </button>
+                 )}
+                 {filters.tuman && (
+                   <button 
+                     onClick={() => setFilters(f => ({...f, tuman: ''}))}
+                     className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/60 hover:text-white flex items-center gap-2 transition-all hover:bg-white/10"
+                   >
+                     <span>Tuman: {TOSHKENT_TUMANLARI.find(t => t.id == filters.tuman)?.nomi}</span>
+                     <X className="w-3 h-3" />
+                   </button>
+                 )}
+                 {filters.yoqilgi && (
+                   <button 
+                     onClick={() => setFilters(f => ({...f, yoqilgi: ''}))}
+                     className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/60 hover:text-white flex items-center gap-2 transition-all hover:bg-white/10"
+                   >
+                     <span>Yoqilg'i: {filters.yoqilgi}</span>
+                     <X className="w-3 h-3" />
+                   </button>
+                 )}
+                 {filters.search && (
+                   <button 
+                     onClick={() => setFilters(f => ({...f, search: ''}))}
+                     className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/60 hover:text-white flex items-center gap-2 transition-all hover:bg-white/10"
+                   >
+                     <span>"{filters.search}"</span>
+                     <X className="w-3 h-3" />
+                   </button>
+                 )}
                </div>
              </div>
 

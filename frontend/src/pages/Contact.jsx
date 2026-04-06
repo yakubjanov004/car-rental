@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import { Send, MapPin, Phone, Mail, Instagram, Facebook, Clock, Plus, Minus, ArrowRight, MessageSquare, Twitter } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ScrollReveal from '../components/ScrollReveal';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconAnchor: [12, 41]
+});
+L.Marker.prototype.options.icon = DefaultIcon;
 
 const contactInfo = [
   { icon: MapPin, label: 'Manzil', val: 'Toshkent sh., Chilonzor tumani', color: '#3B82F6' },
@@ -133,14 +145,23 @@ const Contact = () => {
 
       {/* === MAP SECTION === */}
       <section className="mt-40 px-6">
-        <div className="max-w-7xl mx-auto h-[500px] rounded-[48px] overflow-hidden border border-white/10 shadow-2xl relative grayscale invert opacity-60">
-           <iframe 
-             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d191885.2529851457!2d69.11410148705032!3d41.28259744654941!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38ae8b0cc379e9c3%3A0xa5a997690eda4fe7!2sTashkent%2C%20Uzbekistan!5e0!3m2!1sen!2s!4v1711883651842!5m2!1sen!2s" 
-             width="100%" 
-             height="100%" 
-             style={{ border: 0 }} 
-             loading="lazy" 
-           />
+        <div className="max-w-7xl mx-auto h-[500px] rounded-[48px] overflow-hidden border border-white/10 shadow-2xl relative">
+           <MapContainer center={[41.2995, 69.2401]} zoom={12} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+             <TileLayer
+               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+               attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+             />
+             <Marker position={[41.2995, 69.2401]}>
+               <Popup>
+                 Bizning bosh ofisimiz. Sizni kutamiz!
+               </Popup>
+             </Marker>
+             <Marker position={[41.32, 69.28]}>
+               <Popup>
+                 Yunusobod filiali (Tez kunda!)
+               </Popup>
+             </Marker>
+           </MapContainer>
         </div>
       </section>
 

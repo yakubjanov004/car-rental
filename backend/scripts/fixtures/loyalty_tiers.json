@@ -1,0 +1,66 @@
+[
+  {
+    "model": "loyalty.loyaltytier",
+    "pk": 1,
+    "fields": {
+      "name": "Bronze",
+      "slug": "bronze",
+      "min_points": 0,
+      "max_points": 499,
+      "discount_percentage": "0.0",
+      "free_insurance_upgrade": false,
+      "priority_support": false,
+      "free_delivery": false,
+      "badge_color": "#CD7F32",
+      "icon_emoji": "B"
+    }
+  },
+  {
+    "model": "loyalty.loyaltytier",
+    "pk": 2,
+    "fields": {
+      "name": "Silver",
+      "slug": "silver",
+      "min_points": 500,
+      "max_points": 1499,
+      "discount_percentage": "3.0",
+      "free_insurance_upgrade": false,
+      "priority_support": true,
+      "free_delivery": false,
+      "badge_color": "#C0C0C0",
+      "icon_emoji": "S"
+    }
+  },
+  {
+    "model": "loyalty.loyaltytier",
+    "pk": 3,
+    "fields": {
+      "name": "Gold",
+      "slug": "gold",
+      "min_points": 1500,
+      "max_points": 3999,
+      "discount_percentage": "7.5",
+      "free_insurance_upgrade": true,
+      "priority_support": true,
+      "free_delivery": true,
+      "badge_color": "#FFD700",
+      "icon_emoji": "G"
+    }
+  },
+  {
+    "model": "loyalty.loyaltytier",
+    "pk": 4,
+    "fields": {
+      "name": "Platinum",
+      "slug": "platinum",
+      "min_points": 4000,
+      "max_points": null,
+      "discount_percentage": "12.0",
+      "free_insurance_upgrade": true,
+      "priority_support": true,
+      "free_delivery": true,
+      "badge_color": "#E5E4E2",
+      "icon_emoji": "P"
+    }
+  }
+]

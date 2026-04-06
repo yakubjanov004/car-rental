@@ -10,8 +10,14 @@ import Contact from './pages/Contact';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import Profile from './pages/Profile';
-import AdminManagement from './pages/AdminManagement';
+import AdminPanel from './pages/AdminPanel';
+import Checkout from './pages/Checkout';
 import NotFound from './pages/NotFound';
+import Compare from './pages/Compare';
+
+// Components
+import ComparisonDrawer from './components/ComparisonDrawer';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // New Pages
 import ElectricCars from './pages/ElectricCars';
@@ -19,11 +25,9 @@ import FAQ from './pages/FAQ';
 import Terms from './pages/Terms';
 import Chauffeur from './pages/Chauffeur';
 
-import ProtectedRoute from './components/ProtectedRoute';
-
 function App() {
   return (
-    <div className="min-h-screen flex flex-col bg-bg-dark text-white selection:bg-primary selection:text-white">
+    <div className="relative min-h-screen flex flex-col bg-bg-dark text-white selection:bg-primary selection:text-white">
       <Navbar />
       <main className="flex-1">
         <Routes>
@@ -34,6 +38,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/compare" element={<Compare />} />
           
           {/* New Routes */}
           <Route path="/ev-fleet" element={<ElectricCars />} />
@@ -46,14 +51,30 @@ function App() {
                <Profile />
             </ProtectedRoute>
           } />
+          <Route path="/checkout/:id" element={
+            <ProtectedRoute>
+               <Checkout />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <ProtectedRoute adminOnly>
+               <AdminPanel />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin-panel" element={
+            <ProtectedRoute adminOnly>
+               <AdminPanel />
+            </ProtectedRoute>
+          } />
           <Route path="/admin-management" element={
             <ProtectedRoute adminOnly>
-               <AdminManagement />
+               <AdminPanel />
             </ProtectedRoute>
           } />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
+      <ComparisonDrawer />
       <Footer />
     </div>
   );

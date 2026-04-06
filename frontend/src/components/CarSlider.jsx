@@ -42,9 +42,9 @@ const CarSlider = () => {
             }}
           >
             <img 
-              src={car.main_image || "/images/cars/car-fallback.jpg"} 
-              alt={car.model} 
+              src={car.media?.card_main || car.media?.detail_main} 
               className="w-full h-full object-contain md:object-cover scale-110 lg:scale-125" 
+              alt={car.model} 
             />
           </motion.div>
         ))}

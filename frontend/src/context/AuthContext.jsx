@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('access_token');
       if (token) {
         try {
-          const res = await apiClient.get('/auth/me/');
+          const res = await apiClient.get('/users/me/');
           setUser(res.data);
         } catch (err) {
           console.error('Failed to fetch user', err);
@@ -24,20 +24,20 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (username, password) => {
-    const res = await apiClient.post('/auth/login/', { username, password });
+    const res = await apiClient.post('/users/login/', { username, password });
     localStorage.setItem('access_token', res.data.access);
     localStorage.setItem('refresh_token', res.data.refresh);
     
     // Set headers for immediate use
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${res.data.access}`;
     
-    const userRes = await apiClient.get('/auth/me/');
+    const userRes = await apiClient.get('/users/me/');
     setUser(userRes.data);
     return userRes.data;
   };
 
   const register = async (userData) => {
-    const res = await apiClient.post('/auth/register/', userData);
+    const res = await apiClient.post('/users/register/', userData);
     return res.data;
   };
 
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
     const refresh = localStorage.getItem('refresh_token');
     try {
       if (refresh) {
-        await apiClient.post('/auth/logout/', { refresh });
+        await apiClient.post('/users/logout/', { refresh });
       }
     } catch (err) {
       console.error('Logout error', err);

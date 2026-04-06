@@ -1,0 +1,78 @@
+[
+  {
+    "model": "insurance.insuranceplan",
+    "pk": 1,
+    "fields": {
+      "name": "Asosiy",
+      "slug": "basic",
+      "coverage_level": "basic",
+      "daily_price": "50000.00",
+      "deductible": "5000000.00",
+      "covers_collision": false,
+      "covers_theft": false,
+      "covers_natural_disaster": false,
+      "covers_roadside_assistance": false,
+      "covers_personal_accident": false,
+      "description": "Majburiy asosiy paket",
+      "is_active": true,
+      "sort_order": 1
+    }
+  },
+  {
+    "model": "insurance.insuranceplan",
+    "pk": 2,
+    "fields": {
+      "name": "Standart",
+      "slug": "standard",
+      "coverage_level": "standard",
+      "daily_price": "100000.00",
+      "deductible": "3000000.00",
+      "covers_collision": true,
+      "covers_theft": true,
+      "covers_natural_disaster": false,
+      "covers_roadside_assistance": true,
+      "covers_personal_accident": true,
+      "description": "Kengaytirilgan himoya",
+      "is_active": true,
+      "sort_order": 2
+    }
+  },
+  {
+    "model": "insurance.insuranceplan",
+    "pk": 3,
+    "fields": {
+      "name": "Premium",
+      "slug": "premium",
+      "coverage_level": "premium",
+      "daily_price": "180000.00",
+      "deductible": "1500000.00",
+      "covers_collision": true,
+      "covers_theft": true,
+      "covers_natural_disaster": true,
+      "covers_roadside_assistance": true,
+      "covers_personal_accident": true,
+      "description": "To'liq premium himoya",
+      "is_active": true,
+      "sort_order": 3
+    }
+  },
+  {
+    "model": "insurance.insuranceplan",
+    "pk": 4,
+    "fields": {
+      "name": "Elite Zero",
+      "slug": "elite",
+      "coverage_level": "elite",
+      "daily_price": "250000.00",
+      "deductible": "0.00",
+      "covers_collision": true,
+      "covers_theft": true,
+      "covers_natural_disaster": true,
+      "covers_roadside_assistance": true,
+      "covers_personal_accident": true,
+      "description": "Zero deductible va maksimal himoya",
+      "is_active": true,
+      "sort_order": 4
+    }
+  }
+]

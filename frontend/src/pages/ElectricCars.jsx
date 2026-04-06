@@ -2,13 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Zap, ShieldCheck, BatteryCharging, Leaf, TrendingDown, DollarSign, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
-// import { DEMO_MASHINALAR } from '../data/cars';
 import CarCard from '../components/CarCard';
 import ScrollReveal from '../components/ScrollReveal';
-import { fetchCars } from '../utils/api';
+import { fetchCarModels } from '../utils/api';
 import evHeroImg from '../assets/ev-hero.jpg';
-// In the fleet section:
-// <Link to="/fleet" ...
 
 const ELEKTR_AFZALLIKLARI = [
   { 
@@ -39,8 +36,9 @@ const ElectricCars = () => {
     const loadEVs = async () => {
       setLoading(true);
       try {
-        const data = await fetchCars();
-        const evs = data.filter(c => (c.fuel_type || c.yoqilgi) === 'elektro' || (c.fuel_type || c.yoqilgi) === 'gibrid' || c.elektr);
+        const data = await fetchCarModels();
+        // Faqat haqiqiy elektr modellarni olamiz (1 donadan bo'lib chiqadi)
+        const evs = data.filter(c => c.fuel_type === 'elektro');
         
         if (evs && evs.length > 0) {
           setMashinalar(evs);

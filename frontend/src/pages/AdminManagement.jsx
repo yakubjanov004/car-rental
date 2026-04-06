@@ -5,7 +5,6 @@ import {
   RefreshCcw, ArrowRight, Activity, BarChart3, Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-// import { DEMO_MASHINALAR } from '../data/cars';
 import { formatNarx } from '../utils/formatPrice';
 import { useAuth } from '../context/AuthContext';
 import ScrollReveal from '../components/ScrollReveal';

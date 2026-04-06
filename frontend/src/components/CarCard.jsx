@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, MapPin, Users, Fuel, Settings2, Heart, Zap, ArrowRight } from 'lucide-react';
+import { Star, MapPin, Users, Fuel, Settings2, Heart, Zap, ArrowRight, ArrowLeftRight } from 'lucide-react';
 import { formatNarx } from '../utils/formatPrice';
 import { MEDIA_BASE_URL } from '../utils/api';
+import { useComparison } from '../context/ComparisonContext';
 
 const YOQILGI_RANGI = {
   elektro: { bg: 'rgba(0,217,126,0.12)', text: '#00D97E', label: '⚡ Elektro' },
@@ -15,6 +16,16 @@ const YOQILGI_RANGI = {
 const CarCard = ({ car, index = 0 }) => {
   const [liked, setLiked] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const { addToComparison, removeFromComparison, isInComparison } = useComparison();
+
+  const inCompare = isInComparison(car.id);
+
+  const toggleCompare = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (inCompare) removeFromComparison(car.id);
+    else addToComparison(car);
+  };
 
   // Data normalization for backend vs demo
   const brand = car.brand || car.brend || "Chevrolet";
@@ -27,14 +38,12 @@ const CarCard = ({ car, index = 0 }) => {
   const rating = car.rating || car.reyting || 4.5;
   const reviewsCount = car.review_count || car.sharhlar_soni || 0;
   
-  let image = car.main_image || car.rasm;
+  // Use Media Role Contract
+  const image = car.media?.card_main || `/images/assets/car_fallback.jpg`;
   
-  // Agar bu to'liq havola (http) bo'lsa, o'zini ko'rsatadi
-  if (image && image.startsWith('http')) {
-    // Hech narsa qo'shilmaydi
-  } else if (image && !image.startsWith('/images') && !image.startsWith('/static')) {
-    image = `${MEDIA_BASE_URL}${image}`;
-  }
+  // Gallery dan gallery_front bo'lgan rasmni qidirib topamiz (Bazadan)
+  const galleryFront = car.media?.gallery?.find(img => img.slot === 'gallery_front')?.url;
+  const secondaryImage = galleryFront || image;
 
   const fuel = YOQILGI_RANGI[fuelType] || YOQILGI_RANGI.benzin;
 
@@ -48,63 +57,101 @@ const CarCard = ({ car, index = 0 }) => {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Background decoration */}
+      {/* Dynamic Background Slide (gallery_front) */}
       <AnimatePresence>
         {hovered && (
           <motion.div
-            initial={{ opacity: 0, scale: 1.1, x: 60 }}
-            animate={{ opacity: 1, scale: 1.3, x: 20 }}
-            exit={{ opacity: 0, scale: 1.1, x: 60 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
+            initial={{ opacity: 0, x: 80, scale: 1.1 }}
+            animate={{ opacity: 1, x: 0, scale: 1.25 }}
+            exit={{ opacity: 0, x: 80, scale: 1.1 }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
           >
             <img
-              src={image}
+              src={secondaryImage}
               alt=""
-              className="absolute right-0 bottom-0 w-3/4 h-3/4 object-contain opacity-[0.06] -rotate-6"
-              style={{ filter: 'blur(2px)' }}
+              className="absolute -right-20 -bottom-10 w-full h-full object-contain opacity-[0.12] blur-[40px] -rotate-6"
             />
+            {/* Soft tint accent */}
+            <div className="absolute inset-0 bg-gradient-to-l from-primary/10 via-transparent to-transparent opacity-40" />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Rasm */}
-      <div className="relative aspect-[16/9] overflow-hidden rounded-t-[24px] shrink-0">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-t-[32px] shrink-0 bg-[#0F0F0F] group/img relative">
+        {/* Anti-Grid Studio Background */}
+        <div className="absolute inset-0 bg-[#121212] z-0 opacity-80" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.05)_0%,transparent_70%)] z-0" />
+        
+        {/* Dynamic Studio Glow */}
+        <motion.div 
+          animate={{ 
+            scale: hovered ? 1.5 : 1,
+            opacity: hovered ? 0.3 : 0.15 
+          }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary blur-[80px] rounded-full z-0 transition-all duration-700"
+        />
+
+        {/* Reflective Studio Floor */}
+        <div className="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent z-10" />
+
         <motion.img
           src={image}
           alt={`${brand} ${model}`}
-          className="w-full h-full object-cover"
-          animate={{ scale: hovered ? 1.06 : 1 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full h-full object-contain relative z-10 drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+          animate={{ 
+            scale: hovered ? 1.08 : 1,
+            y: hovered ? -8 : 0
+          }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           onError={(e) => {
-            e.target.src = `https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=70`;
+            e.target.src = `/images/assets/car_fallback.jpg`;
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent opacity-70" />
 
-        <motion.button
-          whileTap={{ scale: 0.8 }}
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLiked(!liked); }}
-          className="absolute top-3 right-3 z-20 w-9 h-9 rounded-xl flex items-center justify-center transition-all bg-black/40 backdrop-blur-md"
-          style={{
-            background: liked ? 'rgba(239,68,68,0.85)' : 'rgba(0,0,0,0.45)',
-          }}
-        >
-          <Heart className={`w-4 h-4 ${liked ? 'fill-white text-white' : 'text-white/70'}`} />
-        </motion.button>
+        {/* Action Buttons */}
+        <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
+          <motion.button
+            whileTap={{ scale: 0.8 }}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLiked(!liked); }}
+            className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all bg-black/40 backdrop-blur-xl border border-white/5 hover:border-white/20"
+            style={{ color: liked ? '#ef4444' : 'white' }}
+          >
+            <Heart className={`w-4 h-4 ${liked ? 'fill-current' : ''}`} />
+          </motion.button>
 
-        <div
-          className="absolute top-3 left-3 z-20 px-2.5 py-1 rounded-[8px] text-[10px] font-bold uppercase tracking-wider"
-          style={{ background: fuel.bg, color: fuel.text }}
-        >
-          {fuel.label}
+          <motion.button
+            whileTap={{ scale: 0.8 }}
+            onClick={toggleCompare}
+            className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all bg-black/40 backdrop-blur-xl border border-white/5 hover:border-white/20 group/compare"
+            style={{ color: inCompare ? '#3b82f6' : 'white' }}
+          >
+            <ArrowLeftRight className="w-4 h-4" />
+          </motion.button>
         </div>
 
-        <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black/50 backdrop-blur-md">
-          <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-          <span className="text-xs font-semibold">{rating}</span>
-          <span className="text-[10px] text-white/40">({reviewsCount})</span>
+        {/* Floating Badges */}
+        <div className="absolute top-4 left-4 z-30 space-y-2">
+          <div
+            className="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.1em] border border-white/5 backdrop-blur-xl inline-block"
+            style={{ background: fuel.bg, color: fuel.text }}
+          >
+            {fuel.label}
+          </div>
         </div>
+
+        <div className="absolute bottom-4 left-4 z-30 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-xl border border-white/5">
+          <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
+          <span className="text-xs font-bold text-white tracking-tighter">{rating}</span>
+          <span className="text-[10px] text-white/30 font-medium">({reviewsCount})</span>
+        </div>
+
+        {car.unit_count > 1 && (
+          <div className="absolute bottom-4 right-4 z-30 px-3 py-1.5 rounded-xl bg-primary/20 backdrop-blur-xl border border-primary/20 text-[9px] font-black text-primary uppercase tracking-[0.15em]">
+            {car.unit_count} MAVJUD
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -117,6 +164,11 @@ const CarCard = ({ car, index = 0 }) => {
             <h3 className="text-lg font-bold font-heading leading-tight group-hover:text-white/90 transition-colors truncate">
               {model}
             </h3>
+            {car.short_tagline && (
+              <div className="text-[9px] text-primary/80 font-bold uppercase tracking-tighter mt-0.5 italic truncate">
+                {car.short_tagline}
+              </div>
+            )}
             <div className="flex items-center gap-1.5 mt-1 no-wrap">
               <MapPin className="w-3 h-3 text-primary shrink-0" />
               <span className="text-[11px] text-white/35 truncate">{car.district_name || car.tuman_nomi || 'Tashkent'}</span>
@@ -124,9 +176,14 @@ const CarCard = ({ car, index = 0 }) => {
           </div>
           <div className="text-right shrink-0 ml-4">
             <div className="text-xl font-extrabold font-display text-white whitespace-nowrap">
-              {formatNarx(price)}
+              {formatNarx(car.dynamic_price || price)}
             </div>
-            <div className="text-[10px] text-white/35 font-medium uppercase tracking-tighter">/ kun</div>
+            <div className="flex justify-end gap-1">
+               {car.dynamic_price && car.dynamic_price !== price && (
+                 <span className="text-[8px] text-primary font-black uppercase italic line-through opacity-40">{formatNarx(price)}</span>
+               )}
+               <div className="text-[10px] text-white/35 font-medium uppercase tracking-tighter">/ kun</div>
+            </div>
           </div>
         </div>
 
@@ -146,7 +203,7 @@ const CarCard = ({ car, index = 0 }) => {
         </div>
 
         <Link
-          to={`/car/${car.id}`}
+          to={`/car/${car.slug || car.id}`}
           className="mt-auto flex items-center justify-between w-full px-5 py-3.5 rounded-2xl bg-white/5 hover:bg-primary/20 border border-white/5 hover:border-primary/50 transition-all duration-300 group/btn"
         >
           <span className="text-[11px] font-bold uppercase tracking-widest text-white/60 group-hover/btn:text-white transition-colors">

@@ -11,10 +11,10 @@ const stats = [
 ];
 
 const team = [
-  { name: 'Jamshid Karimov', role: 'Founder & CEO', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80' },
-  { name: 'Otabek Aliev', role: 'Head of Operations', img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80' },
-  { name: 'Malika Nosirova', role: 'Marketing Director', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80' },
-  { name: 'Sardor Rahimboev', role: 'Tech Lead', img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80' },
+  { name: 'Jamshid Karimov', role: 'Founder & CEO', img: '/images/assets/team_ceo.jpg' },
+  { name: 'Otabek Aliev', role: 'Head of Operations', img: '/images/assets/team_ops.jpg' },
+  { name: 'Malika Nosirova', role: 'Marketing Director', img: '/images/assets/team_marketing.jpg' },
+  { name: 'Sardor Rahimboev', role: 'Tech Lead', img: '/images/assets/team_tech.jpg' },
 ];
 
 const AboutUs = () => {
@@ -67,7 +67,7 @@ const AboutUs = () => {
                <div className="relative">
                   <div className="aspect-[4/5] rounded-[48px] overflow-hidden border border-white/10 shadow-2xl relative z-10">
                      <img 
-                       src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80" 
+                       src="/images/assets/about_hero.jpg" 
                        alt="About us" 
                        className="w-full h-full object-cover scale-110 hover:scale-100 transition-transform duration-1000" 
                      />
