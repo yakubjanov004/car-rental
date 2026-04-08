@@ -157,18 +157,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 20;
+  z-index: 45;
   pointer-events: none;
 }
 
 .cd-hero__car-inner {
   width: 100%;
-  max-width: 92rem;
-  padding-bottom: 5rem;
+  max-width: 95rem;
+  padding-bottom: 2rem;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   padding-right: 0;
-  transform: translateX(4vw);
+  transform: none;
 }
 
 .cd-hero__car-anim {
@@ -206,7 +206,7 @@
   padding: 0 4rem;
   max-width: 95rem;
   margin: 0 auto;
-  z-index: 50;
+  z-index: 55;
   pointer-events: none;
 }
 
@@ -218,11 +218,11 @@
   text-transform: uppercase;
   font-style: italic;
   line-height: 0.85;
-  color: #000;
+  color: #333;
   margin-bottom: 1.5rem;
   animation: title-reveal 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
   will-change: transform, opacity;
-  opacity: 0.6;
+  opacity: 0.9;
 }
 
 .cd-hero__title span {
@@ -242,7 +242,7 @@
   padding-left: 1.5rem;
   z-index: 60;
   pointer-events: auto;
-  opacity: 0.5;
+  opacity: 0.95;
 }
 
 /* Hero → Black Fade */

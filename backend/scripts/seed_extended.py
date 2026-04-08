@@ -31,6 +31,7 @@ from apps.districts.models import District
 from apps.cars.models import CarModel, Car, Amenity, CarImage
 from apps.bookings.models import Booking
 from apps.reviews.models import Review
+from apps.payments.models import PaymentMethod, PaymentTransaction
 
 User = get_user_model()
 
@@ -62,14 +63,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 1200000, "base_deposit": 10000000, "allows_chauffeur": True,
         "short_tagline": "Kelajak Bugun — Nol Emissiya, Cheksiz Quvvat",
         "short_description": "523 km zaryad masofasi. Sustainably made — kelajak texnologiyasi bugun.",
-        "detail_title": "BMW iX — Elektr Inqilobi",
-        "detail_summary": "Harman Kardon audio, panorama lyuk va 12.3\" curved display bilan jihozlangan.",
+        "detail_title": "BMW iX — Elektromobillar Dunyosida Yangi Davr",
+        "detail_summary": "BMW iX xDrive50 modeli nafaqat elektr quvvati, balki barqaror rivojlanish falsafasini o'zida mujassam etgan. 523 ot kuchi va 765 Nm moment uni eng og'ir yo'llarda ham chaqqon qiladi. Harman Kardon audio tizimi va panorama lyuk sizga yuqori darajadagi qulaylikni taqdim etadi.",
         "power": 523, "top_speed": 200, "acceleration": "4.6s", "engine_type": "Dual Electric Motor",
         "fuel_consumption": "21.4 kWh/100km", "drive_type": "xDrive (AWD)", "cargo_capacity": "500 L",
         "rear_title": "FUTURISTIK PROFIL",
-        "rear_description": "Aerodinamik dizayn va innovatsion LED chiroqlar kelajak avtomobili qiyofasini yaratadi.",
+        "rear_description": "Avtomobilning orqa qismi o'zining minimalist va aerodinamik dizayni bilan ajralib turadi. Innovatsion LED chiroqlar va diffuzor havoni boshqarishda yordam beradi, bu esa zaryad tejalishini ta'minlaydi.",
         "interior_title": "SHAYNAM VA KENG SALON",
-        "interior_description": "Curved Display va qayta ishlangan materiallardan tayyorlangan premium interyer.",
+        "interior_description": "Interyerda qayta ishlangan materiallar va yuqori sifatli nappa charm ishlatilgan. 12.3 dyuymli kavisli ekran (Curved Display) barcha boshqaruv elementlarini bir joyda jamlaydi va haydovchi uchun maksimal qulaylik yaratadi.",
         "colors": [("Sophisto Grey", "#6b6b6b"), ("Mineral White", "#e8e8e4")],
         "amenities": ["panorama", "wireless_charging", "apple_carplay", "360_camera", "ambient_light"],
         "year_range": (2022, 2024), "districts": ["Yunusobod", "Yakkasaroy"],
@@ -78,16 +79,16 @@ CAR_DEFINITIONS = {
         "brand": "BMW", "model_name": "M5 F90 CS", "category": "premium",
         "fuel_type": "benzin", "transmission": "automatic", "seats": 5,
         "base_daily_price": 2875000, "base_deposit": 15000000, "allows_chauffeur": False,
-        "short_tagline": "Track DNA, Street Legal — Yolda Bo'ronni His Eting",
+        "short_tagline": "Track DNA, Street Legal — Yo'lda Bo'ronni His Eting",
         "short_description": "627 ot kuchi. M5 CS — seriyali ishlab chiqarishdagi eng kuchli BMW sedan.",
-        "detail_title": "BMW M5 F90 CS — Limited Edition",
-        "detail_summary": "Carbon fiber roof, Merino charm ichki bezak va M Carbon keramik tormozlar.",
+        "detail_title": "BMW M5 F90 CS — Tezlik va Quvvatning Cho'qqisi",
+        "detail_summary": "M5 CS modeli sport avtomobillari ishqibozlari uchun maxsus yaratilgan. 4.4 litrli V8 Biturbo dvigateli sizga 3 soniyada 100 km/h tezlikka erishish imkonini beradi. Carbon fiber detallar va 'Gold Bronze' bezaklari bilan u ko'chalarda status belgisi bo'lib xizmat qiladi.",
         "power": 627, "top_speed": 305, "acceleration": "3.0s", "engine_type": "4.4L V8 Biturbo",
         "fuel_consumption": "11.3 L/100km", "drive_type": "M xDrive (AWD)", "cargo_capacity": "530 L",
         "rear_title": "DINAMIK ORQA PROFIL",
-        "rear_description": "To'rt tomonlama sport ekzoz tizimi va uglerod tolali diffuzor barqarorlikni ta'minlaydi.",
+        "rear_description": "To'rt tomonlama sport ekzoz tizimi (Quad Exhaust) va uglerod tolali orqa diffuzor avtomobilning agressiv xarakterini ko'rsatib turadi. Bu dizayn nafaqat chiroyli, balki yuqori tezlikda barqarorlikni kafolatlaydi.",
         "interior_title": "M SPORT SALON",
-        "interior_description": "Alcantara rul va M Carbon o'rindiqlar maksimal haydash zavqini beradi.",
+        "interior_description": "Salonda M Carbon o'rindiqlar va Alcantara qoplamalari hukmronlik qiladi. Har bir tikuv va detal haydovchini poyga muhitiga sho'ng'itish uchun mo'ljallangan. 4 kishilik sportiv o'rindiqlar bu modelning o'ziga xosligidir.",
         "colors": [("Frozen Dark Grey", "#2a2a2a"), ("Le Mans Blue", "#003399")],
         "amenities": ["sport_seats", "heads_up_display", "apple_carplay", "launch_control"],
         "year_range": (2021, 2023), "districts": ["Chilonzor", "Mirobod"],
@@ -98,14 +99,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 3450000, "base_deposit": 20000000, "allows_chauffeur": True,
         "short_tagline": "Exclusive Collection — Kuch va Hashamatning Uyg'unligi",
         "short_description": "BMW X7 M60i — premium SUV segmentining cho'qqisi. 530 ot kuchi.",
-        "detail_title": "BMW X7 M60i — Exclusive Collection",
-        "detail_summary": "Bowers & Wilkins audio tizimi va Sky Lounge panorama lyuki bilan jihozlangan.",
+        "detail_title": "BMW X7 M60i — Haqiqiy Birinchi Klass SUV",
+        "detail_summary": "7 kishilik keng salon va 530 ot kuchiga ega V8 dvigateli X7 M60i modelini oilaviy sayohatlar va biznes transferlar uchun ideal qiladi. Bowers & Wilkins audio tizimi har bir sayohatingizni koncert zaliga aylantiradi, Sky Lounge panorama lyuki esa tungi osmon go'zalligini taqdim etadi.",
         "power": 530, "top_speed": 250, "acceleration": "4.7s", "engine_type": "4.4L V8 Biturbo",
         "fuel_consumption": "12.9 L/100km", "drive_type": "xDrive (AWD)", "cargo_capacity": "750 L",
         "rear_title": "MOXIRLIK STANDARTI",
-        "rear_description": "Katta o'lchamli SUV uchun mukammal barqarorlik va dinamik ko'rinish.",
+        "rear_description": "Katta o'lchamli SUV bo'lishiga qaramay, uning orqa qismi o'ta zamonaviy va ixcham ko'rinadi. LED chiroqlar xrom detallar bilan birlashib, avtomobilning enini va qudrati ni vizual tarzda oshiradi.",
         "interior_title": "BIRINCHI KLASS KOMFORT",
-        "interior_description": "6 yoki 7 kishilik kenglik, individual iqlim nazorati va yuqori sifatli charm.",
+        "interior_description": "Individual iqlim nazorati, massaj funksiyasiga ega o'rindiqlar va eng yuqori sifatli charm qoplamalar har bir yo'lovchiga VIP darajadagi xizmatni ta'minlaydi. 6 yoki 7 kishilik joylashuv mavjud.",
         "colors": [("Carbon Black", "#1a1a1a"), ("Alpine White", "#f5f5f0")],
         "amenities": ["panorama", "heated_seats", "360_camera", "massage", "apple_carplay", "heads_up_display"],
         "year_range": (2022, 2024), "districts": ["Yunusobod", "Mirzo Ulug'bek"],
@@ -116,14 +117,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 700000, "base_deposit": 4000000, "allows_chauffeur": False,
         "short_tagline": "Elektr SUV — Kelajak Bugun Yetib Keldi",
         "short_description": "Blade Battery texnologiyasi va 420 km zaryad masofasi.",
-        "detail_title": "BYD Atto 3 — Electric SUV",
-        "detail_summary": "12.8\" rotating display va V2L texnologiyasi bilan jihozlangan.",
+        "detail_title": "BYD Atto 3 — Zamonaviy va Tejamkor Elektro-SUV",
+        "detail_summary": "Atto 3 modeli shahar va shahar atrofidagi sayohatlar uchun mukammal yechimdir. Blade Battery texnologiyasi xavfsizlik va uzoq umr ko'rishni kafolatlaydi, 12.8 dyuymli aylanuvchi ekran esa multimedia imkoniyatlarini kengaytiradi.",
         "power": 201, "top_speed": 160, "acceleration": "7.3s", "engine_type": "Single Motor Electric",
         "fuel_consumption": "15.6 kWh/100km", "drive_type": "FWD", "cargo_capacity": "440 L",
         "rear_title": "ZAMONAVIY ESTETIKA",
-        "rear_description": "Ixcham va dinamik orqa profil shahar sharoitiga juda mos keladi.",
+        "rear_description": "Avtomobilning orqa qismi o'zining sodda, ammo mazmunli chiziqlari bilan ajralib turadi. LED yoritish tizimi butun kenglik bo'ylab cho'zilgan bo'lib, tungi vaqtda o'ziga xos imzo yaratadi.",
         "interior_title": "GYM INSPIRED DESIGN",
-        "interior_description": "Musiqa asboblarini eslatuvchi detallar va ergonomik sport o'rindiqlar.",
+        "interior_description": "Interyer dizayni fitnes va musiqa olamidan ilhomlangan. Gitara torlarini eslatuvchi eshik detallari va sportiv o'rindiqlar yosh va dinamik haydovchilar uchun mo'ljallangan.",
         "colors": [("Surf Blue", "#1a6699"), ("Winter White", "#f5f5f0")],
         "amenities": ["apple_carplay", "wireless_charging", "360_camera", "ambient_light"],
         "year_range": (2023, 2024), "districts": ["Yunusobod", "Yakkasaroy"],
@@ -134,14 +135,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 550000, "base_deposit": 3000000, "allows_chauffeur": False,
         "short_tagline": "O'zbek Bozori Uchun Elektromobil",
         "short_description": "400 km zaryad masofasi va keng salon.",
-        "detail_title": "BYD Chazor — Designed for Uzbekistan",
-        "detail_summary": "Zaryad: 30 daqiqada 80%. O'zbekiston iqlimiga moslashgan.",
+        "detail_title": "BYD Chazor — Mashalloh, O'zbek Yo'llarining Yangi Baxti",
+        "detail_summary": "O'zbekiston iqlimi va sharoitiga moslashtirilgan BYD Chazor modeli tejamkorlik va qulaylik uyg'unligidir. 400 km zaryad masofasi kundalik ehtiyojlar uchun yetarli bo'lib, tezkor zaryadlash imkoniyati vaqtni tejashga yordam beradi.",
         "power": 197, "top_speed": 170, "acceleration": "7.3s", "engine_type": "Single Motor Electric",
         "fuel_consumption": "16.5 kWh/100km", "drive_type": "FWD", "cargo_capacity": "450 L",
         "rear_title": "KLASSIK SEDAN",
-        "rear_description": "Barqarorlik va qulaylikni ta'minlovchi klassik dizayn yechimlari.",
+        "rear_description": "Klassik sedan dizayni orqa tomondan barqarorlik va ishonchlilik hissiyotini beradi. Har bir detal amaliyotga yo'naltirilgan bo'lib, keng yukxona bilan ta'minlangan.",
         "interior_title": "SMART INTERYER",
-        "interior_description": "Aylanuvchi multimedia ekrani va kengaytirilgan xavfsizlik tizimlari.",
+        "interior_description": "Multimedia tizimi markazida joylashgan aylanuvchi ekran va zamonaviy datchiklar boshqaruvni osonlashtiradi. Xavfsizlik yostiqchalari va kengaytirilgan ko'rinish zonalari xotirjam haydashni ta'minlaydi.",
         "colors": [("Cosmos Black", "#111"), ("Snow White", "#f5f5f0")],
         "amenities": ["apple_carplay", "wireless_charging", "360_camera"],
         "year_range": (2023, 2024), "districts": ["Chilonzor", "Olmazor"],
@@ -152,14 +153,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 900000, "base_deposit": 6000000, "allows_chauffeur": True,
         "short_tagline": "Dragon Face Design — O'ziga xos, Kuchli, Premium",
         "short_description": "517 ot kuchi AWD va 0-100 km/h 3.9 sek.",
-        "detail_title": "BYD Han EV — Electric Flagship",
-        "detail_summary": "Dynaudio 12-speaker va massaj kresloalari. VIP sayohat uchun.",
+        "detail_title": "BYD Han EV — Hashamatli Elektr Flagmani",
+        "detail_summary": "Han EV modeli BYD kompaniyasining eng premium segmentdagi vakilidir. 517 ot kuchi va to'liq uzatma (AWD) uni haqiqiy yo'l yo'lbarsiga aylantiradi. Dynaudio audio tizimi va massaj o'rindiqlari biznes klass darajasini ta'minlaydi.",
         "power": 517, "top_speed": 185, "acceleration": "3.9s", "engine_type": "Dual Motor Electric",
         "fuel_consumption": "18.5 kWh/100km", "drive_type": "AWD", "cargo_capacity": "410 L",
         "rear_title": "PREMIUM FLAGSHIP",
-        "rear_description": "Yaxlit LED chiroqlar va sportiv aerodinamik qanotlar.",
+        "rear_description": "Dragon Face dizayn falsafasi orqa qismda ham yaqqol namoyon bo'ladi. Yaxlit LED panel va sportiv aerodinamik qanotlar avtomobilning o'ziga xos qiyofasini yaratadi.",
         "interior_title": "LYUKS VA TEXNOLOGIYA",
-        "interior_description": "Nappa charm, Dynaudio audio tizimi va yuqori darajadagi issiqlik izolyatsiyasi.",
+        "interior_description": "Nappa charm, Dynaudio 12-dinamikli audio tizimi va VIP yo'lovchilar uchun maxsus funksiyalar. Har bir material yuqori sifatli va uzoq umr ko'radigan qilib tanlangan.",
         "colors": [("Han Blue", "#001f5e"), ("Cinnabar Red", "#8b1a1a")],
         "amenities": ["panorama", "massage", "ambient_light", "apple_carplay", "heated_seats"],
         "year_range": (2022, 2024), "districts": ["Yunusobod", "Mirzo Ulug'bek"],
@@ -170,14 +171,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 850000, "base_deposit": 5000000, "allows_chauffeur": False,
         "short_tagline": "Ocean X Design — Dinamik va Innovatsion",
         "short_description": "Sportiv elektr sedan, CTB texnologiyasi bilan.",
-        "detail_title": "BYD Seal — Performance Electric",
-        "detail_summary": "0.219 CD aerodinamika va iTAC tizimi bilan boshqaruv.",
+        "detail_title": "BYD Seal — Tezkor va Aerodinamik Elektr Sedan",
+        "detail_summary": "Seal modeli o'zining ultra-past qarshilik koeffitsiyenti (0.219 Cd) bilan hayratda qoldiradi. Bu nafaqat tezlik, balki har bir kVt quvvatdan maksimal foydalanish demakdir. iTAC tizimi orqali aqlli boshqaruv sizga har qanday burilishda ishonch beradi.",
         "power": 530, "top_speed": 180, "acceleration": "3.8s", "engine_type": "Dual Motor Electric",
         "fuel_consumption": "18.2 kWh/100km", "drive_type": "AWD", "cargo_capacity": "450 L",
         "rear_title": "OCEAN X ESTETIKASI",
-        "rear_description": "Dinamik LED chiroqlar va minimalist orqa dizayn aerodinamikani yaxshilaydi.",
+        "rear_description": "Orqa qism dizayni dengiz to'lqinlarini eslatadi. Dinamik chiroqlar va diffuzor havoni samarali yo'naltirib, avtomobilning sportivligini ta'kidlaydi.",
         "interior_title": "MINIMALIST LUXURY",
-        "interior_description": "Kristall uzatmalar qutisi va aylanuvchi 15.6 dyuymli ekran bilan kelajakni his eting.",
+        "interior_description": "Markaziy konsolda kristall uzatmalar qutisi va 15.6 dyuymli ulkan aylanuvchi ekran joylashgan. Minimalizm va kenglik hissi har bir sayohatingizni erkin qiladi.",
         "colors": [("Aurora White", "#f0f0f0"), ("Atlantis Grey", "#4a4a4a")],
         "amenities": ["panorama", "sport_seats", "wireless_charging", "360_camera"],
         "year_range": (2023, 2024), "districts": ["Mirobod", "Yakkasaroy"],
@@ -188,14 +189,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 750000, "base_deposit": 4500000, "allows_chauffeur": False,
         "short_tagline": "Oila Uchun Mukammal SUV",
         "short_description": "Keng salon, yuqori xavfsizlik va zamonaviy interyer.",
-        "detail_title": "BYD Song Plus — Family Electric SUV",
-        "detail_summary": "DiLink 4.0 tizimi va Blade Battery bilan jihozlangan.",
+        "detail_title": "BYD Song Plus — Oilaviy Krossoverning Yangi Me'yori",
+        "detail_summary": "Song Plus o'zida SUV segmentining barcha qulayliklarini jamlagan. Keng salon, baland klirens va tejamkor elektr yuritmalar uni oilaviy sayohatlar uchun eng yaxshi tanlovga aylantiradi. DiLink 4.0 aqlli tizimi bolalaringizni yo'lda zeriktirmaydi.",
         "power": 197, "top_speed": 170, "acceleration": "7.8s", "engine_type": "Single Motor Electric",
         "fuel_consumption": "17.5 kWh/100km", "drive_type": "FWD", "cargo_capacity": "510 L",
         "rear_title": "KENG VA BARQAROR",
-        "rear_description": "SUV segmentida eng yaxshi aerodinamik ko'rsatkichlardan biri.",
+        "rear_description": "Orqa tarafdan Song Plus o'zining salobati bilan ajralib turadi. Kengaytirilgan yo'l izi va LED chiroqlar avtomobilga ishonchli va zamonaviy ko'rinish beradi.",
         "interior_title": "OILAVIY KOMFORT",
-        "interior_description": "Orqa qatorda keng oyoq joyi va yuqori sifatli materiallar.",
+        "interior_description": "Orqa qatorda oyoqlar uchun juda keng joy qoldirilgan, bu esa uzoq masofalarda yo'lovchilar charchamasligini ta'minlaydi. Yumshoq nappa charm va iqlim nazorati komfortni yuqori darajaga ko'taradi.",
         "colors": [("Time Grey", "#555555"), ("Snow White", "#ffffff")],
         "amenities": ["panorama", "heated_seats", "360_camera", "apple_carplay"],
         "year_range": (2023, 2024), "districts": ["Chilonzor", "Sergeli"],
@@ -206,14 +207,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 350000, "base_deposit": 1500000, "allows_chauffeur": False,
         "short_tagline": "Xalq Tanlovi — Ishonchli va Hamyonbop",
         "short_description": "O'zbekistonning eng mashhur sedani, keng yukxona.",
-        "detail_title": "Chevrolet Cobalt — Ishonchli Hamroh",
-        "detail_summary": "Tejamkor va har qanday yo’l sharoitiga chidamli model.",
+        "detail_title": "Chevrolet Cobalt — Har Kun Uchun Ishonchli Hamroh",
+        "detail_summary": "Cobalt modeli o'zining tejamkorligi va chidamliligi bilan tanilgan. Katta yukxona (563 litr) uni ayniqsa bozor va oilaviy yumushlar uchun ajralmas qiladi. Oddiy, ammo samarali texnologiyalar uzoq yillar xizmat qiladi.",
         "power": 105, "top_speed": 170, "acceleration": "11.7s", "engine_type": "1.5L Inline-4",
         "fuel_consumption": "6.7 L/100km", "drive_type": "FWD", "cargo_capacity": "563 L",
-        "rear_title": "KENG YUKXONA",
-        "rear_description": "O'z sinfidagi eng katta yukxonalardan biri — barcha yuklaringiz uchun joy yetarli.",
+        "rear_title": "UXCHAM VA AMALIY",
+        "rear_description": "Orqa dizayn bu modelning amaliyligini ta'kidlaydi. Keng yukxona qopqog'i va baland chiroqlar yuk yuklashni osonlashtiradi va kechasi yaxshi ko'rinadi.",
         "interior_title": "ERGONOMIK SALON",
-        "interior_description": "Soddalik va funksionallik uyg'unligi, uzoq manzillar uchun qulay o'rindiqlar.",
+        "interior_description": "Interyerda soddalik va funksionallikka urg'u berilgan. O'rindiqlar uzoq masofalarda haydovchi charchamasligi uchun sozlangan. Barcha tugmalar qo'l yetadigan qulay joyda.",
         "colors": [("Qora", "#111"), ("Oq", "#ffffff")],
         "amenities": ["apple_carplay"],
         "year_range": (2021, 2024), "districts": ["Chilonzor", "Olmazor", "Uchtepa"],
@@ -224,14 +225,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 350000, "base_deposit": 1500000, "allows_chauffeur": False,
         "short_tagline": "Klassika — Biznes va Kundalik Sayohat",
         "short_description": "Yumshoq yurish va qulay salon bilan tanilgan.",
-        "detail_title": "Chevrolet Gentra — Komforli Sayohat",
-        "detail_summary": "Lyuk va ABS tizimi bilan jihozlangan yuqori pozitsiya.",
+        "detail_title": "Chevrolet Gentra — Yumshoqlik va Klassik Dizayn",
+        "detail_summary": "Gentra o'zbek haydovchilari orasida o'zining yumshoq kalti (suspension) va qulay o'rindiqlari bilan afsonaga aylangan. Lyukli va ABS tizimli yuqori pozitsiyalar shaharda ham, magistral yo'llarda ham ishonch beradi.",
         "power": 107, "top_speed": 180, "acceleration": "12.5s", "engine_type": "1.5L Inline-4",
         "fuel_consumption": "7.5 L/100km", "drive_type": "FWD", "cargo_capacity": "400 L",
-        "rear_title": "ELEKTRONIKA VA XAVFSIZLIK",
-        "rear_description": "Dinamik barqarorlikni ta'minlovchi mustahkam osma va zamonaviy tormoz tizimi.",
-        "interior_title": "LUKXURI INTERYER",
-        "interior_description": "Yumshoq materiallar va lyuk orqali kiruvchi tabiiy yorug'lik bilan qulay muhit.",
+        "rear_title": "KLASSIK SILUET",
+        "rear_description": "Klassik sedan shakllari va mustahkam osma tizimi avtomobilning umrboqligidan dalolat beradi. Dinamik barqarorlik yuqori tezlikda ham saqlanib qoladi.",
+        "interior_title": "QULAY INTERYER",
+        "interior_description": "Salon materiallari yumshoq va ko'zga yoqimli. Lyuk orqali kirayotgan quyosh nuri sayohatni yanada zavqli qiladi. Oddiy multimedia tizimi barcha asosiy funksiyalarni bajaradi.",
         "colors": [("Qora", "#111"), ("Oq", "#ffffff"), ("Kulrang", "#808080")],
         "amenities": ["panorama", "heated_seats"],
         "year_range": (2022, 2024), "districts": ["Sergeli", "Yashnobod"],
@@ -242,14 +243,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 750000, "base_deposit": 4000000, "allows_chauffeur": True,
         "short_tagline": "Business Executive — Kuchli va Elegant",
         "short_description": "2.0 Turbo dvigatel, 253 ot kuchi. Premium komfort.",
-        "detail_title": "Chevrolet Malibu 2 — Turbo Luxury",
-        "detail_summary": "Bose audio, nappa charm va to'liq xavfsizlik tizimlari.",
+        "detail_title": "Chevrolet Malibu 2 — Biznes Olami Uchun Dinamika",
+        "detail_summary": "Malibu 2 modeli o'zida 2.0 litrli turbo dvigatel quvvati va biznes klass hashamatini jamlagan. 253 ot kuchi sizga har qanday vaziyatda birinchi bo'lishni ta'minlaydi. Bose audio tizimi va ventilyatsiya qilinadigan nappa charm o'rindiqlar haqiqiy rohat beradi.",
         "power": 253, "top_speed": 210, "acceleration": "6.3s", "engine_type": "2.0L Turbo Inline-4",
         "fuel_consumption": "8.5 L/100km", "drive_type": "FWD", "cargo_capacity": "447 L",
         "rear_title": "ELEGANTSLIK RAMZI",
-        "rear_description": "Dinamik LED chiroqlar va sportiv shakllar uning biznes klass ekanligini ta'kidlaydi.",
+        "rear_description": "Dinamik LED chiroqlar va sportiv shakllar uning biznes klass ekanligini ta'kidlaydi. Ikkitalik ekzoz tizimi esa uning kapoti ostidagi turbo quvvatdan darak beradi.",
         "interior_title": "BIZNES KLASS KOMFORT",
-        "interior_description": "Bose audio tizimi, ventilyatsiya qilinadigan charm o'rindiqlar va aqlli bort kompyuteri.",
+        "interior_description": "Salon kishini hayratga soluvchi nappa charm bilan qoplangan. Smart infotainment tizimi smartfoningiz bilan to'liq integratsiyalashadi, keng salon esa uzoq safarlarda ham charchatmaydi.",
         "colors": [("Qora", "#0a0a0a"), ("Oq Pearl", "#f8f8f8")],
         "amenities": ["panorama", "heated_seats", "apple_carplay", "ambient_light", "wireless_charging"],
         "year_range": (2021, 2023), "districts": ["Mirobod", "Yunusobod"],
@@ -260,14 +261,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 400000, "base_deposit": 2000000, "allows_chauffeur": False,
         "short_tagline": "Amerika Ruhi — Uzun va Barqaror",
         "short_description": "Katta o'lchamli sedan, yuqori komfort darajasi.",
-        "detail_title": "Chevrolet Malibu 1 — Klassik Komfort",
-        "detail_summary": "2.4 litrli atmosferik dvigatel bilan ishonchli boshqaruv.",
+        "detail_title": "Chevrolet Malibu 1 — Klassik Amerika Sedani",
+        "detail_summary": "Malibu 1 o'zining og'ir va bosiq harakati bilan tanilgan. 2.4 litrli atmosferik dvigatel ishonchlilikni kafolatlaydi, keng g'ildirak bazasi esa yo'ldagi notekisliklarni maksimal darajada yutadi.",
         "power": 167, "top_speed": 195, "acceleration": "9.5s", "engine_type": "2.4L Inline-4",
         "fuel_consumption": "9.2 L/100km", "drive_type": "FWD", "cargo_capacity": "462 L",
         "rear_title": "BARQARORLIK VA SHAKL",
-        "rear_description": "Keng g'ildirak bazasi va mustahkam kuzov har qanday yo'lda barqarorlikni ta'minlaydi.",
+        "rear_description": "Kuzovning mustahkamligi va Amerika sedanlariga xos bo'lgan orqa dizayn unga joziba bag'ishlaydi. Bu model yillar o'tsa ham o'z qiymatini yo'qotmaydigan dizayn me'yorlariga ega.",
         "interior_title": "KLASSIK AMERIKA",
-        "interior_description": "Keng o'rindiqlar va yuqori darajadagi shovqin izolyatsiyasi bilan qulay sayohat.",
+        "interior_description": "Keng va yumshoq o'rindiqlar sizni quchoqlab oladi. Ovoz izolyatsiyasi o'z sinfidagi eng yaxshilaridan biri bo'lib, tashqi shovqinlar sayohatingizga xalal bermaydi.",
         "colors": [("Black", "#111"), ("Silver", "#c0c0c0")],
         "amenities": ["heated_seats"],
         "year_range": (2015, 2018), "districts": ["Chilonzor", "Uchtepa"],
@@ -278,14 +279,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 450000, "base_deposit": 2500000, "allows_chauffeur": False,
         "short_tagline": "Smart Sedan — Yangi Avlod Texnologiyasi",
         "short_description": "Turbo dvigatel, kam yoqilg'i sarfi va zamonaviy xavfsizlik.",
-        "detail_title": "Chevrolet Onix — Modern Choice",
-        "detail_summary": "Keyless entry, auto parking va to'liq raqamli panel.",
+        "detail_title": "Chevrolet Onix — Shahar Hayotiga Moslashgan Smart Sedan",
+        "detail_summary": "Onix modeli yangi avlod avtomobili bo'lib, u tejamkor turbo motor va aqlli texnologiyalarni o'zida birlashtiradi. Avtomatik parkovka qilish tizimi (auto-parking) va kor ko'rinish zonalari datchiklari shaharda juda asqotadi.",
         "power": 132, "top_speed": 190, "acceleration": "10.9s", "engine_type": "1.2L Turbo Inline-3",
         "fuel_consumption": "5.9 L/100km", "drive_type": "FWD", "cargo_capacity": "469 L",
         "rear_title": "DINAMIK VA IXCHAM",
-        "rear_description": "Yangi avlod dizayni bilan ajralib turuvchi zamonaviy orqa optika.",
+        "rear_description": "Ixcham orqa dizayn sportiv ruh va amaliylikni uyg'unlashtiradi. LED chiroqlar tungi vaqtda Onix ga zamonaviy qiyofa bag'ishlaydi.",
         "interior_title": "SMART TEXNOLOGIYA",
-        "interior_description": "Keyless entry, avtomatik parkovka va raqamli asboblar paneli.",
+        "interior_description": "Interyer o'ta zamonaviy: raqamli asboblar paneli, sensorli multimedia va kalitsiz kirish. Wireless charging moduli orqali telefoningizni simsiz quvvatlashingiz mumkin.",
         "colors": [("Dark Grey", "#333"), ("White", "#fff")],
         "amenities": ["apple_carplay", "wireless_charging", "360_camera"],
         "year_range": (2023, 2024), "districts": ["Yunusobod", "Shayxontohur"],
@@ -296,14 +297,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 250000, "base_deposit": 1000000, "allows_chauffeur": False,
         "short_tagline": "Shahar Uchun Yaratilgan — Arzon va Chaqqon",
         "short_description": "Tor ko'chalarda moslashuvchan, yoqilg'i sarfi minimal.",
-        "detail_title": "Chevrolet Spark — City Compact",
-        "detail_summary": "Shahar bo'ylab tezkor va qulay harakatlanish uchun tanlov.",
+        "detail_title": "Chevrolet Spark — Kichik, Ammo Chaqqon Va Tejamkor",
+        "detail_summary": "Spark shahar tirbandliklarida eng yaxshi do'stingizdir. Kichik o'lchamlari tufayli parkovka muammo emas, tejamkor motori esa hamyoningizni asraydi. Yoshlar va yangi o'rgangan haydovchilar uchun ideal.",
         "power": 85, "top_speed": 160, "acceleration": "13.5s", "engine_type": "1.25L Inline-4",
         "fuel_consumption": "5.5 L/100km", "drive_type": "FWD", "cargo_capacity": "170 L",
         "rear_title": "IXCHAM VA CHAQQON",
-        "rear_description": "Shahar ichidagi manevrlar uchun unikal ixchamlik va oson parkovka.",
+        "rear_description": "Orqa qism uning funksionalligini ko'rsatadi. Eshik tutqichlarining yashirin joylashishi avtomobilga sportiv ko'rinish beradi. Har bir detal shahar sharoitiga moslangan.",
         "interior_title": "YOSH VA DINAMIK",
-        "interior_description": "Mototsikl uslubidagi asboblar paneli va ergonomik boshqaruv elementlari.",
+        "interior_description": "Mototsikl uslubidagi spidometr va yorqin rangli interyer detallari ruhni ko'taradi. Shahar ichida tezkor va oson harakatlangin keladi.",
         "colors": [("White", "#ffffff"), ("Silver", "#a8a8a8"), ("Red", "#cc2200")],
         "amenities": ["apple_carplay"],
         "year_range": (2021, 2024), "districts": ["Chilonzor", "Sergeli", "Yashnobod"],
@@ -314,14 +315,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 2000000, "base_deposit": 10000000, "allows_chauffeur": True,
         "short_tagline": "Amerika Afsonasi — Keng va Kuchli",
         "short_description": "355 ot kuchi, 8 o'rindiq. Oilaviy va VIP transfer uchun.",
-        "detail_title": "Chevrolet Tahoe — Full Size SUV",
-        "detail_summary": "RST Edition, 22\" disklar va premium Bose audio bilan.",
+        "detail_title": "Chevrolet Tahoe — Ulkan Quvvat va Cheksiz Kenglik",
+        "detail_summary": "Tahoe modeli yo'llarning qirolidir. V8 dvigateli va 8 kishilik keng salon har qanday oilaviy sayohatni birinchi klass darajasiga ko'taradi. RST Edition dizayni bilan siz doim e'tibor markazida bo'lasiz.",
         "power": 355, "top_speed": 180, "acceleration": "7.5s", "engine_type": "5.3L V8",
         "fuel_consumption": "14.5 L/100km", "drive_type": "4WD", "cargo_capacity": "722 L",
         "rear_title": "KUCHLI AMERIKANES",
-        "rear_description": "Gigant radiator panjarasi va massiv orqa dizayn bilan har qanday yo'l qiroli.",
+        "rear_description": "Mustahkam kvadratik shakllar va massiv orqa profil avtomobilning barqarorligidan dalolat beradi. To'liq uzatma tizimi hatto murakkab yo'llarda ham ishonchni saqlaydi.",
         "interior_title": "GIGANT SALON",
-        "interior_description": "8 kishilik kenglik, uch zonali iqlim nazorati va premium audio tizimi.",
+        "interior_description": "8 kishigacha qulay joylashuv, Bose audio tizimi va uch zonali iqlim nazorati. O'rindiqlarni yig'ish orqali yukxonani ulkan maydonga aylantirish mumkin.",
         "colors": [("Black", "#0a0a0a"), ("Summit White", "#f8f8f6")],
         "amenities": ["panorama", "heated_seats", "apple_carplay", "360_camera", "wireless_charging"],
         "year_range": (2021, 2023), "districts": ["Chilonzor", "Uchtepa"],
@@ -332,14 +333,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 450000, "base_deposit": 2500000, "allows_chauffeur": False,
         "short_tagline": "Yilning SUV'i — Zamonaviy va Qulay",
         "short_description": "Kompakt SUV, Redline dizayni bilan ajralib turadi.",
-        "detail_title": "Chevrolet Tracker 2 — Redline",
-        "detail_summary": "Panorama lyuk, start-stop va kor ko'rinish nuqtalari monitoringi.",
+        "detail_title": "Chevrolet Tracker 2 — Kompakt Krossoverning Mukammal Namunasi",
+        "detail_summary": "Tracker 2 shaharda baland klirens va ixchamlikni qadrlaydiganlar uchun yaratilgan. Panorama lyuk va zamonaviy turbo motor kishi kayfiyatini ko'taradi. Qizil dizayn detallari (Redline) avtomobilga sportiv ruh beradi.",
         "power": 137, "top_speed": 185, "acceleration": "10.5s", "engine_type": "1.2L Turbo Inline-3",
         "fuel_consumption": "6.5 L/100km", "drive_type": "FWD", "cargo_capacity": "393 L",
         "rear_title": "SPORTIV VA COMPACT",
-        "rear_description": "Yangi Redline dizayni va dinamik profil bilan shahar sport suv'i.",
+        "rear_description": "Orqa chiziqlar o'zining aerodinamik qismlari va Redline logotiplari bilan ajralib turadi. Krossover bo'lishiga qaramay, u o'ta epchil va harakatchan ko'rinadi.",
         "interior_title": "TEXNOLOGIK INTERYER",
-        "interior_description": "Panorama lyuk, MyLink multimedia va aqlli yordamchi tizimlar.",
+        "interior_description": "Interyerda haydovchi qulayligiga katta e'tibor berilgan. Multimedia tizimi MyLink orqali barcha funksiyalar markazlashgan, asboblar paneli esa o'ta o'qilishi oson va chiroyli.",
         "colors": [("Dark Grey", "#222"), ("White", "#fff")],
         "amenities": ["panorama", "apple_carplay", "wireless_charging"],
         "year_range": (2023, 2024), "districts": ["Yunusobod", "Mirobod"],
@@ -350,14 +351,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 1500000, "base_deposit": 8000000, "allows_chauffeur": True,
         "short_tagline": "Oila bilan Sayohat — Katta va Xavfsiz",
         "short_description": "V6 dvigatel, 7 kishilik keng salon va AWD.",
-        "detail_title": "Chevrolet Traverse — 7 Seater SUV",
-        "detail_summary": "Premier versiya, adaptiv kruiz kontrol va 3-zonali iqlim nazorati.",
+        "detail_title": "Chevrolet Traverse — Oilaviy Krossoverlar Podshohi",
+        "detail_summary": "Traverse modeli oilangiz a'zolari uchun maksimal xavfsizlik va qulaylikni taklif etadi. 3.6 litrli V6 dvigateli har qanday yuk va yo'lovchi bilan ishonchli harakatlanadi. Uchinchi qator o'rindiqlari ham to'liq o'lchamli yo'lovchilar uchun mo'ljallangan.",
         "power": 281, "top_speed": 190, "acceleration": "7.8s", "engine_type": "3.6L V6",
         "fuel_consumption": "11.5 L/100km", "drive_type": "AWD", "cargo_capacity": "651 L",
         "rear_title": "GIGANT OILAVIY SUV",
-        "rear_description": "Ishonchli va salobatli ko'rinish, uzoq sayohatlar uchun ideal xavfsizlik.",
+        "rear_description": "Orqa profil avtomobilning naqadar keng va salobatli ekanligini isbotlaydi. Katta LED orqa optika avtomobil xavfsizligini ta'minlab, unga premium ko'rinish bag'ishlaydi.",
         "interior_title": "PREMIER KLASS KOMFORT",
-        "interior_description": "7 kishilik kenglik, 3-zonali iqlim nazorati va adaptiv kruiz kontrol.",
+        "interior_description": "Salonda Premier darajasidagi charm va plastik ishlatilgan. Adaptiv kruiz kontrol va 3-zonali iqlim nazorati har bir yo'lovchiga o'zining shaxsiy komfort zonasini yaratishga imkon beradi.",
         "colors": [("Black", "#111"), ("White", "#fdfdfd")],
         "amenities": ["panorama", "heated_seats", "apple_carplay", "360_camera"],
         "year_range": (2022, 2024), "districts": ["Yunusobod", "Mirzo Ulug'bek"],
@@ -368,14 +369,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 1000000, "base_deposit": 5000000, "allows_chauffeur": True,
         "short_tagline": "Komfort Cho'qqisi — Yuqori Texnologiyali SUV",
         "short_description": "Premium interyer va ravon harakatlanish ustuvorligi.",
-        "detail_title": "Hyundai Santa Fe — Luxury SUV",
-        "detail_summary": "Calligraphy pozitsiyasi, harman kardon audio tizimi bilan.",
+        "detail_title": "Hyundai Santa Fe — Hashamat va Amaliylik Uyg'unligi",
+        "detail_summary": "Santa Fe o'zida Koreya muhandisligi durdonalarini jamlagan. HTRAC to'liq uzatma tizimi har qanday ob-havoda yo'lni ushlashni kafolatlaydi, Calligraphy komplektatsiyasi esa sizni nappa charm va Harman Kardon audio bilan siylaydi.",
         "power": 281, "top_speed": 210, "acceleration": "7.0s", "engine_type": "2.5L Turbo Smartstream",
         "fuel_consumption": "9.5 L/100km", "drive_type": "HTRAC (AWD)", "cargo_capacity": "634 L",
         "rear_title": "SALOBATLI SUV",
-        "rear_description": "Zamonaviy LED chiroqlar va kengaytirilgan kuzov shakllari Santa Fe ning premium maqomini ta'kidlaydi.",
+        "rear_description": "Yaxlit chiziqli LED chiroqlar va dinamik shakllar Santa Fe ga yo'llarda darrov ajralib turadigan o'ziga xos ko'rinish beradi. Bu model nafaqat oilaviy, balki biznes image uchun ham mos.",
         "interior_title": "CALLIGRAPHY LUXURY",
-        "interior_description": "Nappa charm, 12.3 dyuymli raqamli panel va Harman Kardon audio tizimi bilan jihozlangan.",
+        "interior_description": "Barcha detallar qo'lda ishlangan kabi sifatli. Markaziy konsolda joylashgan tugmalar boshqaruvni osonlashtiradi, panoramali tom esa salonda ochiq osmon hissini yaratadi.",
         "colors": [("Taiga Brown", "#4b3a2a"), ("Abyss Black", "#050505")],
         "amenities": ["panorama", "massage", "heated_seats", "360_camera", "wireless_charging"],
         "year_range": (2023, 2024), "districts": ["Mirobod", "Yunusobod"],
@@ -386,14 +387,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 700000, "base_deposit": 4000000, "allows_chauffeur": True,
         "short_tagline": "Business Class — Ish uchrashuvlari uchun ideal",
         "short_description": "Aerodinamik dizayn va executive interior.",
-        "detail_title": "Hyundai Sonata — Business Executive",
-        "detail_summary": "DN8 versiyasi, 12.3\" raqamli panel va nappa charm.",
+        "detail_title": "Hyundai Sonata — Sportiv Dizayn va Biznes Komfort",
+        "detail_summary": "Yangi Sonata (DN8) modeli o'zining o'ta jasur dizayni bilan ajralib turadi. Kapot qismidan boshlanuvchi LED chiroqlar unga o'zgacha joziba beradi. Keng salon va yumshoq yurish biznes klass haydovchilari uchun ayni muddao.",
         "power": 191, "top_speed": 210, "acceleration": "8.8s", "engine_type": "2.5L GDI Inline-4",
         "fuel_consumption": "7.8 L/100km", "drive_type": "FWD", "cargo_capacity": "453 L",
         "rear_title": "AERODINAMIK SEDAN",
-        "rear_description": "Sensuous Sportiness dizayn falsafasi asosida yaratilgan o'ta past qarshilik koeffitsiyenti.",
+        "rear_description": "Fastback uslubidagi orqa qism va murakkab geometriyali chiroqlar avtoprogressivlik belgisidir. Havo oqimini samarali boshqarish orqali yoqilg'i tejamkorligi va xotirjamlikka erishilgan.",
         "interior_title": "EXECUTIVE SALON",
-        "interior_description": "Shift-by-wire uzatmalar qutisi va panoramic display bilan zamonaviy boshqaruv.",
+        "interior_description": "Salonda shift-by-wire texnologiyasi orqali uzatmalarni tugmalar orqali boshqarish mumkin. 12.3 dyuymli raqamli displey barcha kerakli ma'lumotlarni futuristik tarzda ko'rsatadi.",
         "colors": [("Phantom Black", "#111"), ("Quartz White", "#f0f0ec")],
         "amenities": ["apple_carplay", "heated_seats", "wireless_charging", "ambient_light", "360_camera"],
         "year_range": (2021, 2023), "districts": ["Yunusobod", "Chilonzor"],
@@ -404,14 +405,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 750000, "base_deposit": 4500000, "allows_chauffeur": False,
         "short_tagline": "Parametric Design — Ko'z Bog'lovchi Tashqi Ko'rinish",
         "short_description": "4-avlod Tucson, innovatsion LED chiroqlar bilan.",
-        "detail_title": "Hyundai Tucson — Parametric Design",
-        "detail_summary": "Sportiv dizayn va eng so'nggi xavfsizlik tizimlari jamlangan.",
+        "detail_title": "Hyundai Tucson — Parametrik Dinamika va Kelajak Dizayni",
+        "detail_summary": "Yangi Tucson (NX4) o'zining 'jasur parametrik' dizayni bilan diqqatni tortadi. Radiator panjarasining bir qismi bo'lgan LED chiroqlar uni hech biri билан adashtirib bo'lmaydigan qildi. Smartstream dvigateli va AWD tizimi ishonchni oshiradi.",
         "power": 187, "top_speed": 200, "acceleration": "9.1s", "engine_type": "2.5L Smartstream",
         "fuel_consumption": "8.2 L/100km", "drive_type": "AWD", "cargo_capacity": "539 L",
         "rear_title": "PARAMETRIK DINAMIKA",
-        "rear_description": "Hidden lighting texnologiyasi va tishli orqa chiroqlar unikal ko'rinish beradi.",
+        "rear_description": "Yirtqich hayvon tishlarini eslatuvchi orqa chiroqlar Tucson ga yirtqichlik va sportivlik bag'ishlaydi. Yashirin orqa artkich (wiper) spoiler ostiga yashirilgan bo'lib, dizaynning tozaligini ta'minlaydi.",
         "interior_title": "INTERSPACE KOMFORT",
-        "interior_description": "Ochiq asboblar paneli va vertikal multimedia displeyi bilan erkinlik hissi.",
+        "interior_description": "Markaziy konsol o'rnida joylashgan vertikal ekran va ochiq asboblar paneli salonda erkinlik va texnologiya hissini beradi. Ikki qavatli konditsioner tizimi yumshoq havo oqimi rejimini taklif etadi.",
         "colors": [("Shimmering Silver", "#c5c5c5"), ("Abyss Black", "#0a0a0a")],
         "amenities": ["panorama", "apple_carplay", "wireless_charging", "heated_seats", "360_camera"],
         "year_range": (2021, 2024), "districts": ["Yunusobod", "Mirzo Ulug'bek"],
@@ -422,14 +423,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 1200000, "base_deposit": 6000000, "allows_chauffeur": True,
         "short_tagline": "Grand Utility Vehicle — VIP Sayohat Standarti",
         "short_description": "7 kishilik VIP salon, biznes klass qulayligi.",
-        "detail_title": "Kia Carnival — VIP Limousine",
-        "detail_summary": "Relaxation seats, Bose audio va to'liq komfort paketi.",
+        "detail_title": "Kia Carnival — Yer Ustidagi Birinchi Klass Layneri",
+        "detail_summary": "Carnival modeli oddiy minivan emas, bu Grand Utility Vehicle. 7 kishilik VIP kursi (Relaxation seats) yo'lovchilarga to'liq yotish holatiga o'tish imkonini beradi. Bose audio tizimi va panorama lyuklar har bir sayohatingizni bayramga aylantiradi.",
         "power": 290, "top_speed": 190, "acceleration": "7.0s", "engine_type": "3.5L V6 GDI",
         "fuel_consumption": "12.5 L/100km", "drive_type": "FWD", "cargo_capacity": "627 L",
         "rear_title": "GRAND UTILITY",
-        "rear_description": "Katta o'lchamli minivan va suv xususiyatlarini birlashtirgan dinamik orqa ko'rinish.",
+        "rear_description": "Mashinaning orqa dizayni uning ulkan qudratini va amaliyligini ko'rsatadi. Avtomatik ochiluvchi yon va orqa eshiklar qo'lda yuk bo'lganda juda qulay.",
         "interior_title": "VIP LOUNGE",
-        "interior_description": "Premium relaxation o'rindiqlari va ikki qavatli panorama lyuk bilan haqiqiy VIP sayohat.",
+        "interior_description": "Premium o'rindiqlar massaj va ventilyatsiya bilan jihozlangan. Har bir yo'lovchi uchun shaxsiy USB portlar va iqlim nazorati kanallari mavjud. Sayohat davomida uxlash hech qachon bunday qulay bo'lmagan.",
         "colors": [("Aurora Black Pearl", "#0f0f0f"), ("Panthera Metal", "#3b3b3b")],
         "amenities": ["panorama", "massage", "heated_seats", "360_camera", "wireless_charging"],
         "year_range": (2022, 2024), "districts": ["Mirobod", "Yunusobod"],
@@ -440,14 +441,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 950000, "base_deposit": 6000000, "allows_chauffeur": False,
         "short_tagline": "Electric Performance — Dinamik Elektro-Krossover",
         "short_description": "Sport dizayn va 500+ km masofaga zaryad.",
-        "detail_title": "Kia EV6 — Future Forward",
-        "detail_summary": "Augmented Reality HUD va ultra-tez zaryadlash tizimi.",
+        "detail_title": "Kia EV6 — Inqilobiy Elektr Dinamikasi",
+        "detail_summary": "EV6 modeli Kia kompaniyasining elektr dunyosidagi yangi yuzidir. O'ta tez zaryad olish imkoniyati va 500 km dan ortiq masofa uni shaharlararo sayohat uchun ham ishonchli qiladi. 325 ot kuchi sizga har qanday poyga mashinasiga xos tezlanishni beradi.",
         "power": 325, "top_speed": 185, "acceleration": "5.2s", "engine_type": "Dual Motor Electric",
         "fuel_consumption": "17.2 kWh/100km", "drive_type": "AWD", "cargo_capacity": "490 L",
         "rear_title": "DIGITAL TIGER DESIGN",
-        "rear_description": "Yaxlit LED chiroqlar va aerodinamik qanot bilan qoplangan orqa dizayn.",
+        "rear_description": "Orqa tarafdan EV6 xuddi kosmik kemadek ko'rinadi. Butun eni bo'ylab cho'zilgan LED chiroqlar uning o'ziga xos imzosi hisoblanadi. Aerodinamik wingletlar yuqori tezlikda barqarorlikni oshiradi.",
         "interior_title": "EKOLOGIK VA SMART",
-        "interior_description": "Qayta ishlangan materiallardan interyer va kengaytirilgan borliqdagi HUD displey.",
+        "interior_description": "Interyerda qayta ishlangan plastik idishlardan olingan ekologik materiallar ishlatilgan. Kengaytirilgan borliqdagi (AR) gologramma displey barcha navigatsiya ma'lumotlarini to'g'ridan-to'g'ri ko'zlaringiz qarshisida ko'rsatadi.",
         "colors": [("Yacht Blue", "#00205b"), ("Moonscape Grey", "#5a5a5a")],
         "amenities": ["panorama", "heads_up_display", "wireless_charging", "360_camera", "ambient_light"],
         "year_range": (2023, 2024), "districts": ["Yakkasaroy", "Yunusobod"],
@@ -458,14 +459,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 650000, "base_deposit": 3500000, "allows_chauffeur": False,
         "short_tagline": "Dinamik Sedan — Sportiv Ruhiyatli Tashqi Ko'rinish",
         "short_description": "Mashhur 'Moshalka' chiroqlar va GT-Line dizayn.",
-        "detail_title": "Kia K5 — Dynamic Sedan",
-        "detail_summary": "Panoramic display va kengaytirilgan multimedia tizimi bilan.",
+        "detail_title": "Kia K5 — Yosh va Jushqin Dil Sohiblari Uchun",
+        "detail_summary": "K5 modeli o'zining 'yurak urishi' uslubidagi LED chiroqlari bilan darrov ko'zga tashlanadi. GT-Line sportiv paket avtomobilga agressivlik beradi, keng va panoramali salon esa sayohatni zavqli qiladi.",
         "power": 191, "top_speed": 210, "acceleration": "7.8s", "engine_type": "2.5L GDI Inline-4",
         "fuel_consumption": "7.5 L/100km", "drive_type": "FWD", "cargo_capacity": "453 L",
         "rear_title": "FASTBACK PROFIL",
-        "rear_description": "Dinamik fastback ko'rinishi va uzluksiz orqa LED chiroqlar.",
+        "rear_description": "Fastback uslubidagi tom chizig'i avtomobilni o'zidan qimmatroq ko'rsatadi. Orqa qismdagi uzluksiz chiziqli chiroqlar uning texnologik ekanligidan dalolat beradi.",
         "interior_title": "SPORTIV VA SMART",
-        "interior_description": "Haydovchiga yo'naltirilgan dashboard va panoramik asboblar paneli.",
+        "interior_description": "Dashboard haydovchiga yo'naltirilgan bo'lib, o'zingizni kabina ichida xuddi pilotdek his qilasiz. Sensorli boshqaruv paneli va ergonomik rul haydash zavqini oshiradi.",
         "colors": [("Interstellar Grey", "#444"), ("Snow White", "#fff")],
         "amenities": ["panorama", "apple_carplay", "wireless_charging", "ambient_light"],
         "year_range": (2022, 2024), "districts": ["Chilonzor", "Mirzo Ulug'bek"],
@@ -476,14 +477,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 450000, "base_deposit": 2500000, "allows_chauffeur": False,
         "short_tagline": "Shahar SUV'i — Ixcham va Zamonaviy",
         "short_description": "Yangi model, shahar ichida qulay SUV.",
-        "detail_title": "Kia Sonet — Compact SUV",
-        "detail_summary": "Ventilyatsiya qilinadigan o'rindiqlar va Bose audio bilan.",
+        "detail_title": "Kia Sonet — Ixcham Shahar Krossoveri",
+        "detail_summary": "Sonet yangi avlod krossoveri bo'lib, u ixcham o'lchamlar va premium funksiyalarni birlashtiradi. Ventilyatsiya qilinadigan o'rindiqlar va Bose audio tizimi o'z sinfidagi kamdan-kam avtomobillarda uchraydi.",
         "power": 115, "top_speed": 170, "acceleration": "11.5s", "engine_type": "1.5L Inline-4",
         "fuel_consumption": "7.0 L/100km", "drive_type": "FWD", "cargo_capacity": "392 L",
         "rear_title": "IXCHAM VA CHAQQON",
-        "rear_description": "Shahar harakati uchun mukammal o'lchamlar va zamonaviy orqa optika.",
+        "rear_description": "Soddalik va dinamika uyg'unligi. Sonet orqa tomondan o'zining baland klirensi bilan ishonchli SUV taassurotini qoldiradi va tor shahar ko'chalarida qulay boshqariladi.",
         "interior_title": "KOMPAKT LUX",
-        "interior_description": "Ventilyatsiya qilinadigan charm o'ridiqlar va premium Bose audio tizimi.",
+        "interior_description": "Barcha materiallar sifatli va chidamli qilib tanlangan. Bose premium audio har bir musiqa notasini tinniq yangratadi, smart-panel esa doim aloqada bo'lishingizni ta'minlaydi.",
         "colors": [("Beige", "#d2b48c"), ("Black", "#111")],
         "amenities": ["apple_carplay", "heated_seats", "wireless_charging"],
         "year_range": (2024, 2024), "districts": ["Shayxontohur", "Olmazor"],
@@ -494,14 +495,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 950000, "base_deposit": 5000000, "allows_chauffeur": True,
         "short_tagline": "Katta Oila Sayohati — 7 Kishilik Isbotlangan Sifat",
         "short_description": "Ishonchli krossover, keng salon va AWD.",
-        "detail_title": "Kia Sorento — The Family SUV",
-        "detail_summary": "Nappa charm salon va to'liq panoramali tom.",
+        "detail_title": "Kia Sorento — Har Bir Safar Uchun Birinchi Klass",
+        "detail_summary": "Sorento — bu mukammal muvozanat. Keng salon, baland texnologiya va kuchli AWD tizimi uni shahar va qishloq yo'llarida ham birdek ishonchli qiladi. Nappa charm interyer hashamat hissini beradi.",
         "power": 281, "top_speed": 210, "acceleration": "7.5s", "engine_type": "2.5L Turbo GDI",
         "fuel_consumption": "9.8 L/100km", "drive_type": "AWD", "cargo_capacity": "616 L",
         "rear_title": "GIGANT OILAVIY KROSSOVER",
-        "rear_description": "Vertikal orqa chiroqlar va kengaytirilgan kuzov kuchi oilaviy xavfsizlikni ta'minlaydi.",
+        "rear_description": "Vertikal LED orqa chiroqlar Sorento ga o'zgacha salobat bag'ishlaydi. Bu dizayn uning kuchini va uzoq yillar xizmat qilishga tayyor ekanligini ifodalaydi.",
         "interior_title": "PREMIUM OILAVIY KOMFORT",
-        "interior_description": "Nappa charm interyer, Bose audio va to'liq panoramali tom bilan kenglik hissi.",
+        "interior_description": "7 kishigacha bemalol sig'adigan salon, har bir yo'lovchi uchun alohida sozlamalar va Bose audio tizimi. Panoramali tom orqali go'zal manzaralardan bahramand bo'lasiz.",
         "colors": [("Mineral Blue", "#1a2a4a"), ("White Pearl", "#fdfdfd")],
         "amenities": ["panorama", "heated_seats", "apple_carplay", "360_camera", "wireless_charging"],
         "year_range": (2022, 2024), "districts": ["Yunusobod", "Mirobod"],
@@ -512,14 +513,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 5000000, "base_deposit": 30000000, "allows_chauffeur": True,
         "short_tagline": "Afsonaviy Gelik — Kuch va Status Beligisi",
         "short_description": "V8 Biturbo, 585 ot kuchi. Off-road va shahar qiroli.",
-        "detail_title": "Mercedes-Benz G63 AMG — The Legend",
-        "detail_summary": "IWC soati, Burmester surround system va sport kalsitlar.",
+        "detail_title": "Mercedes-Benz G63 AMG — Yo'llarning Mutlaq Qiroli",
+        "detail_summary": "G63 AMG shunchaki avtomobil emas, bu statusning oliy ko'rinishidir. 585 ot kuchiga ega V8 Biturbo dvigatelining ovozi hayajon beradi. Har bir detal poyga DNA si bilan boyitilgan va hashamat cho'qqisiga olib chiqilgan.",
         "power": 585, "top_speed": 240, "acceleration": "4.5s", "engine_type": "4.0L V8 Biturbo",
         "fuel_consumption": "16.5 L/100km", "drive_type": "4MATIC (AWD)", "cargo_capacity": "667 L",
         "rear_title": "OFF-ROAD QUVVATI",
-        "rear_description": "Zaxira g'ildiragi va vertikal orqa chiroqlar haqiqiy off-road xarakterini ko'rsatadi.",
+        "rear_description": "Zaxira g'ildiragi va kuchli orqa dizayn uning xarakterini ko'rsatadi. Har qanday off-road sharoitida u birinchi bo'lishga va sizni manzilingizga ishonchli yetkazishga tayyor.",
         "interior_title": "EXECUTIVE LUXURY",
-        "interior_description": "Dual 12.3 dyuymli ekran va qo'lda ishlangan nappa charm interyer.",
+        "interior_description": "IWC soati, Burmester surround system va qo'lda tikilgan nappa charm. Ikki dona 12.3 dyuymli ulkan ekran barcha texnologiyalarni bir joyga jamlaydi va boshqaruvni futuristik qiladi.",
         "colors": [("Matte Black", "#0a0a0a"), ("Emerald Green", "#004d00")],
         "amenities": ["massage", "ambient_light", "360_camera", "apple_carplay", "sport_seats", "heads_up_display"],
         "year_range": (2022, 2024), "districts": ["Yunusobod", "Mirobod"],
@@ -530,14 +531,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 4500000, "base_deposit": 25000000, "allows_chauffeur": True,
         "short_tagline": "Dunyodagi Eng Yaxshi Avtomobil — Hashamat Cho'qqisi",
         "short_description": "Maybach darajasidagi komfort, yangi W223 avlodi.",
-        "detail_title": "Mercedes-Benz S-Class W223 — The Peak",
-        "detail_summary": "Hamma narsa avtomatlashtirilgan: eshiklar, massaj, xushbo'ylatish.",
+        "detail_title": "Mercedes-Benz S-Class W223 — Mukammallik Standarti",
+        "detail_summary": "Yangi S-Class dunyodagi eng ilg'or avtomobil deb hisoblanadi. Digital Light chiroqlari, to'liq avtomatlashtirilgan tizimlar va mislsiz issiqlik va shovqin izolyatsiyasi. Bu biznes klass yo'lovchilari uchun mo'ljallangan mobil ofis va dam olish maskanidir.",
         "power": 429, "top_speed": 250, "acceleration": "4.9s", "engine_type": "3.0L Inline-6 Turbo with EQ Boost",
         "fuel_consumption": "9.5 L/100km", "drive_type": "4MATIC (AWD)", "cargo_capacity": "550 L",
         "rear_title": "HASHAMATLI PROFIL",
-        "rear_description": "Yashirin eshik tutqichlari va innovatsion chiziqli LED chiroqlar bilan mukammal estetika.",
+        "rear_description": "Yashirin eshik tutqichlari (flush-fitted handles) aerodinamikani yaxshilaydi va avtomobilga butunlay toza ko'rinish beradi. Orqa chiroqlar qimmatbaho kristallarni eslatadi.",
         "interior_title": "BIRINCHI KLASS SALON",
-        "interior_description": "OLED displeylar, 4D Burmester audio tizimi va 'Executive' massaj o'rindiqlari bilan mislsiz qulaylik.",
+        "interior_description": "4D Burmester audio tizimi o'rindiqlardagi vibratsiya orqali musiqa chuqurligini his qildiradi. 'Executive' massaj o'rindiqlari va OLED ulkan ekranlari bilan siz haydaishdan ko'ra ko'proq yo'lovchi bo'lishni xohlaysiz.",
         "colors": [("Obsidian Black", "#010101"), ("Diamond White", "#f0f0f0")],
         "amenities": ["panorama", "massage", "ambient_light", "360_camera", "heads_up_display", "wireless_charging"],
         "year_range": (2022, 2024), "districts": ["Yunusobod", "Yakkasaroy"],
@@ -548,14 +549,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 3500000, "base_deposit": 20000000, "allows_chauffeur": True,
         "short_tagline": "Sport SUV — Porsche DNA si Har bir Detalda",
         "short_description": "Sportiv kupé dizayn va murosasiz dinamika.",
-        "detail_title": "Porsche Cayenne Coupe — Sports DNA",
-        "detail_summary": "Sport Chrono paketi va adaptiv pnevmatik suspenziya bilan.",
+        "detail_title": "Porsche Cayenne Coupe — SUV shaklidagi Haqiqiy Sportkar",
+        "detail_summary": "Cayenne Coupe modeli sport avtomobili DNA sini SUV amaliyligi bilan birlashtirgan. Sport Chrono paketi va adaptiv pnevmatik osma tizimi har qanday burilishni hayajonli sarguzashtga aylantiradi. Porsche muhandisligi durdonasini o'zingizda his eting.",
         "power": 335, "top_speed": 245, "acceleration": "5.7s", "engine_type": "3.0L V6 Turbo",
         "fuel_consumption": "11.2 L/100km", "drive_type": "AWD", "cargo_capacity": "625 L",
         "rear_title": "FLYLINE DIZAYN",
-        "rear_description": "Porsche ning mashhur orqa chiroqlar paneli va adaptiv spoiler sport xarakterini belgilaydi.",
+        "rear_description": "Orqa tarafdan flyline dizayni unga dinamik kupé qiyofasini beradi. Porsche yoritish paneli butun kenglik bo'ylab cho'zilgan bo'lib, tungi vaqtda statusni yaqqol ko'rsatib turadi.",
         "interior_title": "SPORTIV HASXAMAT",
-        "interior_description": "Porsche Advanced Cockpit va sportiv Merino charm o'rindiqlar bilan boshqaruv zavqi.",
+        "interior_description": "Porsche Advanced Cockpit barcha boshqaruvlarni barmoq uchingizda jamlaydi. Sportiv Merino charm o'rindiqlar tezkor haydashda sizni ishonchli ushlab turadi, Bose audio tizimi esa har bir sado tinnisligini kafolatlaydi.",
         "colors": [("Jet Black", "#0c0c0c"), ("Crayon", "#d0d0d0")],
         "amenities": ["panorama", "sport_seats", "heads_up_display", "360_camera", "apple_carplay"],
         "year_range": (2023, 2024), "districts": ["Yunusobod", "Mirobod"],
@@ -566,14 +567,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 4000000, "base_deposit": 25000000, "allows_chauffeur": False,
         "short_tagline": "Elektr Hayajon — 0 dan 100 gacha 2.8 Sekund",
         "short_description": "Dunyodagi eng tezkor elektr sedallardan biri.",
-        "detail_title": "Porsche Taycan Turbo S — Electric Soul",
-        "detail_summary": "800 voltli batareya tizimi va unikal sportiv boshqaruv.",
+        "detail_title": "Porsche Taycan Turbo S — Mutlaq Elektr Quvvati",
+        "detail_summary": "Taycan Turbo S elektromobillar nimalarga qodir ekanligini isbotlaydi. 750 ot kuchi va 0-100 tezlanishni 2.8 soniyada amalga oshirish bu — yerdagi raketadir. 800 voltli akkumulyator tizimi o'ta tez zaryad olishga yordam beradi.",
         "power": 750, "top_speed": 260, "acceleration": "2.8s", "engine_type": "Dual Electric Motor",
         "fuel_consumption": "24.5 kWh/100km", "drive_type": "AWD", "cargo_capacity": "366 L",
         "rear_title": "FUTURISTIK SPORTKAR",
-        "rear_description": "Minimalist aerodinamika va yaxlit chiziqli chiroqlar bilan Porsche ning elektr kelajagi.",
+        "rear_description": "Minimalistik va aerodinamik shakllar orqa tomondan uning elektr kelajak farzandi ekanligini bildiradi. Porsche yozuvli LED chiroqlar paneli barchani hayratda qoldiradi.",
         "interior_title": "DIGITAL COCKPIT",
-        "interior_description": "Ekologik charm va to'liq raqamli boshqaruv asboblar paneli bilan hayajonli muhit.",
+        "interior_description": "To'liq digital boshqaruv, hatto yo'lovchi uchun ham alohida ekran. Ekologik charm va sportiv o'rindiqlar haydashning zavqini mutlaqo o'zgacha qiladi.",
         "colors": [("Frozen Blue", "#a1caf1"), ("Carrara White", "#f8f8f8")],
         "amenities": ["panorama", "sport_seats", "ambient_light", "360_camera", "wireless_charging"],
         "year_range": (2022, 2024), "districts": ["Yunusobod", "Mirzo Ulug'bek"],
@@ -584,14 +585,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 3000000, "base_deposit": 15000000, "allows_chauffeur": False,
         "short_tagline": "Yerdagi Raketa — 1020 Ot Kuchi",
         "short_description": "0-100 km/h: 2.1 sek. Eng aqlli va tezkor Tesla.",
-        "detail_title": "Tesla Model S Plaid — Beyond Fast",
-        "detail_summary": "Yoke ruletkasi, 17\" o'yin displeyi va avtopilot.",
+        "detail_title": "Tesla Model S Plaid — Tezlikning Yangi Ta'rifi",
+        "detail_summary": "Model S Plaid modeli 1020 ot kuchi bilan sizni o'rindiqqa mixlab qo'yadi. Autopilot tizimi va 17 dyuymli markaziy kinoteatr-displeyi sayohatlaringizni o'zgacha qiladi. Pley-steyshn darajasidagi o'yinlarni to'g'ridan-to'g'ri uning ekranida o'ynash mumkin.",
         "power": 1020, "top_speed": 322, "acceleration": "2.1s", "engine_type": "Tri-Motor Electric",
         "fuel_consumption": "18.5 kWh/100km", "drive_type": "AWD", "cargo_capacity": "793 L",
         "rear_title": "PLAID PERFORMANCE",
-        "rear_description": "Yengil vaznli uglerod tolali komponentlar va mukammal aerodinamik shakl.",
+        "rear_description": "Carbon fiber spoiler va Plaid logotipi uning naqadar tez ekanligidan nishonadir. Aerodinamik qarshilik o'ta past, bu esa tezlik va tejamkorlikni kafolatlaydi.",
         "interior_title": "MINIMALIST TECH",
-        "interior_description": "Yoke ruletkasi, 17 dyuymli kinoteatr displeyi va avtopilot tizimi bilan inqilobiy interyer.",
+        "interior_description": "Yoke rulet (shvarts-rul) o'zgacha boshqaruv zavqini beradi. Hech qanday murakkab tugmalar yo'q — hammasini markaziy raqamli panel orqali boshqarish mumkin.",
         "colors": [("Deep Blue Metallic", "#002366"), ("Solid Black", "#0a0a0a")],
         "amenities": ["panorama", "wireless_charging", "apple_carplay", "ambient_light", "launch_control"],
         "year_range": (2022, 2024), "districts": ["Yunusobod", "Olmazor"],
@@ -602,14 +603,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 900000, "base_deposit": 5000000, "allows_chauffeur": False,
         "short_tagline": "Kelajak SUV'i — Minimalizm va Samaradorlik",
         "short_description": "Ko'p qirrali krossover, o'ta xavfsiz va texnologik.",
-        "detail_title": "Tesla Model Y — The Smart SUV",
-        "detail_summary": "To'liq shisha tom, avtopilot va supertejamkor yurish.",
+        "detail_title": "Tesla Model Y — Biznes va Oilaviy Kelajak Tanlovi",
+        "detail_summary": "Model Y modeli Tesla ning eng muvaffaqiyatli elektromobillaridan biridir. Keng yukxona, to'liq shisha tom va o'ta xavfsiz kuzov uni oilaviy tanlov qiladi. Avtopilot yordamida uzoq masofali sayohatlar endi yanada kamroq charchatadi.",
         "power": 384, "top_speed": 217, "acceleration": "4.8s", "engine_type": "Dual Motor Electric",
         "fuel_consumption": "16.5 kWh/100km", "drive_type": "AWD", "cargo_capacity": "854 L",
         "rear_title": "SMART KROSSOVER",
-        "rear_description": "Har qanday yo'lga moslashuvchan, kengaytirilgan yukona va minimalist dizayn.",
+        "rear_description": "Minimalistik va silliq ko'rinish xarakteristikasi orqa qismda ham davom etadi. Bu model nafaqat shaharda, balki ko'p yuk bilan sayohat qilishda ham ishonchli.",
         "interior_title": "OPEN SPACE",
-        "interior_description": "To'liq shisha tom, minimalist markaziy displey va maksimal xavfsizlik zonasi.",
+        "interior_description": "Interyerda bitta markaziy displeydan boshqa ortiqcha detal yo'q. To'liq shisha tom orqali yulduzlarni ko'rish kishi ruhiga orom bag'ishlaydi, o'ta keng salon esa erkinlik beradi.",
         "colors": [("Pearl White", "#fefefe"), ("Midnight Silver", "#4c4c4c")],
         "amenities": ["panorama", "wireless_charging", "apple_carplay", "360_camera"],
         "year_range": (2023, 2024), "districts": ["Yunusobod", "Yakkasaroy"],
@@ -620,14 +621,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 650000, "base_deposit": 3000000, "allows_chauffeur": True,
         "short_tagline": "Biznes Klas — Isbotlangan Ishonch",
         "short_description": "Yangi 75 kuzov, JBL audio va yuqori komfort.",
-        "detail_title": "Toyota Camry 75 — Business Class",
-        "detail_summary": "Prestige Plus pozitsiyasi, yumshoq podveska va ishonchli motor.",
+        "detail_title": "Toyota Camry 75 — Sifat va Ishonchning Barchaga Ma'lum Ta'rifi",
+        "detail_summary": "Camry 75 modeli O'zbekiston ko'chalarida biznes klassning ramzidir. Uning yumshoq podveskasi va JBL audio tizimi har bir sayohatni birinchi darajaga ko'taradi. Ishonchli va chidamli motor esa har qanday sharoitda uzoq yashaydi.",
         "power": 203, "top_speed": 210, "acceleration": "8.2s", "engine_type": "2.5L Inline-4",
         "fuel_consumption": "7.5 L/100km", "drive_type": "FWD", "cargo_capacity": "493 L",
         "rear_title": "KOMFORLI SEDAN",
-        "rear_description": "Qayta ishlangan orqa asma va ovoz izolyatsiyasi bilan biznes klass darajasidagi ravonlik.",
+        "rear_description": "Elegant chiziqlar va o'ziga xos orqa LED optika Camry ning klassik statusini ta'kidlaydi. Bu model o'zining ravon yurishi bilan hashamatli avtomobillar orasidagi munosib o'rinni egallaydi.",
         "interior_title": "KOMFORT VA SIFAT",
-        "interior_description": "Prestige Plus pozitsiyasi, JBL audio tizimi va yuqori darajadagi xavfsizlik yostiqchalari.",
+        "interior_description": "Prestige Plus pozitsiyasi bilan nappa charm va JBL audio tizimi sizga hamrohlik qiladi. Keng va yumshoq o'rindiqlar uzoq manzillarni yaqin qiladi, shovqin izolyatsiyasi esa osoyishtalikni ta'minlaydi.",
         "colors": [("Black", "#000"), ("White", "#fff")],
         "amenities": ["apple_carplay", "heated_seats", "wireless_charging", "360_camera"],
         "year_range": (2021, 2023), "districts": ["Yunusobod", "Mirobod", "Chilonzor"],
@@ -638,14 +639,14 @@ CAR_DEFINITIONS = {
         "base_daily_price": 3500000, "base_deposit": 20000000, "allows_chauffeur": True,
         "short_tagline": "Har Yo'lning Qiroli — GR Sport",
         "short_description": "Afsonaviy LC300, yangi V6 Twin-Turbo dvigateli.",
-        "detail_title": "Toyota Land Cruiser 300 — King of Roads",
-        "detail_summary": "GR Sport versiyasi, E-KDSS tizimi va eng yuqori off-road qobiliyati.",
+        "detail_title": "Toyota Land Cruiser 300 — Cheksiz Quvvat va Yo'llar Qiroli",
+        "detail_summary": "Yangi Land Cruiser 300 (LC300) GR Sport modeli off-road dunyosining mutlaq yetakchisidir. 3.5 litrli Twin-Turbo V6 dvigateli quvvat bilan birga tejamkorlikni ham ta'minlaydi. E-KDSS tizimi esa burilishlarda avtomobilning og'masligiga yordam beradi.",
         "power": 409, "top_speed": 210, "acceleration": "6.7s", "engine_type": "3.5L V6 Twin-Turbo",
         "fuel_consumption": "12.5 L/100km", "drive_type": "4WD", "cargo_capacity": "1131 L",
         "rear_title": "QIROLLIK SALOBATI",
-        "rear_description": "GR Sport eksterer paketi va massiv orqa profil LC300 ning har qanday yo'l qiroli ekanligini isbotlaydi.",
+        "rear_description": "GR Sport eksterer paketi uning o'ziga xosligini anglatadi. Massiv orqa dizayn va baland klirens har qanday sahro yo'llarida ham ishonchni saqlab qoladi va sizning qobiliyatingizni namoyon etadi.",
         "interior_title": "OFF-ROAD LUXURY",
-        "interior_description": "GR Sport interyer detallari, E-KDSS tizimi va to'rt zonali iqlim nazorati bilan mislsiz quvvat.",
+        "interior_description": "GR Sport detallari bilan bezatilgan premium interyer, to'rt zonali iqlim nazorati va barcha o'rindiqlar uchun massaj tizimi. Yo'l tanlamas bo'lishiga qaramay, salonda hashamat hukmron.",
         "colors": [("Black Shine", "#111"), ("White Pearl", "#f5f5f0")],
         "amenities": ["panorama", "heated_seats", "360_camera", "wireless_charging", "ambient_light", "massage"],
         "year_range": (2022, 2024), "districts": ["Yunusobod", "Mirzo Ulug'bek"],
@@ -675,6 +676,43 @@ REVIEW_TEMPLATES = {
     ],
 }
 
+REAL_USER_NAMES = [
+    ("Jamshid", "Abduqodirov", "jamshid_car"),
+    ("Madina", "Xodjayeva", "madina.lux"),
+    ("Sardor", "Rustamov", "sardor_88"),
+    ("Nilufar", "G'aniyeva", "nilu_drive"),
+    ("Dilshod", "To'rayev", "dilshod_pro"),
+    ("Shaxzoda", "Umarova", "shaxzoda.vip"),
+    ("Anvar", "Karimov", "anvar_taxi"),
+    ("Nodir", "Sodiqov", "nodir.dev"),
+    ("Malika", "Saidova", "malika_queen"),
+    ("Feruza", "Normatova", "feruza_lux"),
+    ("Azizbek", "Rahimov", "azizbek_uz"),
+    ("Bekzod", "Ismoilov", "bekzod_premium"),
+    ("Jasur", "Hamidov", "jasur_sport"),
+    ("Sherzod", "Akbarov", "sherzod_top"),
+    ("Laylo", "Murodova", "laylo_beauty"),
+    ("Sarvar", "Qosimov", "sarvar_pro"),
+    ("Rustam", "Aliyev", "rustam_coach"),
+    ("Otabek", "Nazarov", "otabek_drive"),
+    ("Zilola", "Egamberdiyeva", "zilola_star"),
+    ("Zafar", "Ibragimov", "zafar_king"),
+    ("Durdona", "Qurbonova", "durdona_guli"),
+    ("Sanjar", "Mirzayev", "sanjar_sport"),
+    ("Xurshid", "Toshmatov", "xurshid_b2b"),
+    ("Kamola", "Inomova", "kamola_lux"),
+    ("Alisher", "Usmonov", "alisher_shark")
+]
+
+REAL_ADDRESSES = [
+    "Toshkent sh., Yunusobod tumani, 19-mavze, 45-uy",
+    "Toshkent sh., Chilonzor tumani, Qatortol ko'chasi, 12-uy",
+    "Toshkent sh., Mirobod tumani, Nukus ko'chasi, 78-uy",
+    "Toshkent sh., Shayxontohur tumani, Labzak, 22-uy",
+    "Toshkent sh., Yakkasaroy tumani, Shota Rustaveli, 10-uy",
+    "Toshkent sh., Mirzo Ulug'bek tumani, Buyuk Ipak Yo'li, 156-uy"
+]
+
 def ensure_users():
     admin, created = User.objects.get_or_create(username='admin')
     if created:
@@ -682,16 +720,54 @@ def ensure_users():
         admin.is_superuser = True
         admin.is_staff = True
         admin.save()
-    users = list(User.objects.exclude(is_superuser=True))
-    if not users:
-        for i in range(15):
-            u = User.objects.create_user(
-                username=f'user{i+1}', password='pass123',
-                first_name=f'User{i+1}', last_name='Test',
-                phone_number=f'+99890{1000000 + i}',
-            )
-            users.append(u)
+        print("   [OK] Admin account created: admin / admin123")
+
+    users = []
+    print("Seeding Realistic Users...")
+    for first, last, uname in REAL_USER_NAMES:
+        user, created = User.objects.get_or_create(
+            username=uname,
+            defaults={
+                'first_name': first,
+                'last_name': last,
+                'email': f"{uname}@email.uz",
+                'phone_number': f"+9989{random.randint(0, 9)}{random.randint(100, 999)}{random.randint(10, 99)}{random.randint(10, 99)}",
+                'address': random.choice(REAL_ADDRESSES),
+                'passport_number': f"A{chr(random.randint(65, 90))}{random.randint(1000000, 9999999)}",
+                'driver_license': f"AF{random.randint(1000000, 9999999)}",
+                'verification_status': 'verified'
+            }
+        )
+        if created:
+            user.set_password('pass123')
+            user.save()
+        users.append(user)
     return users
+
+def seed_payment_methods(users):
+    print("Seeding Payment Methods...")
+    card_types = ['uzcard', 'humo', 'visa', 'mastercard']
+    for user in users:
+        # Har bir userda 1-2 ta karta bo'lsin
+        for _ in range(random.randint(1, 2)):
+            ctype = random.choice(card_types)
+            if ctype in ['uzcard', 'humo']:
+                pan = f"{'8600' if ctype == 'uzcard' else '9860'} **** **** {random.randint(1000, 9999)}"
+            else:
+                pan = f"{'4444' if ctype == 'visa' else '5555'} **** **** {random.randint(1000, 9999)}"
+            
+            PaymentMethod.objects.get_or_create(
+                user=user,
+                masked_pan=pan,
+                defaults={
+                    'card_type': ctype,
+                    'expiry_month': f"{random.randint(1, 12):02d}",
+                    'expiry_year': f"{random.randint(25, 30)}",
+                    'card_holder': f"{user.first_name} {user.last_name}".upper(),
+                    'is_verified': True,
+                    'is_default': not PaymentMethod.objects.filter(user=user).exists()
+                }
+            )
 
 def ensure_district(name):
     district, _ = District.objects.get_or_create(name=name)
@@ -757,9 +833,9 @@ def seed_models_and_units():
                     slot=slot,
                     sort_order=idx
                 )
-                print(f"   ✅ {code}__{slot}.webp saqlandi")
+                print(f"   [OK] {code}__{slot}.webp saqlandi")
             else:
-                print(f"   ⚠️  {code}__{slot}.webp topilmadi!")
+                print(f"   [SKIP] {code}__{slot}.webp topilmadi!")
 
         # Units
         unit_count = random.randint(3, 5)
@@ -787,19 +863,38 @@ def seed_models_and_units():
     return all_cars
 
 def seed_bookings_reviews(cars, users):
+    print("Seeding Bookings, Reviews and Transactions...")
     for car in cars:
-        for _ in range(random.randint(1, 3)):
+        # Har bir mashina uchun 2-4 ta bron
+        for _ in range(random.randint(2, 4)):
             user = random.choice(users)
-            start_date = datetime.now().date() + timedelta(days=random.randint(-15, 10))
-            end_date = start_date + timedelta(days=random.randint(1, 4))
+            start_date = datetime.now().date() + timedelta(days=random.randint(-20, 15))
+            end_date = start_date + timedelta(days=random.randint(1, 5))
             days = max(1, (end_date - start_date).days)
-            Booking.objects.create(
+            total_price = car.daily_price * days
+            
+            booking = Booking.objects.create(
                 user=user, car=car, start_date=start_date, end_date=end_date,
-                total_price=car.daily_price * days,
-                status=random.choice(['pending', 'approved', 'completed']),
+                total_price=total_price,
+                status=random.choice(['pending', 'approved', 'completed', 'cancelled']),
                 full_name=f"{user.first_name} {user.last_name}".strip() or user.username,
                 phone_number=user.phone_number or '+998900000000',
             )
+            
+            # To'lov tranzaksiyasini yaratish (Success holatida)
+            if booking.status != 'pending':
+                pm = user.payment_methods.first()
+                if pm:
+                    PaymentTransaction.objects.create(
+                        user=user,
+                        booking=booking,
+                        amount=total_price,
+                        payment_type='card',
+                        payment_method=pm,
+                        status='paid' if booking.status in ['approved', 'completed'] else 'cancelled'
+                    )
+
+        # Sharh qoldirish
         cat = car.model_info.category
         template_key = "economy"
         if cat in ["premium", "sport"]: template_key = "premium"
@@ -807,13 +902,14 @@ def seed_bookings_reviews(cars, users):
         elif cat == "suv": template_key = "suv"
         
         templates = REVIEW_TEMPLATES.get(template_key, REVIEW_TEMPLATES['economy'])
-        random.shuffle(templates)
-        for text, rating in templates[:random.randint(1, 2)]:
+        for text, rating in random.sample(templates, min(len(templates), random.randint(1, 2))):
             user = random.choice(users)
             Review.objects.get_or_create(user=user, car=car, defaults={'comment': text, 'rating': rating})
 
 def clear_data():
     print("Clearing old data...")
+    PaymentTransaction.objects.all().delete()
+    PaymentMethod.objects.all().delete()
     Review.objects.all().delete()
     Booking.objects.all().delete()
     Car.objects.all().delete()
@@ -821,16 +917,17 @@ def clear_data():
     CarModel.objects.all().delete()
 
 def run():
-    print('🚀 RIDELUX Extended Mega Seed boshlandi...')
+    print('[START] RIDELUX Extended Mega Seed boshlandi...')
     clear_data()
     users = ensure_users()
+    seed_payment_methods(users)
     cars = seed_models_and_units()
     seed_bookings_reviews(cars, users)
     total_images = __import__('apps.cars.models', fromlist=['CarImage']).CarImage.objects.count()
-    print(f'\n✨ Seed yakunlandi!')
-    print(f'📦 Modellar: {len(CAR_DEFINITIONS)} ta')
-    print(f'🚗 Mashinalar: {len(cars)} ta')
-    print(f'🖼️  Rasmlar bazada: {total_images} ta')
+    print(f'\n[DONE] Seed yakunlandi!')
+    print(f'[INFO] Modellar: {len(CAR_DEFINITIONS)} ta')
+    print(f'[INFO] Mashinalar: {len(cars)} ta')
+    print(f'[INFO] Rasmlar bazada: {total_images} ta')
 
 if __name__ == '__main__':
     run()

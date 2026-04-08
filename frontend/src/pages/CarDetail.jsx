@@ -104,7 +104,7 @@ const CarDetail = () => {
 
   const heroCarY = useTransform(scrollYProgress, [0, 0.15], [0, 150]);
   const heroCarScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.88]);
-  const heroCarOpacity = useTransform(scrollYProgress, [0.08, 0.2], [1, 0]);
+  const heroCarOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
   const heroContentY = useTransform(scrollYProgress, [0, 0.2], [0, -100]);
   
   const detailBgY = useTransform(scrollYProgress, [0.1, 0.4], [100, -100]);

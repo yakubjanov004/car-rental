@@ -18,6 +18,7 @@ const Profile = () => {
    const [loyaltyTiers, setLoyaltyTiers] = useState([]);
    const [newCard, setNewCard] = useState({ pan: '', expiry: '', holder: '', card_type: 'uzcard' });
    const [uploading, setUploading] = useState({ passport: false, license: false });
+   const [selectedBooking, setSelectedBooking] = useState(null);
 
    const extractCollection = (payload) => {
       if (Array.isArray(payload)) return payload;
@@ -267,9 +268,12 @@ const Profile = () => {
                                                    <p className="text-sm font-bold text-primary italic">{formatNarx(booking.total_price)}</p>
                                                 </div>
                                                 <div className="flex items-end md:justify-end">
-                                                   <button className="flex items-center gap-2 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-widest transition-colors">
+                                                   <button 
+                                                      onClick={() => setSelectedBooking(booking)}
+                                                      className="flex items-center gap-2 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-widest transition-colors"
+                                                   >
                                                       Tafsilotlar <ChevronRight className="w-4 h-4" />
-                                                   </button>
+                                                    </button>
                                                 </div>
                                              </div>
                                           </div>
@@ -501,6 +505,156 @@ const Profile = () => {
                               </div>
                            </div>
                         </motion.div>
+                     )}
+                  </AnimatePresence>
+                  
+                  {/* Booking Details Modal */}
+                  <AnimatePresence>
+                     {selectedBooking && (
+                        <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
+                           <motion.div 
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              onClick={() => setSelectedBooking(null)}
+                              className="absolute inset-0 bg-black/99 backdrop-blur-xl"
+                           />
+                           <motion.div 
+                              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                              className="relative w-full max-w-2xl glass p-0 border-white/10 shadow-2xl overflow-hidden rounded-[48px]"
+                           >
+                              <div className="relative h-64 overflow-hidden">
+                                 <img 
+                                    src={getImageUrl(selectedBooking?.car_info?.main_image)} 
+                                    className="w-full h-full object-cover" 
+                                    alt="" 
+                                 />
+                                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent" />
+                                 <button 
+                                    onClick={() => setSelectedBooking(null)}
+                                    className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/50 border border-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all"
+                                 >
+                                    <XCircle className="w-6 h-6" />
+                                 </button>
+                                 <div className="absolute bottom-8 left-10">
+                                    <div className="flex items-center gap-3 mb-2">
+                                       <span className="px-3 py-1 rounded-full bg-primary text-[8px] font-black text-white uppercase tracking-widest">
+                                          {selectedBooking?.car_info?.category}
+                                       </span>
+                                       <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                                          selectedBooking.status === 'completed' ? 'bg-green-500 text-white' :
+                                          selectedBooking.status === 'pending' ? 'bg-orange-500 text-white' :
+                                          selectedBooking.status === 'cancelled' ? 'bg-red-500 text-white' : 'bg-primary text-white'
+                                       }`}>
+                                          {selectedBooking.status}
+                                       </span>
+                                    </div>
+                                    <h3 className="text-3xl font-black italic tracking-tighter uppercase">
+                                       {selectedBooking?.car_info?.brand} {selectedBooking?.car_info?.model}
+                                    </h3>
+                                 </div>
+                              </div>
+
+                              <div className="p-10 space-y-8">
+                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                                    <div className="space-y-1">
+                                       <p className="text-[9px] text-white/30 font-black uppercase tracking-widest">Buyurtma ID</p>
+                                       <p className="text-sm font-bold">#BOOK-{String(selectedBooking.id).padStart(6, '0')}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                       <p className="text-[9px] text-white/30 font-black uppercase tracking-widest">Ijara Davri</p>
+                                       <p className="text-sm font-bold">{(new Date(selectedBooking.end_date) - new Date(selectedBooking.start_date)) / (1000 * 60 * 60 * 24)} kun</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                       <p className="text-[9px] text-white/30 font-black uppercase tracking-widest">Haydovchi Bilan</p>
+                                       <p className="text-sm font-bold text-primary italic uppercase tracking-tighter">{selectedBooking.is_chauffeur ? 'Ha' : 'Yo\'q'}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                       <p className="text-[9px] text-white/30 font-black uppercase tracking-widest">Jami Summa</p>
+                                       <p className="text-lg font-black text-primary italic tracking-tighter">{formatNarx(selectedBooking.total_price)}</p>
+                                    </div>
+                                 </div>
+
+                                 <div className="h-px bg-white/5 w-full" />
+
+                                 <div className="grid md:grid-cols-2 gap-10">
+                                    <div className="space-y-4">
+                                       <h4 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Sana va Vaqt</h4>
+                                       <div className="space-y-3">
+                                          <div className="flex items-center gap-3">
+                                             <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
+                                                <Calendar className="w-4 h-4 text-white/40" />
+                                             </div>
+                                             <div>
+                                                <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Olish Sanasi</p>
+                                                <p className="text-xs font-bold">{selectedBooking.start_date}</p>
+                                             </div>
+                                          </div>
+                                          <div className="flex items-center gap-3">
+                                             <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
+                                                <Calendar className="w-4 h-4 text-white/40" />
+                                             </div>
+                                             <div>
+                                                <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Qaytarish Sanasi</p>
+                                                <p className="text-xs font-bold">{selectedBooking.end_date}</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                       <h4 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Bog'lanish Ma'lumotlari</h4>
+                                       <div className="space-y-3">
+                                          <div className="flex items-center gap-3">
+                                             <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
+                                                <User className="w-4 h-4 text-white/40" />
+                                             </div>
+                                             <div>
+                                                <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Mijoz</p>
+                                                <p className="text-xs font-bold uppercase tracking-tighter italic">{selectedBooking.full_name}</p>
+                                             </div>
+                                          </div>
+                                          <div className="flex items-center gap-3">
+                                             <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
+                                                <Bell className="w-4 h-4 text-white/40" />
+                                             </div>
+                                             <div>
+                                                <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Telefon</p>
+                                                <p className="text-xs font-bold uppercase tracking-tighter italic">{selectedBooking.phone_number}</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+
+                                 {selectedBooking.delivery_address && (
+                                    <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
+                                       <p className="text-[9px] text-white/30 font-black uppercase tracking-widest mb-2">Yetkazib Berish Manzili</p>
+                                       <p className="text-xs font-bold italic">{selectedBooking.delivery_address}</p>
+                                    </div>
+                                 )}
+
+                                 <div className="pt-4 flex gap-4">
+                                    <button 
+                                       onClick={() => setSelectedBooking(null)}
+                                       className="btn-secondary w-full py-5 text-[10px] font-black tracking-widest uppercase"
+                                    >
+                                       Yopish
+                                    </button>
+                                    {selectedBooking.status === 'completed' && (
+                                       <Link 
+                                          to={`/car/${selectedBooking.car_info.model_group}`}
+                                          className="btn-primary w-full py-5 text-[10px] font-black tracking-widest uppercase flex items-center justify-center"
+                                       >
+                                          Qayta Bron Qilish
+                                       </Link>
+                                    )}
+                                 </div>
+                              </div>
+                           </motion.div>
+                        </div>
                      )}
                   </AnimatePresence>
 
