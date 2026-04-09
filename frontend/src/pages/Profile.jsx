@@ -19,6 +19,7 @@ import CardManagement from '../components/profile/CardManagement';
 import BillingHistory from '../components/profile/BillingHistory';
 import ProfileSettings from '../components/profile/ProfileSettings';
 import BookingDetailsModal from '../components/profile/BookingDetailsModal';
+import NotificationsSection from '../components/profile/Notifications';
 
 const Profile = () => {
    const { user, logout } = useAuth();
@@ -31,6 +32,7 @@ const Profile = () => {
    const [loyaltyTiers, setLoyaltyTiers] = useState([]);
    const [kycData, setKycData] = useState(null);
    const [invoices, setInvoices] = useState([]);
+   const [notifications, setNotifications] = useState([]);
    const [downloadingInvoice, setDownloadingInvoice] = useState(null);
    const [profileForm, setProfileForm] = useState({
       first_name: user?.first_name || '',
@@ -59,13 +61,14 @@ const Profile = () => {
    useEffect(() => {
       const fetchProfileData = async () => {
          try {
-            const [bookingsResult, methodsResult, loyaltyResult, tiersResult, kycResult, invoicesResult] = await Promise.allSettled([
+            const [bookingsResult, methodsResult, loyaltyResult, tiersResult, kycResult, invoicesResult, notificationsResult] = await Promise.allSettled([
                apiClient.get('/bookings/my/'),
                apiClient.get('/payments/methods/'),
                fetchMyLoyaltyAccount(),
                fetchLoyaltyTiers(),
                fetchMyKyc(),
                fetchInvoices(),
+               apiClient.get('/users/notifications/'),
             ]);
 
             if (bookingsResult.status === 'fulfilled') {
@@ -85,6 +88,9 @@ const Profile = () => {
             }
             if (invoicesResult.status === 'fulfilled') {
                setInvoices(extractCollection(invoicesResult.value));
+            }
+            if (notificationsResult.status === 'fulfilled') {
+               setNotifications(extractCollection(notificationsResult.value.data));
             }
          } catch (error) {
             console.error('Error loading profile data:', error);
@@ -110,6 +116,17 @@ const Profile = () => {
          alert('Yuklashda xatolik!');
       } finally {
          setUploading({ ...uploading, [type]: false });
+      }
+   };
+
+   const handleSubmitKyc = async () => {
+      try {
+         const updated = await submitKyc();
+         setKycData(updated);
+         alert('Hujjatlar ko\'rib chiqish uchun yuborildi!');
+      } catch (error) {
+         const msg = error.response?.data?.error || 'Xatolik yuz berdi!';
+         alert(msg);
       }
    };
 
@@ -178,11 +195,30 @@ const Profile = () => {
       }
    };
 
+   const handleMarkAllNotificationsRead = async () => {
+      try {
+         await apiClient.post('/users/notifications/read-all/');
+         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      } catch (error) {
+         console.error(error);
+      }
+   };
+
+   const handleMarkNotificationRead = async (id) => {
+      try {
+         await apiClient.post(`/users/notifications/${id}/read/`);
+         setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      } catch (error) {
+         console.error(error);
+      }
+   };
+
    const tabs = [
       { id: 'buyurtmalar', label: 'BUYURTMALARIM', icon: Calendar },
       { id: 'hujjatlar', label: 'HUJJATLAR', icon: ShieldCheck },
       { id: 'kartalar', label: 'TO\'LOV KARTALARI', icon: CreditCard },
       { id: 'to\'lovlar', label: 'TO\'LOVLAR TARIXI', icon: CardIcon },
+      { id: 'bildirishnomalar', label: 'BILDIRISHNOMALAR', icon: Bell },
       { id: 'sevimlilar', label: 'SEVIMLILAR', icon: Heart },
       { id: 'profil', label: 'PROFIL', icon: Settings },
    ];
@@ -223,22 +259,31 @@ const Profile = () => {
             <div className="grid lg:grid-cols-12 gap-16">
                {/* Sidebar */}
                <div className="lg:col-span-3 space-y-2">
-                  {tabs.map((tab) => (
-                     <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`w-full flex items-center gap-4 px-8 py-5 rounded-2xl transition-all duration-500 group ${
-                           activeTab === tab.id 
-                           ? 'bg-primary text-white shadow-[0_20px_40px_-15px_rgba(255,107,0,0.3)]' 
-                           : 'hover:bg-white/5 border border-transparent hover:border-white/5'
-                        }`}
-                     >
-                        <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-white' : 'text-white/20 group-hover:text-white/50'}`} />
-                        <span className={`text-[10px] font-black uppercase tracking-widest ${activeTab === tab.id ? 'text-white' : 'text-white/30 group-hover:text-white'}`}>
-                           {tab.label}
-                        </span>
-                     </button>
-                  ))}
+                  {tabs.map((tab) => {
+                     const unreadCount = tab.id === 'bildirishnomalar' ? notifications.filter(n => !n.is_read).length : 0;
+                     
+                     return (
+                        <button
+                           key={tab.id}
+                           onClick={() => setActiveTab(tab.id)}
+                           className={`w-full flex items-center gap-4 px-8 py-5 rounded-2xl transition-all duration-500 group relative ${
+                              activeTab === tab.id 
+                              ? 'bg-primary text-white shadow-[0_20px_40px_-15px_rgba(255,107,0,0.3)]' 
+                              : 'hover:bg-white/5 border border-transparent hover:border-white/5'
+                           }`}
+                        >
+                           <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-white' : 'text-white/20 group-hover:text-white/50'}`} />
+                           <span className={`text-[10px] font-black uppercase tracking-widest ${activeTab === tab.id ? 'text-white' : 'text-white/30 group-hover:text-white'}`}>
+                              {tab.label}
+                           </span>
+                           {unreadCount > 0 && (
+                              <span className="ml-auto w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center text-[9px] font-black shadow-lg shadow-orange-500/20">
+                                 {unreadCount}
+                              </span>
+                           )}
+                        </button>
+                     );
+                  })}
                </div>
 
                {/* Content */}
@@ -263,6 +308,7 @@ const Profile = () => {
                               kycData={kycData} 
                               uploading={uploading} 
                               onFileUpload={handleFileUpload} 
+                              onSubmit={handleSubmitKyc}
                               getImageUrl={getImageUrl} 
                            />
                         </motion.div>
@@ -284,6 +330,16 @@ const Profile = () => {
                               invoices={invoices} 
                               downloadingInvoice={downloadingInvoice} 
                               onDownload={handleDownloadInvoice} 
+                           />
+                        </motion.div>
+                     )}
+
+                     {activeTab === 'bildirishnomalar' && (
+                        <motion.div key="bildirishnomalar" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                           <NotificationsSection 
+                              notifications={notifications} 
+                              onMarkAsRead={handleMarkNotificationRead} 
+                              onMarkAllAsRead={handleMarkAllNotificationsRead} 
                            />
                         </motion.div>
                      )}

@@ -4,6 +4,7 @@ import {
   Search, SlidersHorizontal, LayoutGrid, List, 
   X, ChevronDown, ArrowUpDown, Filter, RotateCcw, AlertCircle
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { TOSHKENT_TUMANLARI } from '../data/districts';
 import CarCard from '../components/CarCard';
 import ScrollReveal from '../components/ScrollReveal';
@@ -20,14 +21,15 @@ const CATEGORIES = [
 ];
 
 const Fleet = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
   const [filters, setFilters] = useState({
-    search: '',
-    kategoriya: 'all',
-    tuman: '',
+    search: searchParams.get('search') || '',
+    kategoriya: searchParams.get('kategoriya') || 'all',
+    tuman: searchParams.get('tuman') || '',
     brend: '',
     yoqilgi: '',
     priceRange: [0, 30000000],

@@ -1,7 +1,10 @@
 import React from 'react';
 import { ShieldCheck, CheckCircle, Upload, CreditCard } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const KYCSection = ({ kycData, uploading, onFileUpload, getImageUrl }) => {
+const KYCSection = ({ kycData, uploading, onFileUpload, getImageUrl, onSubmit }) => {
+   const canSubmit = kycData?.passport_front_image && kycData?.license_image && (kycData?.status === 'draft' || kycData?.status === 'rejected');
+
    return (
       <div className="space-y-8">
          <div className="flex items-center justify-between mb-8">
@@ -17,7 +20,14 @@ const KYCSection = ({ kycData, uploading, onFileUpload, getImageUrl }) => {
             )}
          </div>
 
-         <div className="grid md:grid-cols-2 gap-8">
+         {kycData?.status === 'rejected' && kycData?.rejection_reason && (
+            <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-[32px] mb-8">
+               <p className="text-[10px] text-red-500 font-black uppercase tracking-widest mb-2 font-black">Rad etish sababi:</p>
+               <p className="text-sm text-white/70 italic">"{kycData.rejection_reason}"</p>
+            </div>
+         )}
+
+         <div className="grid md:grid-cols-2 gap-8 mb-12">
             {/* Passport */}
             <div className="glass p-10 space-y-6 border-white/10 relative overflow-hidden group">
                <div className="flex items-center justify-between">
@@ -100,6 +110,17 @@ const KYCSection = ({ kycData, uploading, onFileUpload, getImageUrl }) => {
                </div>
             </div>
          </div>
+
+         {canSubmit && (
+            <motion.button
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               onClick={onSubmit}
+               className="w-full py-6 bg-primary text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-[0_20px_40px_-15px_rgba(255,107,0,0.3)] hover:scale-[1.02] transition-all"
+            >
+               TASDIQLASHGA YUBORISH
+            </motion.button>
+         )}
       </div>
    );
 };
