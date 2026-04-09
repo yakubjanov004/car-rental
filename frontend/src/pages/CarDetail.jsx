@@ -88,8 +88,39 @@ const CarDetail = () => {
     startDate: '',
     endDate: '',
     fullName: user?.first_name ? `${user.first_name} ${user.last_name || ''}` : '',
-    phone_number: user?.phone || '',
+    phone_number: user?.phone_number || '',
   });
+
+  const formatPhoneNumber = (value) => {
+    // Only digits
+    const digits = value.replace(/\D/g, '');
+    
+    // Ensure it starts with 998 or handle as suffix
+    let clean = digits;
+    if (clean.startsWith('998')) {
+      clean = clean.slice(3);
+    }
+    
+    // Max 9 digits for UZ numbers after 998
+    clean = clean.slice(0, 9);
+    
+    // Format: +998 90 123 45 67
+    let formatted = '+998';
+    if (clean.length > 0) {
+      formatted += ' ' + clean.slice(0, 2);
+    }
+    if (clean.length > 2) {
+      formatted += ' ' + clean.slice(2, 5);
+    }
+    if (clean.length > 5) {
+      formatted += ' ' + clean.slice(5, 7);
+    }
+    if (clean.length > 7) {
+      formatted += ' ' + clean.slice(7, 9);
+    }
+    
+    return formatted;
+  };
 
   const [dateError, setDateError] = useState('');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -208,6 +239,13 @@ const CarDetail = () => {
   const handleBooking = async () => {
     if (!user) { navigate('/signin'); return; }
     if (!validateDates(bookingData.startDate, bookingData.endDate)) return;
+    
+    const digits = bookingData.phone_number.replace(/\D/g, '');
+    if (digits.length !== 12) {
+      alert("Telefon raqamini to'liq kiriting (+998 ...)");
+      return;
+    }
+
     try {
       const res = await createBooking({
         car: car.id,
@@ -592,7 +630,7 @@ const CarDetail = () => {
                       placeholder="+998 90 123 45 67"
                       className="cd-form__input cd-form__input--full"
                       value={bookingData.phone_number}
-                      onChange={(e) => setBookingData({ ...bookingData, phone_number: e.target.value })}
+                      onChange={(e) => setBookingData({ ...bookingData, phone_number: formatPhoneNumber(e.target.value) })}
                       style={{ marginBottom: '1.5rem' }}
                     />
 

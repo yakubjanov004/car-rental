@@ -157,6 +157,7 @@ class CarSerializer(serializers.ModelSerializer):
         for u in units:
             data.append({
                 "id": u.id,
+                "slug": u.slug,
                 "color_name": u.color_name,
                 "color_hex": u.color_hex,
                 "plate_number": u.plate_number,

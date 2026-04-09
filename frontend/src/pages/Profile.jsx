@@ -133,15 +133,35 @@ const Profile = () => {
    const handleAddCard = async (e) => {
       e.preventDefault();
       try {
+         const cleanPan = newCard.pan.replace(/\D/g, '');
+         if (cleanPan.length !== 16) throw new Error('Karta raqami 16 ta raqamdan iborat bo\'lishi kerak');
+         
+         // Prefix validation based on user's request: humo: 8600, uzcard: 5614
+         if (newCard.card_type === 'humo' && !cleanPan.startsWith('8600')) {
+            throw new Error('Humo kartasi 8600 bilan boshlanishi kerak');
+         }
+         if (newCard.card_type === 'uzcard' && !cleanPan.startsWith('5614')) {
+            throw new Error('Uzcard kartasi 5614 bilan boshlanishi kerak');
+         }
+
          const [exp_month, exp_year] = (newCard.expiry || '').split('/');
-         if (!exp_month || !exp_year) throw new Error('Invalid expiry');
+         if (!exp_month || !exp_year || exp_month.length !== 2 || exp_year.length !== 2) {
+            throw new Error('Amal qilish muddati noto\'g\'ri (MM/YY)');
+         }
+         
+         const month = parseInt(exp_month);
+         if (month < 1 || month > 12) throw new Error('Oy noto\'g\'ri (01-12)');
+
+         if (!newCard.holder.trim()) throw new Error('Karta egasini kiriting');
+         if (newCard.holder.trim().split(' ').length < 2) throw new Error('Ism va familiyani to\'liq kiriting');
          
          const payload = {
-            pan: newCard.pan,
-            holder: newCard.holder,
+            pan: cleanPan,
+            card_holder: newCard.holder.trim(),
             expiry_month: exp_month.trim(),
             expiry_year: exp_year.trim(),
-            card_type: newCard.card_type
+            card_type: newCard.card_type,
+            masked_pan: `${cleanPan.slice(0, 4)} **** **** ${cleanPan.slice(12)}`
          };
          await apiClient.post('/payments/methods/', payload);
          const res = await apiClient.get('/payments/methods/');
@@ -149,7 +169,7 @@ const Profile = () => {
          setShowCardModal(false);
          setNewCard({ pan: '', expiry: '', holder: '', card_type: 'uzcard' });
       } catch (error) {
-         alert('Xatolik! Ma\'lumotlarni tekshiring.');
+         alert(error.message || 'Xatolik! Ma\'lumotlarni tekshiring.');
       }
    };
 
@@ -287,7 +307,7 @@ const Profile = () => {
                </div>
 
                {/* Content */}
-               <div className="lg:col-span-9">
+               <div className="lg:col-span-9 relative">
                   <AnimatePresence mode="wait">
                      {activeTab === 'buyurtmalar' && (
                         <motion.div key="buyurtmalar" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
@@ -390,19 +410,50 @@ const Profile = () => {
                         </div>
                         <div className="space-y-2">
                            <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">Karta raqami</label>
-                           <input type="text" value={newCard.pan} onChange={e => setNewCard({...newCard, pan: e.target.value})} placeholder="8600 ...." className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-primary/50" />
+                           <input 
+                              type="text" 
+                              value={newCard.pan.replace(/(\d{4})(?=\d)/g, '$1 ')} 
+                              onChange={e => {
+                                 const val = e.target.value.replace(/\D/g, '').slice(0, 16);
+                                 setNewCard({...newCard, pan: val});
+                              }} 
+                              placeholder="0000 0000 0000 0000" 
+                              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-primary/50" 
+                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-6">
-                           <div className="space-y-2">
-                               <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">Muddati</label>
-                               <input type="text" value={newCard.expiry} onChange={e => setNewCard({...newCard, expiry: e.target.value})} placeholder="MM/YY" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-primary/50" />
-                           </div>
-                           <div className="space-y-2">
-                               <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">Egasi</label>
-                               <input type="text" value={newCard.holder} onChange={e => setNewCard({...newCard, holder: e.target.value.toUpperCase()})} placeholder="FULL NAME" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-primary/50" />
-                           </div>
-                        </div>
-                        <button type="submit" className="btn-primary w-full py-5 text-[10px] font-black tracking-widest mt-4 uppercase">KARTANI BOG'LASH</button>
+                         <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">Muddati</label>
+                                <input 
+                                   type="text" 
+                                   value={newCard.expiry} 
+                                   onChange={e => {
+                                      let val = e.target.value.replace(/\D/g, '');
+                                      if (val.length > 4) val = val.slice(0, 4);
+                                      if (val.length >= 2) {
+                                         val = val.slice(0, 2) + '/' + val.slice(2);
+                                      }
+                                      setNewCard({...newCard, expiry: val});
+                                   }} 
+                                   placeholder="MM/YY" 
+                                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-primary/50" 
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">Egasi</label>
+                                <input 
+                                   type="text" 
+                                   value={newCard.holder} 
+                                   onChange={e => {
+                                      const val = e.target.value.replace(/[^A-Za-z\s]/g, '').toUpperCase();
+                                      setNewCard({...newCard, holder: val});
+                                   }} 
+                                   placeholder="ISM FAMILIYA" 
+                                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-primary/50" 
+                                />
+                            </div>
+                         </div>
+                         <button type="submit" className="btn-primary w-full py-5 text-[10px] font-black tracking-widest mt-4 uppercase">KARTANI BOG'LASH</button>
                      </form>
                   </motion.div>
                </div>

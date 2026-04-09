@@ -27,11 +27,10 @@ const CarCard = ({ car, index = 0 }) => {
     else addToComparison(car);
   };
 
-  // Data normalization for backend vs demo
   const brand = car.brand || car.brend || "Chevrolet";
   const model = car.model || "Unknown";
   const year = car.year || car.yil || 2024;
-  const price = car.daily_price || car.kunlik_narx || 0;
+  const price = car.daily_price || car.base_daily_price || car.kunlik_narx || 0;
   const fuelType = car.fuel_type || car.yoqilgi || 'benzin';
   const transmission = car.transmission || car.uzatma || 'automatic';
   const seats = car.seats || car.orinlar || 5;

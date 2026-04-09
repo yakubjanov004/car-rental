@@ -37,8 +37,7 @@ const ElectricCars = () => {
       setLoading(true);
       try {
         const data = await fetchCarModels();
-        // Faqat haqiqiy elektr modellarni olamiz (1 donadan bo'lib chiqadi)
-        const evs = data.filter(c => c.fuel_type === 'elektro');
+        const evs = (data.results || []).filter(c => c.fuel_type === 'elektro');
         
         if (evs && evs.length > 0) {
           setMashinalar(evs);

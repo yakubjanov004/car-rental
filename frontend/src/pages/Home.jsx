@@ -259,7 +259,6 @@ const Hero = ({ filterTuman, setFilterTuman, filterKategoriya, setFilterKategori
   );
 };
 
-// ===================== ASOSIY KOMPONENT =====================
 const Home = () => {
   const [cars, setCars] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -269,11 +268,20 @@ const Home = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const allCars = await fetchCars();
-        setCars(allCars || []);
+        let allCars = await fetchCars();
+        if (!Array.isArray(allCars)) {
+           if (allCars && typeof allCars === 'object') {
+             allCars = allCars.results || allCars.data || [];
+             if (!Array.isArray(allCars)) allCars = [];
+           } else {
+             allCars = [];
+           }
+        }
+        
+        setCars(allCars);
         
         // Sharhlarni mashinalar ichidan yig'amiz
-        const allReviews = allCars.flatMap(c => c.reviews || []);
+        const allReviews = allCars.flatMap(c => c?.reviews || []);
         setReviews(allReviews.length > 0 ? allReviews.slice(0, 6) : []);
       } catch (err) {
         console.error("Home data fetch failed:", err);
@@ -285,19 +293,22 @@ const Home = () => {
   // 1. Premium mashinalarni guruhlash (Takrorlanishni oldini olish)
   const premiumCars = useMemo(() => {
     const grouped = {};
-    cars.forEach(car => {
-      const key = car.model_group || car.id;
-      if (!grouped[key]) {
-        grouped[key] = { ...car, unit_count: 1 };
-      } else {
-        grouped[key].unit_count += 1;
-      }
-    });
-    return Object.values(grouped).sort((a,b) => b.daily_price - a.daily_price).slice(0, 6);
+    if (Array.isArray(cars)) {
+      cars.forEach(car => {
+        const key = car.model_group || car.id;
+        if (!grouped[key]) {
+          grouped[key] = { ...car, unit_count: 1 };
+        } else {
+          grouped[key].unit_count += 1;
+        }
+      });
+    }
+    return Object.values(grouped).sort((a,b) => (b.daily_price || 0) - (a.daily_price || 0)).slice(0, 6);
   }, [cars]);
 
   // 2. Elektro-promo uchun bitta elektrokar tanlash
   const electricFeatured = useMemo(() => {
+    if (!Array.isArray(cars)) return null;
     return cars.find(c => c.fuel_type === 'elektro') || cars[0];
   }, [cars]);
 

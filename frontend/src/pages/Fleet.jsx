@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, SlidersHorizontal, LayoutGrid, List, 
-  X, ChevronDown, ArrowUpDown, Filter, RotateCcw, AlertCircle
+  X, ChevronDown, ArrowUpDown, Filter, RotateCcw, AlertCircle,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { TOSHKENT_TUMANLARI } from '../data/districts';
@@ -26,6 +27,11 @@ const Fleet = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
     kategoriya: searchParams.get('kategoriya') || 'all',
@@ -39,53 +45,75 @@ const Fleet = () => {
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Fetch car models from backend
-  useEffect(() => {
-    const loadCars = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchCarModels();
-        if (data && data.length > 0) {
-          setCars(data);
-        } else {
-          setCars([]);
-          setError("Database is empty. Please check admin panel car models.");
-        }
-      } catch (err) {
-        console.error("Backend fetch failed:", err);
-        setError("Error connecting to the backend.");
-        setCars([]);
-      } finally {
-        setLoading(false);
+  // Fetch car models from backend with pagination
+  const loadCars = useCallback(async (page = 1) => {
+    setLoading(true);
+    try {
+      // Build backend query params
+      const params = { page };
+      
+      // Search filter - sent to backend
+      if (filters.search) {
+        params.search = filters.search;
       }
-    };
-    loadCars();
-  }, []);
+      
+      // Ordering
+      if (filters.sortBy === 'narx_osh') {
+        params.ordering = 'base_daily_price';
+      } else if (filters.sortBy === 'narx_tush') {
+        params.ordering = '-base_daily_price';
+      } else {
+        params.ordering = '-id';
+      }
 
+      const data = await fetchCarModels(params);
+      if (data && data.results && data.results.length > 0) {
+        setCars(data.results);
+        setTotalPages(data.total_pages || 1);
+        setTotalCount(data.count || 0);
+        setCurrentPage(data.current_page || page);
+        setError(null);
+      } else {
+        setCars([]);
+        setTotalPages(1);
+        setTotalCount(0);
+        setError("Database is empty. Please check admin panel car models.");
+      }
+    } catch (err) {
+      console.error("Backend fetch failed:", err);
+      setError("Error connecting to the backend.");
+      setCars([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters.search, filters.sortBy]);
+
+  // Load cars when page or relevant filters change
+  useEffect(() => {
+    loadCars(currentPage);
+  }, [currentPage, loadCars]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.search, filters.sortBy]);
+
+  // Client-side filtering (for filters not supported by backend)
   const filteredCars = useMemo(() => {
     let result = [...cars];
 
-    // 1. Qidiruv (Search)
-    if (filters.search) {
-      const s = filters.search.toLowerCase();
-      result = result.filter(c => 
-        (c.brand || "").toLowerCase().includes(s) || 
-        (c.model || "").toLowerCase().includes(s)
-      );
-    }
-
-    // 2. Kategoriya (Category)
+    // 1. Kategoriya (Category) - client side
     if (filters.kategoriya !== 'all') {
       if (filters.kategoriya === 'elektro') {
         result = result.filter(c => c.fuel_type === 'elektro');
       } else if (filters.kategoriya === 'premium') {
-        result = result.filter(c => c.daily_price >= 1000000 || c.category === 'premium');
+        result = result.filter(c => (c.daily_price || c.base_daily_price || 0) >= 1000000 || c.category === 'premium');
       } else {
         result = result.filter(c => c.category === filters.kategoriya);
       }
     }
 
-    // 3. Tuman (District) - Models that have units in this district
+    // 2. Tuman (District) - Models that have units in this district
     if (filters.tuman) {
       const tId = parseInt(filters.tuman);
       result = result.filter(c => 
@@ -93,25 +121,16 @@ const Fleet = () => {
       );
     }
 
-    // 4. Yoqilgi (Fuel Type)
+    // 3. Yoqilgi (Fuel Type) - client side
     if (filters.yoqilgi) {
       result = result.filter(c => c.fuel_type === filters.yoqilgi);
     }
 
-    // 5. Narx oralig'i (Price Range)
-    result = result.filter(c => 
-      c.daily_price >= filters.priceRange[0] && 
-      c.daily_price <= filters.priceRange[1]
-    );
-
-    // 6. Saralash (Sorting)
-    if (filters.sortBy === 'reyting') {
-      result.sort((a, b) => (b.rating || 4.5) - (a.rating || 4.5));
-    } else if (filters.sortBy === 'narx_osh') {
-      result.sort((a, b) => a.daily_price - b.daily_price);
-    } else if (filters.sortBy === 'narx_tush') {
-      result.sort((a, b) => b.daily_price - a.daily_price);
-    }
+    // 4. Narx oralig'i (Price Range) - client side
+    result = result.filter(c => {
+      const price = c.daily_price || c.base_daily_price || 0;
+      return price >= filters.priceRange[0] && price <= filters.priceRange[1];
+    });
 
     return result;
   }, [filters, cars]);
@@ -127,6 +146,45 @@ const Fleet = () => {
       sortBy: 'reyting',
       viewMode: 'grid',
     });
+    setCurrentPage(1);
+  };
+
+  // Page navigation
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 7;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      
+      let start = Math.max(2, currentPage - 2);
+      let end = Math.min(totalPages - 1, currentPage + 2);
+      
+      if (currentPage <= 3) {
+        end = Math.min(5, totalPages - 1);
+      }
+      if (currentPage >= totalPages - 2) {
+        start = Math.max(totalPages - 4, 2);
+      }
+      
+      if (start > 2) pages.push('...');
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (end < totalPages - 1) pages.push('...');
+      
+      pages.push(totalPages);
+    }
+    
+    return pages;
   };
 
   return (
@@ -320,7 +378,12 @@ const Fleet = () => {
              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                <div className="text-[11px] text-white/30 font-bold uppercase tracking-[0.2em] flex items-center gap-3">
                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                 Topildi: <span className="text-white">{filteredCars.length}</span> ta premium model
+                 Topildi: <span className="text-white">{totalCount}</span> ta premium model
+                 {totalPages > 1 && (
+                   <span className="text-white/20 ml-2">
+                     (Sahifa {currentPage}/{totalPages})
+                   </span>
+                 )}
                </div>
 
                {/* Active Filter Chips */}
@@ -373,26 +436,114 @@ const Fleet = () => {
              ) : (
                 <>
                   {filteredCars.length > 0 ? (
-                    <div className={`grid gap-8 ${
-                      filters.viewMode === 'grid' 
-                      ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2' 
-                      : 'grid-cols-1'
-                    }`}>
-                      <AnimatePresence mode="popLayout">
-                        {filteredCars.map((car, index) => (
-                          <motion.div
-                            key={car.id}
-                            layout
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            transition={{ duration: 0.5 }}
-                          >
-                             <CarCard car={car} index={index} />
-                          </motion.div>
-                        ))}
-                      </AnimatePresence>
-                    </div>
+                    <>
+                      <div className={`grid gap-8 ${
+                        filters.viewMode === 'grid' 
+                        ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2' 
+                        : 'grid-cols-1'
+                      }`}>
+                        <AnimatePresence mode="popLayout">
+                          {filteredCars.map((car, index) => (
+                            <motion.div
+                              key={car.id ?? car.slug ?? `car-${index}`}
+                              layout
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.9 }}
+                              transition={{ duration: 0.5 }}
+                            >
+                               <CarCard car={car} index={index} />
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* Pagination Controls */}
+                      {totalPages > 1 && (
+                        <div className="mt-16 flex flex-col items-center gap-6">
+                          <div className="flex items-center gap-2">
+                            {/* First page */}
+                            <button
+                              onClick={() => goToPage(1)}
+                              disabled={currentPage === 1}
+                              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 border ${
+                                currentPage === 1
+                                  ? 'bg-white/[0.02] border-white/5 text-white/10 cursor-not-allowed'
+                                  : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white hover:border-white/20'
+                              }`}
+                            >
+                              <ChevronsLeft className="w-4 h-4" />
+                            </button>
+
+                            {/* Previous page */}
+                            <button
+                              onClick={() => goToPage(currentPage - 1)}
+                              disabled={currentPage === 1}
+                              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 border ${
+                                currentPage === 1
+                                  ? 'bg-white/[0.02] border-white/5 text-white/10 cursor-not-allowed'
+                                  : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white hover:border-white/20'
+                              }`}
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                            </button>
+
+                            {/* Page numbers */}
+                            {getPageNumbers().map((page, idx) => (
+                              <React.Fragment key={idx}>
+                                {page === '...' ? (
+                                  <span className="w-11 h-11 flex items-center justify-center text-white/20 text-xs font-bold">
+                                    •••
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => goToPage(page)}
+                                    className={`w-11 h-11 rounded-xl flex items-center justify-center text-[12px] font-bold transition-all duration-300 border ${
+                                      page === currentPage
+                                        ? 'bg-primary border-primary text-white shadow-lg shadow-primary/30 scale-110'
+                                        : 'bg-white/5 border-white/5 text-white/40 hover:bg-white/10 hover:text-white hover:border-white/20'
+                                    }`}
+                                  >
+                                    {page}
+                                  </button>
+                                )}
+                              </React.Fragment>
+                            ))}
+
+                            {/* Next page */}
+                            <button
+                              onClick={() => goToPage(currentPage + 1)}
+                              disabled={currentPage === totalPages}
+                              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 border ${
+                                currentPage === totalPages
+                                  ? 'bg-white/[0.02] border-white/5 text-white/10 cursor-not-allowed'
+                                  : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white hover:border-white/20'
+                              }`}
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+
+                            {/* Last page */}
+                            <button
+                              onClick={() => goToPage(totalPages)}
+                              disabled={currentPage === totalPages}
+                              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 border ${
+                                currentPage === totalPages
+                                  ? 'bg-white/[0.02] border-white/5 text-white/10 cursor-not-allowed'
+                                  : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white hover:border-white/20'
+                              }`}
+                            >
+                              <ChevronsRight className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* Page info text */}
+                          <div className="text-[10px] text-white/20 font-bold uppercase tracking-[0.2em]">
+                            {((currentPage - 1) * 40) + 1} — {Math.min(currentPage * 40, totalCount)} / {totalCount} ta model
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <div className="py-32 flex flex-col items-center justify-center glass rounded-[48px] text-center px-6 border-white/5">
                       <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-10 border border-white/5">

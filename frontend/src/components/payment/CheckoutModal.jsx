@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { usePaymentFlow } from './hooks/usePaymentFlow';
 import Step1_Summary from './steps/Step1_Summary';
 import Step2_Insurance from './steps/Step2_Insurance';
@@ -7,12 +7,31 @@ import Step3_CardInput from './steps/Step3_CardInput';
 import Step4_OTP from './steps/Step4_OTP';
 import Step5_Success from './steps/Step5_Success';
 
-const STEPS = ['Xulosa', 'Sug\'urta', 'To\'lov', 'Tasdiqlash', 'Natija'];
+const STEPS = [
+  { id: 1, label: 'Xulosa' },
+  { id: 2, label: "Sug'urta" },
+  { id: 3, label: "To'lov" },
+  { id: 4, label: 'OTP' },
+  { id: 5, label: 'Tayyor' }
+];
+
+const STEP_TITLES = {
+  1: 'Buyurtma xulosasi',
+  2: "Sug'urta tanlash",
+  3: "To'lov usuli",
+  4: 'SMS tasdiqlash',
+  5: ''
+};
 
 const CheckoutModal = ({ isOpen, onClose, booking }) => {
   const {
     step,
     setStep,
+    paymentTab,
+    setPaymentTab,
+    phoneNumber,
+    setPhoneNumber,
+    retryPayment,
     cardData,
     setCardData,
     otp,
@@ -59,6 +78,10 @@ const CheckoutModal = ({ isOpen, onClose, booking }) => {
         onSubmit={initiatePaymentFlow}
         isProcessing={paymentStatus === 'processing'}
         error={error}
+        paymentTab={paymentTab}
+        onTabChange={setPaymentTab}
+        phoneNumber={phoneNumber}
+        onPhoneChange={setPhoneNumber}
       />
     ),
     4: (
@@ -68,6 +91,9 @@ const CheckoutModal = ({ isOpen, onClose, booking }) => {
         onVerify={verifyOtpFlow}
         onResend={resendOtpFlow}
         isProcessing={paymentStatus === 'processing'}
+        isPolling={paymentStatus === 'polling'}
+        paymentMethod={paymentTab === 'card' ? 'BANK KARTASI' : paymentTab === 'payme' ? 'PAYME QR' : 'CLICK PAY'}
+        phoneNumber={phoneNumber || "901234567"}
         transactionId={transactionId}
         cardLast4={cardLast4}
         devOtp={devOtp}
@@ -81,6 +107,7 @@ const CheckoutModal = ({ isOpen, onClose, booking }) => {
         totalAmount={totalAmount}
         paymentResult={paymentResult}
         onClose={onClose}
+        onRetry={retryPayment}
       />
     ),
   };
@@ -104,42 +131,57 @@ const CheckoutModal = ({ isOpen, onClose, booking }) => {
             transition={{ type: 'spring', duration: 0.4 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#0f0f0f] shadow-2xl">
-              <div className="relative border-b border-white/10 px-6 pb-4 pt-6">
-                <div className="mb-4 flex items-center gap-2">
-                  {STEPS.map((label, idx) => (
-                    <div key={label} className="flex items-center gap-2">
-                      <div
-                        className={`h-2.5 w-2.5 rounded-full ${idx + 1 <= step ? 'bg-primary' : 'bg-white/20'}`}
-                      />
-                      {idx < STEPS.length - 1 ? <div className="h-px w-5 bg-white/20" /> : null}
-                    </div>
-                  ))}
-                </div>
+            <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#0A0A0A] shadow-2xl shadow-primary/10 flex flex-col max-h-[90vh]">
+              <div className="relative border-b border-white/10 px-6 pb-4 pt-6 shrink-0">
+                {step < 5 && (
+                 <div className="mb-6 flex items-center justify-between gap-1 overflow-x-auto pb-2 scrollbar-none">
+                  {STEPS.map((s) => {
+                    const isCompleted = step > s.id;
+                    const isCurrent = step === s.id;
+                    return (
+                      <div key={s.id} className="flex flex-col items-center gap-1.5 min-w-[50px]">
+                        <div className={`relative flex h-5 w-5 items-center justify-center rounded-full transition-all duration-300 ${isCompleted ? 'bg-primary' : isCurrent ? 'bg-primary shadow-[0_0_10px_rgba(255,107,1,0.5)]' : 'bg-white/10'}`}>
+                           {isCompleted && <Check className="w-3 h-3 text-white" />}
+                           {isCurrent && <span className="absolute w-full h-full rounded-full border-2 border-primary animate-pulse opacity-75 object-none scale-150" />}
+                           {!isCompleted && !isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-white/30" />}
+                        </div>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${isCurrent || isCompleted ? 'text-primary' : 'text-white/30'}`}>
+                          {s.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                 </div>
+                )}
 
-                <h2 className="text-lg font-bold text-white">{STEPS[step - 1]}</h2>
+                {step < 5 && STEP_TITLES[step] && (
+                  <h2 className="text-xl font-black uppercase tracking-widest text-white">{STEP_TITLES[step]}</h2>
+                )}
 
                 {step < 5 ? (
                   <button
                     onClick={onClose}
-                    className="absolute right-4 top-4 rounded-full border border-white/10 p-2 text-white/70 hover:text-white"
+                    className="absolute right-4 top-4 rounded-full border border-white/10 p-2 text-white/70 hover:text-white transition-colors bg-[#0A0A0A]"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 ) : null}
               </div>
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={step}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="p-6"
-                >
-                  {stepComponents[step]}
-                </motion.div>
-              </AnimatePresence>
+              <div className="overflow-y-auto overflow-x-hidden flex-1 scrollbar-none">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={step}
+                    initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+                    transition={{ duration: 0.3 }}
+                    className="p-6"
+                  >
+                    {stepComponents[step]}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
           </motion.div>
         </>

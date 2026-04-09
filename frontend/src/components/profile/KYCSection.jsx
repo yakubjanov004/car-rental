@@ -15,7 +15,7 @@ const KYCSection = ({ kycData, uploading, onFileUpload, getImageUrl, onSubmit })
                   kycData.status === 'under_review' ? 'bg-orange-500/10 text-orange-500' :
                   kycData.status === 'rejected' ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-white/40'
                }`}>
-                  Status: {kycData.status.replace('_', ' ')}
+                  Status: {kycData.status?.replace('_', ' ') || 'YUKLANMOQDA...'}
                </div>
             )}
          </div>

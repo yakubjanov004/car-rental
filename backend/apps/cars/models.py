@@ -64,6 +64,9 @@ class CarModel(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-id']
+
     def __str__(self):
         return f"{self.brand} {self.model_name}"
 
@@ -100,6 +103,9 @@ class Car(models.Model):
     rating = models.FloatField(default=0.0)
     review_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-id']
 
     def save(self, *args, **kwargs):
         if not self.slug:

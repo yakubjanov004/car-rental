@@ -25,12 +25,12 @@ const CardManagement = ({ paymentMethods, onRemoveCard, onShowAddModal }) => {
                      </div>
                      <div className="space-y-4">
                         <p className="text-xl font-bold tracking-[0.2em] font-mono text-white/90">
-                           •••• •••• •••• {method.pan.slice(-4)}
+                           {method.masked_pan || '•••• •••• •••• ••••'}
                         </p>
                         <div className="flex justify-between items-end">
                            <div className="space-y-1">
                               <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Karta Egasi</p>
-                              <p className="text-xs font-bold text-white uppercase">{method.holder}</p>
+                              <p className="text-xs font-bold text-white uppercase">{method.card_holder}</p>
                            </div>
                            <div className="space-y-1 text-right">
                               <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Muddati</p>

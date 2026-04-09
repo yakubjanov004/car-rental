@@ -3,9 +3,9 @@
 
 @theme {
   /* === RANGLAR === */
-  --color-primary: #E8372A;
-  --color-primary-dark: #C42E21;
-  --color-primary-light: #FF4D3E;
+  --color-primary: #FF6B01;
+  --color-primary-dark: #CC5601;
+  --color-primary-light: #FF8533;
   --color-bg-dark: #0A0A0A;
   --color-card-dark: #141414;
   --color-elevated: #1C1C1C;
@@ -38,8 +38,8 @@
   body {
     background-color: #0A0A0A;
     background-image:
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,55,42,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(232,55,42,0.04) 0%, transparent 50%);
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255,107,1,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(255,107,1,0.04) 0%, transparent 50%);
     background-attachment: fixed;
     color: white;
     font-family: var(--font-body);
@@ -48,7 +48,7 @@
   h1, h2, h3 { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.03em; }
   h4, h5, h6 { font-family: var(--font-heading); font-weight: 600; }
 
-  ::selection { background: rgba(232,55,42,0.3); color: white; }
+  ::selection { background: rgba(255,107,1,0.3); color: white; }
 }
 
 @layer components {
@@ -59,11 +59,11 @@
            transition-all duration-200
            hover:bg-primary-light active:scale-[0.97]
            disabled:opacity-40 disabled:cursor-not-allowed;
-    box-shadow: 0 0 0 0 rgba(232,55,42,0);
+    box-shadow: 0 0 0 0 rgba(255,107,1,0);
     transition: background 0.2s, transform 0.15s, box-shadow 0.3s;
   }
   .btn-primary:hover {
-    box-shadow: 0 8px 30px rgba(232,55,42,0.35);
+    box-shadow: 0 8px 30px rgba(255,107,1,0.35);
   }
 
   .btn-secondary {
@@ -86,8 +86,8 @@
     transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
   }
   .card:hover {
-    border-color: rgba(232,55,42,0.25);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,55,42,0.08);
+    border-color: rgba(255,107,1,0.25);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,107,1,0.08);
     transform: translateY(-4px);
   }
 
@@ -107,8 +107,8 @@
            placeholder:text-white/25;
   }
   .input:focus {
-    border-color: rgba(232,55,42,0.5);
-    box-shadow: 0 0 0 3px rgba(232,55,42,0.1);
+    border-color: rgba(255,107,1,0.5);
+    box-shadow: 0 0 0 3px rgba(255,107,1,0.1);
   }
 
   /* === BADGE === */
@@ -118,7 +118,7 @@
   .badge-electric { background: rgba(0,217,126,0.15); color: #00D97E; }
   .badge-hybrid   { background: rgba(245,158,11,0.15); color: #F59E0B; }
   .badge-premium  { background: rgba(167,139,250,0.15); color: #A78BFA; }
-  .badge-new      { background: rgba(232,55,42,0.15); color: #E8372A; }
+  .badge-new      { background: rgba(255,107,1,0.15); color: var(--color-primary); }
 
   /* === SCROLLBAR === */
   ::-webkit-scrollbar { width: 6px; height: 6px; }

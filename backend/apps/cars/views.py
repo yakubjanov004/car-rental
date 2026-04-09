@@ -22,7 +22,7 @@ class CarFilter(django_filters.FilterSet):
         }
 
 class CarModelViewSet(viewsets.ModelViewSet):
-    queryset = CarModel.objects.prefetch_related('images', 'units', 'amenities').all()
+    queryset = CarModel.objects.prefetch_related('images', 'units', 'amenities').all().order_by('-id')
     serializer_class = CarModelSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['allows_chauffeur']

@@ -1,13 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import {
   initiatePayment,
   verifyOtp as verifyOtpApi,
+  verifyPayment as verifyPaymentApi,
   resendOtp as resendOtpApi,
   fetchPaymentMethods,
 } from '../../../services/api/payments';
 
 export const usePaymentFlow = (booking) => {
   const [step, setStep] = useState(1);
+  const [paymentTab, setPaymentTab] = useState('card');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  
   const [cardData, setCardData] = useState({});
   const [otp, setOtp] = useState('');
   const [selectedInsurance, setSelectedInsurance] = useState(null);
@@ -19,6 +23,8 @@ export const usePaymentFlow = (booking) => {
   const [savedMethods, setSavedMethods] = useState([]);
   const [useSavedMethod, setUseSavedMethod] = useState(false);
   const [selectedMethodId, setSelectedMethodId] = useState(null);
+  
+  const pollingRef = useRef(null);
 
   useEffect(() => {
     const loadMethods = async () => {
@@ -39,6 +45,8 @@ export const usePaymentFlow = (booking) => {
     };
 
     loadMethods();
+    
+    return () => stopPolling();
   }, []);
 
   const insuranceDailyCost = Number(selectedInsurance?.daily_price || 0);
@@ -50,27 +58,97 @@ export const usePaymentFlow = (booking) => {
     return Number(booking?.total_price || 0) + insuranceDailyCost * days;
   }, [booking, insuranceDailyCost, days]);
 
+  const stopPolling = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  };
+
+  const startPolling = (txId) => {
+    stopPolling();
+    // Har 3 soniyada (setInterval)
+    pollingRef.current = setInterval(async () => {
+      try {
+        const res = await verifyPaymentApi({ transaction_id: txId });
+        // status === 'paid' bo'lsa polling to'xta, step 5 ga o't
+        if (res.status === 'paid' || res.status === 'success') {
+          stopPolling();
+          setPaymentResult(res);
+          setPaymentStatus('success');
+          setStep(5);
+        } else if (res.status === 'failed' || res.status === 'error') {
+          stopPolling();
+          setPaymentStatus('failed');
+          setError(res.error || "To'lov amalga oshmadi");
+          setStep(5);
+        }
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+    }, 3000);
+  };
+
   const initiate = async () => {
     setError(null);
     setPaymentStatus('processing');
 
     try {
-      const result = await initiatePayment({
-        booking_id: booking.id,
-        ...(useSavedMethod && selectedMethodId
-          ? { payment_method_id: selectedMethodId }
-          : {
-              card_number: (cardData.number || '').replace(/\s/g, ''),
-              expiry: cardData.expiry,
-              cvv: cardData.cvv,
-              holder: cardData.holder,
-            }),
+      let actualProvider = 'mock';
+      let actualMethod = 'card';
+
+      if (paymentTab === 'payme') {
+        actualProvider = 'payme';
+        actualMethod = 'qr';
+      } else if (paymentTab === 'click') {
+        actualProvider = 'click';
+        actualMethod = 'phone';
+      } else if (paymentTab === 'card') {
+        actualProvider = 'mock'; // hozircha mock ishlatamiz
+        actualMethod = 'card';
+      }
+
+      const payload = {
+        booking_id: booking?.id,
+        provider: actualProvider,
+        method: actualMethod,
         insurance_plan_id: selectedInsurance?.id,
-      });
+      };
+      
+      if (paymentTab === 'card') {
+        if (useSavedMethod && selectedMethodId) {
+          payload.payment_method_id = selectedMethodId;
+        } else {
+          payload.card_number = (cardData.number || '').replace(/\s/g, '');
+          payload.expiry = cardData.expiry;
+          payload.cvv = cardData.cvv;
+          payload.holder = cardData.holder;
+        }
+      } else if (paymentTab === 'click') {
+        payload.phone = phoneNumber.replace(/\s/g, '');
+      }
+
+      const result = await initiatePayment(payload);
       setTransactionId(result.transaction_id);
+      setPaymentResult(null);
+
+      if (paymentTab === 'payme' && actualMethod === 'qr') {
+        setPaymentStatus('polling');
+        setStep(4);
+        startPolling(result.transaction_id);
+        return result;
+      }
+
+      if (paymentTab === 'click') {
+        setPaymentStatus('polling');
+        setStep(4);
+        startPolling(result.transaction_id);
+        return result;
+      }
+
+      // Card flow defaults to OTP simulation
       setDevOtp(result._dev_otp);
       setPaymentStatus('otp_sent');
-      setPaymentResult(null);
       setStep(4);
       return result;
     } catch (err) {
@@ -100,10 +178,7 @@ export const usePaymentFlow = (booking) => {
   };
 
   const resend = async () => {
-    if (!transactionId) {
-      return;
-    }
-
+    if (!transactionId) return;
     setError(null);
     try {
       await resendOtpApi({ transaction_id: transactionId });
@@ -113,9 +188,23 @@ export const usePaymentFlow = (booking) => {
     }
   };
 
+  const retryPayment = () => {
+    stopPolling();
+    setStep(3);
+    setPaymentStatus('idle');
+    setError(null);
+    setTransactionId(null);
+  };
+
   return {
     step,
     setStep,
+    paymentTab,
+    setPaymentTab,
+    phoneNumber,
+    setPhoneNumber,
+    retryPayment,
+    
     cardData,
     setCardData,
     otp,

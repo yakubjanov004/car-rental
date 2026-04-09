@@ -48,7 +48,7 @@ const Chauffeur = () => {
       setLoading(true);
       try {
         const data = await fetchCarModels({ allows_chauffeur: true });
-        setCars(data);
+        setCars(data.results || []);
       } catch (err) {
         console.error("Fetch failed:", err);
       } finally {
