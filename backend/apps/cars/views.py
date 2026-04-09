@@ -84,12 +84,12 @@ class CarViewSet(viewsets.ModelViewSet):
         
         for b in qs:
             booked_ranges.append({
-                "start": b.start_date.strftime('%Y-%m-%d'),
-                "end": b.end_date.strftime('%Y-%m-%d')
+                "start": b.start_datetime.strftime('%Y-%m-%d'),
+                "end": b.end_datetime.strftime('%Y-%m-%d')
             })
-            # Also fill individual dates for easier frontend check
-            curr = b.start_date
-            while curr <= b.end_date:
+            curr = b.start_datetime.date()
+            end_d = b.end_datetime.date()
+            while curr <= end_d:
                 booked_dates.append(curr.strftime('%Y-%m-%d'))
                 curr += timedelta(days=1)
 

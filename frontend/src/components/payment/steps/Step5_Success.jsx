@@ -176,8 +176,8 @@ const Step5_Success = ({
 
                       <div className="space-y-1.5 border-b border-dashed border-white/20 pb-4 pt-2">
                         <div className="flex justify-between"><span>Bron raqami:</span><span className="text-white">#{booking?.id ? `BKG-${booking.id}` : 'N/A'}</span></div>
-                        <div className="flex justify-between"><span>Mashina:</span><span className="text-white truncate max-w-[120px]">{booking?.car?.brand} {booking?.car?.model}</span></div>
-                        <div className="flex justify-between"><span>Muddat:</span><span>{booking?.start_date ? new Date(booking?.start_date).toLocaleDateString('uz-UZ', {day:'2-digit', month:'2-digit'}) : ''} — {booking?.end_date ? new Date(booking?.end_date).toLocaleDateString('uz-UZ', {day:'2-digit', month:'2-digit'}) : ''}</span></div>
+                        <div className="flex justify-between"><span>Mashina:</span><span className="text-white truncate max-w-[120px]">{booking?.car_info?.brand} {booking?.car_info?.model}</span></div>
+                        <div className="flex justify-between"><span>Muddat:</span><span>{booking?.start_datetime ? new Date(booking?.start_datetime).toLocaleDateString('uz-UZ', {day:'2-digit', month:'2-digit'}) : ''} — {booking?.end_datetime ? new Date(booking?.end_datetime).toLocaleDateString('uz-UZ', {day:'2-digit', month:'2-digit'}) : ''}</span></div>
                         <div className="flex justify-between"><span>Sug`urta:</span><span className="text-primary font-bold">Premium</span></div>
                       </div>
 

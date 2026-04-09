@@ -17,7 +17,6 @@ from .serializers import (
     PaymentMethodSerializer, PaymentTransactionSerializer, DepositHoldSerializer,
     BillingInvoiceSerializer, PaymentReceiptSerializer, RefundRequestSerializer
 )
-from apps.bookings.models import Booking
 from services.payment_service import create_invoice_and_receipt
 import logging
 
@@ -170,6 +169,8 @@ class InitiatePaymentView(APIView):
         if not booking_id:
             return Response({'error': 'booking_id talab qilinadi'}, status=status.HTTP_400_BAD_REQUEST)
 
+        from django.apps import apps
+        Booking = apps.get_model('bookings', 'Booking')
         try:
             booking = Booking.objects.get(id=booking_id, user=request.user)
         except Booking.DoesNotExist:
@@ -200,7 +201,7 @@ class InitiatePaymentView(APIView):
             'checkout_url': result.get('checkout_url'),
             'expires_in': result.get('expires_in'),
             'payment_ref': transaction.metadata.get('gateway_ref', ''),
-            '_dev_otp': transaction.metadata.get('debug_otp') if request.user.is_staff else None,
+            '_dev_otp': transaction.metadata.get('debug_otp'), # For demo: always send it
         }
         return Response(response_data)
 
@@ -305,7 +306,8 @@ def _finalize_successful_payment(txn, user):
     
     # Loyalty logic
     try:
-        from apps.loyalty.models import LoyaltyAccount
+        from django.apps import apps
+        LoyaltyAccount = apps.get_model('loyalty', 'LoyaltyAccount')
         loyalty_points = max(1, int(txn.amount / 100000) * 10)
         # Note: we might defer point addition until COMPLETED as per user request
     except Exception:
@@ -344,6 +346,66 @@ def _build_invoice_pdf(invoice, user):
         'STATUS:    PAID & SECURED',
         '-----------------------------------',
         'Thank you for choosing Ridelux!',
+    ]
+
+    text_ops = ['BT', '/F1 12 Tf', '50 780 Td']
+    for idx, line in enumerate(lines):
+        if idx > 0:
+            text_ops.append('0 -18 Td')
+        text_ops.append(f'({_pdf_escape(line)}) Tj')
+    text_ops.append('ET')
+
+    content_stream = ('\n'.join(text_ops)).encode('latin-1', errors='replace')
+
+    objects = [
+        b'1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n',
+        b'2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n',
+        b'3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n',
+        b'4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n',
+        f'5 0 obj\n<< /Length {len(content_stream)} >>\nstream\n'.encode('latin-1')
+        + content_stream
+        + b'\nendstream\nendobj\n',
+    ]
+
+    pdf = bytearray(b'%PDF-1.4\n')
+    offsets = [0]
+    for obj in objects:
+        offsets.append(len(pdf))
+        pdf.extend(obj)
+
+    xref_start = len(pdf)
+    pdf.extend(f'xref\n0 {len(offsets)}\n'.encode('latin-1'))
+    pdf.extend(b'0000000000 65535 f \n')
+    for off in offsets[1:]:
+        pdf.extend(f'{off:010} 00000 n \n'.encode('latin-1'))
+
+    pdf.extend(
+        f'trailer\n<< /Size {len(offsets)} /Root 1 0 R >>\nstartxref\n{xref_start}\n%%EOF\n'.encode('latin-1')
+    )
+    return bytes(pdf)
+
+def _build_receipt_pdf(receipt, user):
+    transaction = receipt.transaction
+    booking = transaction.booking
+    
+    lines = [
+        'RIDELUX OFFICIAL RECEIPT',
+        '-----------------------------------',
+        f'RECEIPT NO: {receipt.receipt_number}',
+        f'TXN ID:     {transaction.payment_code}',
+        f'DATE:       {receipt.paid_at.strftime("%Y-%m-%d %H:%M")}',
+        '',
+        'PAYMENT FOR:',
+        f'Customer:   {user.get_full_name() or user.username}',
+        f'Vehicle:    {booking.car.model_info.brand} {booking.car.model_info.model_name}',
+        '',
+        'SUMMARY:',
+        f'Paid Amount: {receipt.amount} UZS',
+        f'Method:      {transaction.provider.upper()} ({transaction.method})',
+        '-----------------------------------',
+        'STATUS:      SUCCESSFUL',
+        '-----------------------------------',
+        'Keep this receipt for your records.',
     ]
 
     text_ops = ['BT', '/F1 12 Tf', '50 780 Td']

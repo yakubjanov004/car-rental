@@ -25,8 +25,8 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
     endDate: '',
     pickupLocation: '',
     flightNumber: '',
-    fullName: user?.first_name ? `${user.first_name} ${user.last_name || ''}` : '',
-    phoneNumber: user?.phone || '',
+    fullName: user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : (user?.username || ''),
+    phoneNumber: user?.phone_number || '',
   });
 
   const totalDays = formData.startDate && formData.endDate ? kunlarFarqi(formData.startDate, formData.endDate) : 0;
@@ -59,8 +59,8 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
     try {
       await createBooking({
         car: car.id,
-        start_date: formData.startDate,
-        end_date: formData.endDate,
+        start_datetime: `${formData.startDate}T10:00:00Z`,
+        end_datetime: `${formData.endDate}T10:00:00Z`,
         full_name: formData.fullName,
         phone_number: formData.phoneNumber,
         is_chauffeur: true,
@@ -70,7 +70,11 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
       setStep(4); // Success step
     } catch (err) {
       console.error(err);
-      setError("Bron qilishda xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.");
+      const backendError = err.response?.data?.non_field_errors?.[0] || 
+                           err.response?.data?.[0] || 
+                           (typeof err.response?.data === 'string' ? err.response?.data : null) || 
+                           "Bron qilishda xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.";
+      setError(backendError);
     } finally {
       setLoading(false);
     }
@@ -156,6 +160,34 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                 {step === 2 && (
                   <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div className="space-y-3">
+                              <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">Ism va familiya</label>
+                              <div className="relative">
+                                 <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                                 <input 
+                                   type="text" 
+                                   placeholder="To'liq ismingiz"
+                                   className="w-full bg-[#0A0A0A] border border-white/5 rounded-2xl p-5 pl-14 text-sm focus:border-primary/50 outline-none"
+                                   value={formData.fullName}
+                                   onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                                 />
+                              </div>
+                           </div>
+                           <div className="space-y-3">
+                              <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">Telefon raqam</label>
+                              <div className="relative">
+                                 <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                                 <input 
+                                   type="text" 
+                                   placeholder="+998"
+                                   className="w-full bg-[#0A0A0A] border border-white/5 rounded-2xl p-5 pl-14 text-sm focus:border-primary/50 outline-none"
+                                   value={formData.phoneNumber}
+                                   onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                                 />
+                              </div>
+                           </div>
+                        </div>
                         <div className="space-y-3">
                            <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">Kutib olish joyi (Aeroport/Mehmonxona/Uy)</label>
                            <div className="relative">
@@ -186,7 +218,7 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                      <div className="flex gap-4">
                         <button onClick={() => setStep(1)} className="flex-1 h-16 rounded-2xl bg-white/5 text-[10px] font-black uppercase tracking-widest">Orqaga</button>
                         <button 
-                           disabled={!formData.pickupLocation}
+                           disabled={!formData.pickupLocation || !formData.fullName || !formData.phoneNumber}
                            onClick={() => setStep(3)}
                            className="flex-[2] btn-primary h-16 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50"
                         >

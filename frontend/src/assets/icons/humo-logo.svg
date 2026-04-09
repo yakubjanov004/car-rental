@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <!-- HUMO official branding: green gradient with white text -->
+  <defs>
+    <linearGradient id="humoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00875A"/>
+      <stop offset="100%" stop-color="#006644"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="40" rx="6" fill="url(#humoBg)"/>
+  <!-- HUMO text -->
+  <text x="14" y="27" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="20" fill="#FFFFFF" letter-spacing="3">HUMO</text>
+  <!-- Orange accent dot -->
+  <circle cx="108" cy="14" r="6" fill="#FF6B00"/>
+</svg>

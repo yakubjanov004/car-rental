@@ -63,7 +63,7 @@ const KYCSection = ({ kycData, uploading, onFileUpload, getImageUrl, onSubmit })
                      {uploading.passport ? (
                         <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                      ) : (
-                        <><Upload className="w-5 h-5 text-white/20" /> <span className="text-[10px] font-black uppercase tracking-widest">Almashtirish</span></>
+                        <><Upload className="w-5 h-5 text-white/20" /> <span className="text-[10px] font-black uppercase tracking-widest">{kycData?.passport_front_image ? 'Almashtirish' : 'Yuklash'}</span></>
                      )}
                   </label>
                </div>
@@ -104,7 +104,7 @@ const KYCSection = ({ kycData, uploading, onFileUpload, getImageUrl, onSubmit })
                      {uploading.license ? (
                         <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                      ) : (
-                        <><Upload className="w-5 h-5 text-white/20" /> <span className="text-[10px] font-black uppercase tracking-widest">Almashtirish</span></>
+                        <><Upload className="w-5 h-5 text-white/20" /> <span className="text-[10px] font-black uppercase tracking-widest">{kycData?.license_image ? 'Almashtirish' : 'Yuklash'}</span></>
                      )}
                   </label>
                </div>

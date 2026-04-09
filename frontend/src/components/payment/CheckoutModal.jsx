@@ -52,6 +52,7 @@ const CheckoutModal = ({ isOpen, onClose, booking }) => {
     resendOtpFlow,
     error,
     devOtp,
+    setDevOtp,
   } = usePaymentFlow(booking);
 
   const selectedMethod = savedMethods.find((method) => method.id === selectedMethodId);
@@ -113,6 +114,7 @@ const CheckoutModal = ({ isOpen, onClose, booking }) => {
   };
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -187,6 +189,55 @@ const CheckoutModal = ({ isOpen, onClose, booking }) => {
         </>
       )}
     </AnimatePresence>
+    
+    <AnimatePresence>
+        {isOpen && devOtp && step === 4 && (
+          <motion.div
+            initial={{ opacity: 0, x: 100, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 100, scale: 0.9 }}
+            className="fixed bottom-8 right-8 z-[100] w-72 glass border border-primary/30 p-4 rounded-2xl shadow-[0_20px_50px_rgba(255,107,0,0.2)] overflow-hidden bg-[#0A0A0A]"
+          >
+            <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                >
+                  <Check className="w-5 h-5 text-primary" />
+                </motion.div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">MOCK SMS PROLOGUE</p>
+                <p className="text-white font-bold text-sm leading-tight mb-2">Tasdiqlash kodi</p>
+                <div className="bg-white/5 rounded-lg p-2 font-mono text-center relative border border-white/5">
+                   <p className="text-primary text-xl font-black tracking-[0.3em]">{devOtp}</p>
+                   <div className="absolute -top-1 -right-1 flex gap-1">
+                      <span className="w-1 h-1 rounded-full bg-primary animate-ping" />
+                   </div>
+                </div>
+                <p className="text-[9px] text-white/30 italic mt-2 leading-tight">Bu kod faqat demo uchun ko'rsatilmoqda.</p>
+              </div>
+              <button 
+                onClick={() => setDevOtp(null)}
+                className="text-white/20 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <motion.div 
+               initial={{ width: "100%" }}
+               animate={{ width: "0%" }}
+               transition={{ duration: 30, ease: "linear" }}
+               onAnimationComplete={() => { if (typeof setDevOtp === 'function') setDevOtp(null); }}
+               className="absolute bottom-0 left-0 h-0.5 bg-primary/30"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

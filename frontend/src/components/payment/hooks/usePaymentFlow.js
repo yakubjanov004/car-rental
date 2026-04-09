@@ -28,7 +28,7 @@ export const usePaymentFlow = (booking) => {
 
   useEffect(() => {
     const loadMethods = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       if (!token) return;
 
       try {
@@ -51,7 +51,7 @@ export const usePaymentFlow = (booking) => {
 
   const insuranceDailyCost = Number(selectedInsurance?.daily_price || 0);
   const days = booking
-    ? Math.max(1, Math.ceil((new Date(booking.end_date) - new Date(booking.start_date)) / 86400000))
+    ? Math.max(1, Math.ceil((new Date(booking.end_datetime) - new Date(booking.start_datetime)) / 86400000))
     : 0;
 
   const totalAmount = useMemo(() => {

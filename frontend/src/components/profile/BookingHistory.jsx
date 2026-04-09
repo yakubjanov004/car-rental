@@ -1,9 +1,16 @@
 import React from 'react';
+import carPlaceholder from '../../assets/car-placeholder.png';
 import { motion } from 'framer-motion';
 import { Calendar, ChevronRight, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { formatNarx } from '../../utils/formatPrice';
+import { BASE_ORIGIN } from '../../services/api/apiClient';
 
 const BookingHistory = ({ bookings, onSelectDetail }) => {
+   const getImageUrl = (rawUrl) => {
+      if (!rawUrl) return carPlaceholder;
+      if (rawUrl.startsWith('http')) return rawUrl;
+      return `${BASE_ORIGIN}${rawUrl}`;
+   };
    const getStatusStyles = (status) => {
       switch (status) {
          case 'confirmed': return 'bg-green-500/10 text-green-500';
@@ -46,9 +53,9 @@ const BookingHistory = ({ bookings, onSelectDetail }) => {
                   <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
                      <div className="w-full md:w-48 h-32 rounded-3xl overflow-hidden bg-white/5 shrink-0 relative">
                         <img 
-                           src={booking.car_info?.main_image || 'https://images.unsplash.com/photo-1542282088-fe8426682b8f?w=800'} 
+                           src={getImageUrl(booking.car_info?.main_image)} 
                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                           alt={booking.car_info?.model_name}
+                           alt={booking.car_info?.model_name || 'Car'}
                         />
                         <div className="absolute top-3 left-3">
                            <div className={`px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-2 backdrop-blur-md ${getStatusStyles(booking.status)}`}>

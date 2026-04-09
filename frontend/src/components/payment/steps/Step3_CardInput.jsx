@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, Lock, ShieldCheck, Zap } from 'lucide-react';
+import uzcardLogo from '../../../assets/icons/uzcard-logo.svg';
+import humoLogo from '../../../assets/icons/humo-logo.svg';
+import visaLogo from '../../../assets/icons/visa-logo.svg';
+import mastercardLogo from '../../../assets/icons/mastercard-logo.svg';
 
 // Oddiy formatlash funksiyasi: barcha son bo'lmagan belgilarni olib tashlaydi
 const formatCardNumber = (value) => {
@@ -150,16 +154,16 @@ const Step3_CardInput = ({
                     {selectedMethodId === method.id && <div className="absolute top-0 right-0 w-20 h-20 bg-primary/20 blur-2xl rounded-full mix-blend-screen" />}
                     
                     <div className="w-14 h-10 rounded-lg bg-gradient-to-tr from-white/10 to-white/5 border border-white/10 flex items-center justify-center p-1 relative z-10">
-                      {method.card_type === 'UZCARD' && <div className="w-full h-full bg-blue-600 rounded flex items-center justify-center text-[7px] font-black text-yellow-400">UZCARD</div>}
-                      {method.card_type === 'HUMO' && <div className="w-full h-full bg-orange-500 rounded flex items-center justify-center text-[7px] font-black text-white">HUMO</div>}
-                      {method.card_type === 'VISA' && <div className="text-[10px] font-black text-blue-500 italic">VISA</div>}
-                      {method.card_type === 'MASTERCARD' && <div className="flex gap-0.5"><div className="w-3 h-3 rounded-full bg-red-500"/><div className="w-3 h-3 rounded-full bg-yellow-500 opacity-80 -ml-1.5"/></div>}
-                      {(!['UZCARD', 'HUMO', 'VISA', 'MASTERCARD'].includes(method.card_type)) && <CreditCard className="w-5 h-5 text-white/50" />}
+                      {method.card_type?.toUpperCase() === 'UZCARD' && <img src={uzcardLogo} alt="UZCARD" className="w-full h-full object-contain rounded" />}
+                      {method.card_type?.toUpperCase() === 'HUMO' && <img src={humoLogo} alt="HUMO" className="w-full h-full object-contain rounded" />}
+                      {method.card_type?.toUpperCase() === 'VISA' && <div className="text-[10px] font-black text-blue-500 italic">VISA</div>}
+                      {method.card_type?.toUpperCase() === 'MASTERCARD' && <div className="flex gap-0.5"><div className="w-3 h-3 rounded-full bg-red-500"/><div className="w-3 h-3 rounded-full bg-yellow-500 opacity-80 -ml-1.5"/></div>}
+                      {(!['UZCARD', 'HUMO', 'VISA', 'MASTERCARD'].includes(method.card_type?.toUpperCase())) && <CreditCard className="w-5 h-5 text-white/50" />}
                     </div>
 
                     <div className="flex-1 text-left relative z-10">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-black uppercase text-white tracking-widest">{method.card_type || 'Karta'}</p>
+                        <p className="text-sm font-black uppercase text-white tracking-widest">{method.card_type?.toUpperCase() || 'Karta'}</p>
                         {method.is_default && <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[8px] uppercase tracking-widest font-black border border-primary/30">Asosiy</span>}
                       </div>
                       <p className="text-xs text-white/60 tracking-[0.2em] font-mono mt-0.5">**** **** **** {method.masked_pan.slice(-4)}</p>
@@ -187,8 +191,8 @@ const Step3_CardInput = ({
                       <div className="flex justify-between items-start relative z-10">
                         <div className="w-12 h-9 rounded-md bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-600 opacity-90 shadow-sm" />
                         <div className="h-8 flex items-center">
-                          {cardBrand === 'UZCARD' && <span className="px-2 py-1 bg-blue-600 rounded text-yellow-400 font-black text-xs">UZCARD</span>}
-                          {cardBrand === 'HUMO' && <span className="px-2 py-1 bg-orange-500 rounded text-white font-black text-xs">HUMO</span>}
+                          {cardBrand === 'UZCARD' && <img src={uzcardLogo} alt="UZCARD" className="h-6" />}
+                          {cardBrand === 'HUMO' && <img src={humoLogo} alt="HUMO" className="h-6" />}
                           {cardBrand === 'VISA' && <span className="text-xl font-black italic text-white mix-blend-overlay">VISA</span>}
                           {cardBrand === 'MASTERCARD' && <div className="flex gap-1"><div className="w-6 h-6 rounded-full bg-red-500 mix-blend-screen"/><div className="w-6 h-6 rounded-full bg-yellow-400 mix-blend-screen -ml-3"/></div>}
                         </div>

@@ -2,8 +2,9 @@ import apiClient from './apiClient';
 
 export const fetchMyKyc = async () => {
   const response = await apiClient.get('/users/kyc/');
-  // The ViewSet returns a list for list() or an object for single object logic.
-  // Our implementation returns the object directly in get_object.
+  if (response.data && Array.isArray(response.data.results)) {
+    return response.data.results[0];
+  }
   if (Array.isArray(response.data)) return response.data[0];
   return response.data;
 };

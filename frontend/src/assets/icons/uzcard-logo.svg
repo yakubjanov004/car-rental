@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <!-- Uzcard official branding: blue background with white/yellow text -->
+  <rect width="120" height="40" rx="6" fill="#1A3F9E"/>
+  <!-- UZ text -->
+  <text x="10" y="27" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="18" fill="#FFFFFF" letter-spacing="1">UZ</text>
+  <!-- CARD text -->
+  <text x="42" y="27" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="18" fill="#FFD700" letter-spacing="1">CARD</text>
+  <!-- Decorative stripe -->
+  <rect x="0" y="34" width="120" height="6" rx="0" fill="#FFD700"/>
+</svg>

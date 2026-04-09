@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from apps.bookings.models import Booking
+# Removed direct import to avoid circular dependencies
 
 class PaymentMethod(models.Model):
     CARD_TYPES = [
@@ -19,6 +19,9 @@ class PaymentMethod(models.Model):
     is_default = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.card_type.upper()} {self.masked_pan} - {self.user.username}"
@@ -50,7 +53,7 @@ class PaymentTransaction(models.Model):
 
     payment_code = models.CharField(max_length=50, unique=True, db_index=True, null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='transactions')
-    booking = models.ForeignKey(Booking, on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')
+    booking = models.ForeignKey('bookings.Booking', on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     currency = models.CharField(max_length=10, default='UZS')
     provider = models.CharField(max_length=20, choices=PROVIDERS, default='mock', db_index=True)
@@ -64,6 +67,9 @@ class PaymentTransaction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def save(self, *args, **kwargs):
         if not self.payment_code:
             import uuid
@@ -76,7 +82,7 @@ class PaymentTransaction(models.Model):
 
 class BillingInvoice(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='invoices')
+    booking = models.ForeignKey('bookings.Booking', on_delete=models.CASCADE, related_name='invoices')
     transaction = models.OneToOneField(PaymentTransaction, on_delete=models.CASCADE, related_name='invoice')
     invoice_number = models.CharField(max_length=50, unique=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -84,6 +90,9 @@ class BillingInvoice(models.Model):
     status = models.CharField(max_length=20, default='paid', choices=[('pending', 'Kutilmoqda'), ('paid', 'To\'langan'), ('cancelled', 'Bekor qilingan')])
     due_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"Invoice {self.invoice_number} - {self.user.username}"
@@ -128,11 +137,14 @@ class DepositHold(models.Model):
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='deposits')
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='deposits')
+    booking = models.ForeignKey('bookings.Booking', on_delete=models.CASCADE, related_name='deposits')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='held')
     transaction = models.OneToOneField(PaymentTransaction, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
     released_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
@@ -149,6 +161,9 @@ class PromoCode(models.Model):
     valid_until = models.DateTimeField()
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.code} - {self.discount_value}{'%' if self.discount_type == 'percentage' else ' UZS'}"

@@ -249,9 +249,8 @@ const CarDetail = () => {
     try {
       const res = await createBooking({
         car: car.id,
-        start_date: bookingData.startDate,
-        end_date: bookingData.endDate,
-        total_price: (car.daily_price || 0) * (kunlarFarqi(bookingData.startDate, bookingData.endDate) || 1),
+        start_datetime: bookingData.startDate + 'T10:00:00',
+        end_datetime: bookingData.endDate + 'T10:00:00',
         full_name: bookingData.fullName,
         phone_number: bookingData.phone_number,
       });

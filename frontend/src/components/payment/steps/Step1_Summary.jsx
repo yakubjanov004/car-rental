@@ -23,12 +23,12 @@ const Step1_Summary = ({ booking, totalAmount, onNext }) => {
         <div className="space-y-3 relative z-10">
           <div className="flex justify-between items-center text-sm border-b border-white/5 pb-3">
             <span className="text-white/60">Avtomobil</span>
-            <span className="text-white font-medium">{booking?.car?.brand} {booking?.car?.model || 'Tanlanmagan'}</span>
+            <span className="text-white font-medium">{booking?.car_info?.brand} {booking?.car_info?.model || 'Tanlanmagan'}</span>
           </div>
           <div className="flex justify-between items-center text-sm border-b border-white/5 pb-3">
             <span className="text-white/60">Ijara davri</span>
             <span className="text-white font-medium">
-              {new Date(booking?.start_date).toLocaleDateString('uz-UZ')} - {new Date(booking?.end_date).toLocaleDateString('uz-UZ')}
+              {new Date(booking?.start_datetime).toLocaleDateString('uz-UZ')} - {new Date(booking?.end_datetime).toLocaleDateString('uz-UZ')}
             </span>
           </div>
           

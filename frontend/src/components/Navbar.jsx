@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Phone, ChevronDown, User, LogOut, LayoutDashboard, Bell, Info } from 'lucide-react';
+import { Menu, X, Phone, ChevronDown, User, LogOut, LayoutDashboard, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../utils/api';
 
@@ -26,24 +26,46 @@ const NotificationList = ({ onRead }) => {
     } catch(e) {}
   };
 
-  if (loading) return <div className="p-10 text-center text-white/20 italic text-[10px] uppercase font-black">Yuklanmoqda...</div>;
-  if (notifications.length === 0) return <div className="p-10 text-center text-white/10 italic text-[10px] uppercase font-bold">Hozircha xabarlar yo'q</div>;
+  const getTypeLabel = (type) => {
+    switch(type) {
+      case 'booking_created': return 'Yangi buyurtma';
+      case 'payment_completed': return "To'lov";
+      case 'booking_approved': return 'Tasdiqlandi';
+      case 'booking_rejected': return 'Rad etildi';
+      case 'kyc_approved': return 'KYC tasdiqlandi';
+      case 'kyc_rejected': return 'KYC rad etildi';
+      case 'system': return 'Tizim';
+      default: return type?.replace(/_/g, ' ') || 'Xabar';
+    }
+  };
+
+  const getTypeColor = (type) => {
+    if (type?.includes('approved') || type?.includes('completed')) return 'text-emerald-400 bg-emerald-500/15';
+    if (type?.includes('rejected')) return 'text-red-400 bg-red-500/15';
+    if (type?.includes('created') || type?.includes('submitted')) return 'text-amber-400 bg-amber-500/15';
+    return 'text-blue-400 bg-blue-500/15';
+  };
+
+  if (loading) return <div className="p-10 text-center text-white/30 text-xs">Yuklanmoqda...</div>;
+  if (notifications.length === 0) return <div className="p-10 text-center text-white/20 text-xs">Hozircha xabarlar yo'q</div>;
 
   return (
     <div className="flex flex-col">
       {notifications.map(n => (
-        <div key={n.id} className={`p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition-colors relative ${!n.is_read ? 'bg-primary/[0.02]' : ''}`}>
-           {!n.is_read && <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full shadow-[0_0_10px_rgba(255,107,1,0.5)]" />}
-           <div className="flex justify-between items-start mb-1">
-              <span className={`text-[9px] font-black uppercase tracking-tighter ${n.type?.includes('kyc') ? 'text-blue-400' : 'text-primary'}`}>
-                 {n.type?.replace(/_/g, ' ')}
+        <div key={n.id} className={`px-4 py-3.5 border-b border-white/[0.06] last:border-0 hover:bg-white/[0.04] transition-colors relative ${!n.is_read ? '' : 'opacity-50'}`}>
+           {!n.is_read && <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-full" />}
+           <div className="flex justify-between items-center mb-1.5 pl-2">
+              <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${getTypeColor(n.type)}`}>
+                 {getTypeLabel(n.type)}
               </span>
-              <span className="text-[8px] text-white/20 font-medium">{new Date(n.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+              <span className="text-[9px] text-white/25 font-medium">{new Date(n.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
            </div>
-           <h4 className="text-[11px] font-bold text-white mb-1 leading-tight">{n.title}</h4>
-           <p className="text-[10px] text-white/40 leading-relaxed line-clamp-2">{n.message}</p>
+           <div className="pl-2">
+             <h4 className="text-[12px] font-semibold text-white/90 mb-0.5 leading-tight">{n.title}</h4>
+             <p className="text-[11px] text-white/40 leading-relaxed line-clamp-2">{n.message}</p>
+           </div>
            {!n.is_read && (
-             <button onClick={() => handleRead(n.id)} className="mt-2 text-[8px] font-black uppercase text-white/20 hover:text-white transition-colors underline underline-offset-4 pointer-events-auto">O'qildi</button>
+             <button onClick={() => handleRead(n.id)} className="ml-2 mt-1.5 text-[9px] font-bold uppercase text-white/25 hover:text-primary transition-colors">O'qildi</button>
            )}
         </div>
       ))}
@@ -70,12 +92,14 @@ const NAV_LINKS = [
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [navDropdownOpen, setNavDropdownOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [lang, setLang] = useState('UZ');
   const [langOpen, setLangOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, logout } = useAuth();
   const location = useLocation();
+  const notifRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -95,6 +119,17 @@ const Navbar = () => {
       getNotifications();
     }
   }, [user, location]);
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <>
@@ -125,25 +160,26 @@ const Navbar = () => {
               link.children ? (
                 <div key={i} className="relative">
                   <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    onClick={() => { setNavDropdownOpen(!navDropdownOpen); setNotifOpen(false); setLangOpen(false); }}
                     className="flex items-center gap-1 px-4 py-2 text-sm text-white/60 hover:text-white rounded-xl hover:bg-white/5 transition-all font-medium"
                   >
                     {link.label}
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${navDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <AnimatePresence>
-                    {dropdownOpen && (
+                    {navDropdownOpen && (
                       <motion.div
                         initial={{ opacity: 0, y: 8, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.96 }}
                         transition={{ duration: 0.18 }}
-                        className="absolute top-full left-0 mt-2 w-52 glass rounded-2xl overflow-hidden py-1.5 shadow-2xl shadow-black/50"
+                        className="absolute top-full left-0 mt-2 w-52 bg-[#141414] border border-white/10 rounded-2xl overflow-hidden py-1.5 shadow-2xl shadow-black/50"
                       >
                         {link.children.map((child) => (
                           <NavLink
                             key={child.to}
                             to={child.to}
+                            onClick={() => setNavDropdownOpen(false)}
                             className={({ isActive }) =>
                               `block px-4 py-2.5 text-sm transition-colors ${
                                 isActive ? 'text-primary bg-white/5' : 'text-white/60 hover:text-white hover:bg-white/5'
@@ -188,12 +224,12 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-3">
             {/* Language Switcher */}
             <div className="relative mr-2">
-              <button onClick={() => setLangOpen(!langOpen)} className="flex items-center gap-1 text-sm text-white/55 hover:text-white transition-colors uppercase font-bold">
+              <button onClick={() => { setLangOpen(!langOpen); setNotifOpen(false); setNavDropdownOpen(false); }} className="flex items-center gap-1 text-sm text-white/55 hover:text-white transition-colors uppercase font-bold">
                 {lang} <ChevronDown className={`w-3.5 h-3.5 transition-transform ${langOpen ? 'rotate-180' : ''}`} />
               </button>
               <AnimatePresence>
                 {langOpen && (
-                  <motion.div initial={{opacity:0, y:8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:8}} className="absolute top-full right-0 mt-2 bg-[#111] backdrop-blur-md rounded-xl border border-white/10 overflow-hidden w-24 shadow-2xl">
+                  <motion.div initial={{opacity:0, y:8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:8}} className="absolute top-full right-0 mt-2 bg-[#141414] rounded-xl border border-white/10 overflow-hidden w-24 shadow-2xl">
                      <button onClick={() => {setLang('UZ'); setLangOpen(false)}} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white/70 hover:text-white">UZ</button>
                      <button onClick={() => {setLang('RU'); setLangOpen(false)}} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white/70 hover:text-white">RU</button>
                      <button onClick={() => {setLang('EN'); setLangOpen(false)}} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white/70 hover:text-white">EN</button>
@@ -209,46 +245,56 @@ const Navbar = () => {
             
             {user ? (
               <div className="flex items-center gap-3">
-                <div className="relative">
+                {/* Notification Bell */}
+                <div className="relative" ref={notifRef}>
                   <button 
                     onClick={() => {
-                        setDropdownOpen(dropdownOpen === 'notifications' ? null : 'notifications');
+                        setNotifOpen(!notifOpen);
                         setLangOpen(false);
+                        setNavDropdownOpen(false);
                     }}
-                    className="relative p-2 text-white/40 hover:text-white transition-colors group"
+                    className="relative p-2 text-white/40 hover:text-white transition-colors"
                   >
                      <Bell className="w-5 h-5" />
                      {unreadCount > 0 && (
-                       <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border border-bg-dark animate-pulse" />
+                       <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full animate-pulse" />
                      )}
                   </button>
 
                   <AnimatePresence>
-                    {dropdownOpen === 'notifications' && (
+                    {notifOpen && (
                       <motion.div 
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute top-full right-0 mt-3 w-80 glass border-white/10 rounded-[24px] overflow-hidden shadow-2xl z-[100]"
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full right-0 mt-3 w-[340px] bg-[#111111] border border-white/10 rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] z-[100]"
                       >
-                        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
-                           <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Sizning Xabarlaringiz</span>
+                        {/* Header */}
+                        <div className="px-4 py-3 border-b border-white/[0.06] flex justify-between items-center bg-white/[0.03]">
+                           <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Bildirishnomalar</span>
                            {unreadCount > 0 && (
                              <button 
                                onClick={async () => {
                                  await markAllNotificationsAsRead();
                                  setUnreadCount(0);
                                }}
-                               className="text-[9px] font-black uppercase tracking-tighter text-primary hover:text-white transition-colors"
+                               className="text-[9px] font-bold uppercase tracking-wider text-primary hover:text-primary/80 transition-colors"
                              >
                                Hammasini o'qish
                              </button>
                            )}
                         </div>
-                        <div className="max-h-[360px] overflow-y-auto scrollbar-hide">
+                        {/* List */}
+                        <div className="max-h-[360px] overflow-y-auto">
                            <NotificationList onRead={() => setUnreadCount(prev => Math.max(0, prev - 1))} />
                         </div>
-                        <Link to="/profile?tab=buyurtmalar" className="block p-4 text-center text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-primary border-t border-white/5 bg-white/[0.02] transition-colors">
+                        {/* Footer */}
+                        <Link 
+                          to="/profile?tab=buyurtmalar" 
+                          onClick={() => setNotifOpen(false)}
+                          className="block px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-white/25 hover:text-primary border-t border-white/[0.06] bg-white/[0.02] transition-colors"
+                        >
                            Barcha bildirishnomalar
                         </Link>
                       </motion.div>

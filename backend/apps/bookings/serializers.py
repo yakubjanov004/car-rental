@@ -9,8 +9,8 @@ class WaitlistSerializer(serializers.ModelSerializer):
         model = Waitlist
         fields = ['id', 'user', 'user_name', 'car', 'car_name', 'created_at', 'is_active']
         read_only_fields = ['user', 'created_at', 'is_active']
-from apps.cars.serializers import CarSerializer
 
+from ..cars.serializers import CarSerializer
 from django.db.models import Q
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -34,9 +34,12 @@ class BookingSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = self.context['request'].user
         
-        # KYC check
-        if not hasattr(user, 'kyc') or user.kyc.status != 'approved':
-            raise serializers.ValidationError("Ma'lumotlaringiz tasdiqlanmagan. Bron qilish uchun KYC tekshiruvidan o'tishingiz shart.")
+        is_chauffeur = data.get('is_chauffeur', False)
+        
+        # KYC check (Only needed for self-drive, not chauffeur)
+        if not is_chauffeur:
+            if not hasattr(user, 'kyc') or user.kyc.status != 'approved':
+                raise serializers.ValidationError("Ma'lumotlaringiz tasdiqlanmagan. O'zingiz haydash uchun KYC tekshiruvidan o'tishingiz shart.")
         
         # Blacklist check
         if getattr(user, 'is_blacklisted', False):
@@ -58,7 +61,7 @@ class BookingSerializer(serializers.ModelSerializer):
             )
             
             # Maintenance check
-            from apps.cars.models import MaintenanceRecord
+            from ..cars.models import MaintenanceRecord
             maintenance = MaintenanceRecord.objects.filter(
                 car=car
             ).filter(

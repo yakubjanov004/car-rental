@@ -1,4 +1,7 @@
-import { User, Heart, Calendar, LogOut, ChevronRight, Settings, Clock, CheckCircle, XCircle, Info, Star, CreditCard, ShieldCheck, AlertTriangle, Bell, Upload, Trash2, Zap, FileText, Download, FileDown } from 'lucide-react';
+import { User, Heart, Calendar, LogOut, ChevronRight, Settings, Clock, CheckCircle, XCircle, Info, Star, CreditCard, ShieldCheck, AlertTriangle, Bell, Upload, Trash2, Zap, FileText, Download, FileDown, Lock } from 'lucide-react';
+import carPlaceholder from '../assets/car-placeholder.png';
+import uzcardLogo from '../assets/icons/uzcard-logo.svg';
+import humoLogo from '../assets/icons/humo-logo.svg';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { formatNarx } from '../utils/formatPrice';
@@ -34,6 +37,11 @@ const Profile = () => {
    const [invoices, setInvoices] = useState([]);
    const [notifications, setNotifications] = useState([]);
    const [downloadingInvoice, setDownloadingInvoice] = useState(null);
+   const [showOtpModal, setShowOtpModal] = useState(false);
+   const [randomOTP, setRandomOTP] = useState('');
+   const [userInputOTP, setUserInputOTP] = useState('');
+   const [otpError, setOtpError] = useState('');
+   const [pendingCardPayload, setPendingCardPayload] = useState(null);
    const [profileForm, setProfileForm] = useState({
       first_name: user?.first_name || '',
       last_name: user?.last_name || '',
@@ -53,7 +61,7 @@ const Profile = () => {
    };
 
    const getImageUrl = (rawUrl) => {
-      if (!rawUrl) return 'https://images.unsplash.com/photo-1542282088-fe8426682b8f?w=800';
+      if (!rawUrl) return carPlaceholder;
       if (rawUrl.startsWith('http')) return rawUrl;
       return `${BASE_ORIGIN}${rawUrl}`;
    };
@@ -155,6 +163,11 @@ const Profile = () => {
          if (!newCard.holder.trim()) throw new Error('Karta egasini kiriting');
          if (newCard.holder.trim().split(' ').length < 2) throw new Error('Ism va familiyani to\'liq kiriting');
          
+         if (!user?.phone_number) {
+            alert("Sizning profilingizda telefon raqam yo'q. Iltimos, oldin PROFIL bo'limidan telefon raqamingizni kiriting!");
+            return;
+         }
+
          const payload = {
             pan: cleanPan,
             card_holder: newCard.holder.trim(),
@@ -163,11 +176,37 @@ const Profile = () => {
             card_type: newCard.card_type,
             masked_pan: `${cleanPan.slice(0, 4)} **** **** ${cleanPan.slice(12)}`
          };
-         await apiClient.post('/payments/methods/', payload);
+         
+         setPendingCardPayload(payload);
+         setRandomOTP(Math.floor(100000 + Math.random() * 900000).toString());
+         setUserInputOTP('');
+         setOtpError('');
+         setShowCardModal(false);
+         setShowOtpModal(true);
+      } catch (error) {
+         alert(error.message || 'Xatolik! Ma\'lumotlarni tekshiring.');
+      }
+   };
+
+   const handleVerifyOtp = async () => {
+      if ((userInputOTP || '').length !== 6) {
+         setOtpError('6 xonali kodni kiriting.');
+         return;
+      }
+      
+      if (userInputOTP !== randomOTP) {
+         setOtpError("Noto'g'ri kod! Qaytadan urinib ko'ring.");
+         return;
+      }
+
+      try {
+         await apiClient.post('/payments/methods/', pendingCardPayload);
          const res = await apiClient.get('/payments/methods/');
          setPaymentMethods(extractCollection(res.data));
-         setShowCardModal(false);
+         setShowOtpModal(false);
+         setPendingCardPayload(null);
          setNewCard({ pan: '', expiry: '', holder: '', card_type: 'uzcard' });
+         alert("Karta muvaffaqiyatli bog'landi!");
       } catch (error) {
          alert(error.message || 'Xatolik! Ma\'lumotlarni tekshiring.');
       }
@@ -401,9 +440,9 @@ const Profile = () => {
                         <div className="space-y-2">
                            <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">Karta turi</label>
                            <div className="grid grid-cols-2 gap-4">
-                              {['uzcard', 'humo'].map(type => (
-                                 <button key={type} type="button" onClick={() => setNewCard({...newCard, card_type: type})} className={`py-4 rounded-xl border-2 transition-all text-xs font-bold uppercase ${newCard.card_type === type ? 'border-primary bg-primary/10 text-white' : 'border-white/5 bg-white/5 text-white/40'}`}>
-                                    {type}
+                              {[{type: 'uzcard', logo: uzcardLogo}, {type: 'humo', logo: humoLogo}].map(({type, logo}) => (
+                                 <button key={type} type="button" onClick={() => setNewCard({...newCard, card_type: type})} className={`py-4 rounded-xl border-2 transition-all flex items-center justify-center gap-3 ${newCard.card_type === type ? 'border-primary bg-primary/10' : 'border-white/5 bg-white/5'}`}>
+                                    <img src={logo} alt={type} className="h-6" />
                                  </button>
                               ))}
                            </div>
@@ -455,6 +494,46 @@ const Profile = () => {
                          </div>
                          <button type="submit" className="btn-primary w-full py-5 text-[10px] font-black tracking-widest mt-4 uppercase">KARTANI BOG'LASH</button>
                      </form>
+                  </motion.div>
+               </div>
+            )}
+         </AnimatePresence>
+
+         {/* Verification OTP Modal */}
+         <AnimatePresence>
+            {showOtpModal && (
+               <div className="fixed inset-0 z-[130] flex items-center justify-center px-4">
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowOtpModal(false)} className="absolute inset-0 bg-black/90 backdrop-blur-xl" />
+                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative w-full max-w-md bg-[#111] border border-white/5 rounded-[64px] shadow-2xl p-10 flex flex-col items-center text-center">
+                     <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-10 border border-primary/20">
+                        <Lock className="w-8 h-8 text-primary" />
+                     </div>
+                     <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">Kod tasdiqlash</h3>
+                     <p className="text-xs text-white/30 max-w-xs mb-10">Sizning <strong className="text-white">{user?.phone_number}</strong> raqamingizga yuborilgan 6-xonali kodni kiriting.</p>
+                     
+                     <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-10 w-full">
+                        <span className="text-[10px] text-white/20 uppercase font-black block mb-3">Simulyatsiya (OTP):</span>
+                        <span className="text-4xl font-display font-black text-primary tracking-[0.4em] blur-[1px] hover:blur-none transition-all">{randomOTP}</span>
+                     </div>
+
+                     <input 
+                        type="text" 
+                        placeholder="_ _ _ _ _ _" 
+                        className="w-48 bg-[#0A0A0A] border-2 border-white/10 rounded-[32px] p-6 text-center text-2xl font-black text-white outline-none focus:border-primary tracking-[0.5em]"
+                        value={userInputOTP}
+                        onChange={e => {
+                          setUserInputOTP(e.target.value.replace(/\D/g, ''));
+                          setOtpError('');
+                        }}
+                        maxLength={6}
+                     />
+
+                     {otpError && <p className="mt-4 text-xs font-bold text-red-500">{otpError}</p>}
+
+                     <div className="flex gap-4 w-full mt-12">
+                        <button onClick={() => { setShowOtpModal(false); setShowCardModal(true); }} className="flex-1 py-4 glass rounded-[20px] text-[10px] font-black uppercase text-white/40">Orqaga</button>
+                        <button onClick={handleVerifyOtp} className="flex-[2] py-4 btn-primary rounded-[20px] text-[10px] font-black uppercase shadow-lg shadow-primary/20">TASDIQLASH</button>
+                     </div>
                   </motion.div>
                </div>
             )}

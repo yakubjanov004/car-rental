@@ -13,6 +13,12 @@ import { initiatePayment, verifyOtp, verifyPayment, fetchPaymentMethods } from '
 import { fetchInsurancePlans, createBookingInsurance } from '../services/api/insurance';
 import { calculateDynamicPrice } from '../services/api/pricing';
 import { useAuth } from '../context/AuthContext';
+import uzcardLogo from '../assets/icons/uzcard-logo.svg';
+import humoLogo from '../assets/icons/humo-logo.svg';
+import visaLogo from '../assets/icons/visa-logo.svg';
+import mastercardLogo from '../assets/icons/mastercard-logo.svg';
+import clickLogo from '../assets/icons/click-logo.svg';
+import paymeLogo from '../assets/icons/payme-logo.svg';
 
 const Checkout = () => {
   const { user } = useAuth();
@@ -674,8 +680,8 @@ const Checkout = () => {
                >
                  <div className="absolute top-10 flex flex-col items-center gap-2">
                     <div className="flex gap-2">
-                       <div className="w-12 h-6 bg-blue-600 rounded flex items-center justify-center text-[8px] font-bold text-white tracking-widest">UZCARD</div>
-                       <div className={`w-12 h-6 bg-orange-600 rounded flex items-center justify-center text-[8px] font-bold text-white tracking-widest`}>HUMO</div>
+                       <img src={uzcardLogo} alt="UZCARD" className="h-6" />
+                       <img src={humoLogo} alt="HUMO" className="h-6" />
                     </div>
                  </div>
 

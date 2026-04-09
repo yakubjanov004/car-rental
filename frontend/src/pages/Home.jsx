@@ -313,7 +313,7 @@ const Home = () => {
   }, [cars]);
 
   return (
-    <div className="bg-[#0A0A0A] overflow-x-hidden">
+    <div className="relative bg-[#0A0A0A] overflow-x-hidden">
       <Hero 
          filterTuman={filterTuman} 
          setFilterTuman={setFilterTuman}
