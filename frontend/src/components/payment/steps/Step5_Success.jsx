@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { downloadReceiptFile } from '../../../services/api/payments';
+import { downloadInvoiceFile } from '../../../services/api/payments';
 
 const Step5_Success = ({ status, booking, totalAmount, paymentResult, onClose }) => {
   const ok = status === 'success';
   const [downloading, setDownloading] = useState(false);
 
-  const handleDownload = async () => {
-    if (!paymentResult?.receipt_id) return;
+  const handleDownloadInvoice = async () => {
+    if (!paymentResult?.invoice_id) return;
     setDownloading(true);
     try {
-      const blob = await downloadReceiptFile(paymentResult.receipt_id);
+      const blob = await downloadInvoiceFile(paymentResult.invoice_id);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${paymentResult.receipt_number || 'receipt'}.pdf`;
+      a.download = `${paymentResult.invoice_number || 'invoice'}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -52,11 +52,11 @@ const Step5_Success = ({ status, booking, totalAmount, paymentResult, onClose })
       {ok ? (
         <button
           type="button"
-          onClick={handleDownload}
-          disabled={downloading || !paymentResult?.receipt_id}
+          onClick={handleDownloadInvoice}
+          disabled={downloading || !paymentResult?.invoice_id}
           className="w-full rounded-xl border border-white/10 py-3 font-semibold text-white disabled:opacity-60"
         >
-          {downloading ? 'Yuklanmoqda...' : 'Chekni yuklab olish'}
+          {downloading ? 'Yuklanmoqda...' : 'Invoysni yuklab olish'}
         </button>
       ) : null}
     </div>

@@ -102,3 +102,11 @@ class CarViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve', 'availability']:
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
+
+from .models import MaintenanceRecord
+from .serializers import MaintenanceSerializer
+
+class MaintenanceViewSet(viewsets.ModelViewSet):
+    queryset = MaintenanceRecord.objects.all().order_by('-start_datetime')
+    serializer_class = MaintenanceSerializer
+    permission_classes = [permissions.IsAdminUser]

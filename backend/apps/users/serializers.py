@@ -6,7 +6,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'avatar', 'is_staff', 'address', 'passport_image', 'driver_license_image', 'verification_status', 'loyalty_points')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'avatar', 'is_staff', 'address', 'passport_number', 'driver_license', 'passport_image', 'driver_license_image', 'verification_status', 'loyalty_points')
         read_only_fields = ('id', 'is_staff', 'verification_status', 'loyalty_points')
 
     def update(self, instance, validated_data):

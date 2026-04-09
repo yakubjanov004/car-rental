@@ -19,6 +19,9 @@ from .serializers import (
 )
 from apps.bookings.models import Booking
 from services.payment_service import create_invoice_and_receipt
+import logging
+
+logger = logging.getLogger('apps.payments')
 
 class PaymentMethodViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentMethodSerializer
@@ -54,7 +57,7 @@ class PaymentTransactionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return PaymentTransaction.objects.filter(user=self.request.user).order_by('-created_at')
+        return PaymentTransaction.objects.filter(user=self.request.user).select_related('booking', 'user').order_by('-created_at')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, status='pending')
@@ -83,6 +86,14 @@ class BillingInvoiceViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return BillingInvoice.objects.filter(user=self.request.user).order_by('-created_at')
+
+    @action(detail=True, methods=['get'], url_path='download')
+    def download(self, request, pk=None):
+        invoice = self.get_object()
+        pdf_bytes = _build_invoice_pdf(invoice, request.user)
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{invoice.invoice_number}.pdf"'
+        return response
 
 
 class PaymentReceiptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -141,174 +152,57 @@ class PromoCodeViewSet(viewsets.ViewSet):
             return Response({"valid": False, "error": "Noto'g'ri yoki muddati o'tgan promo kod"}, status=status.HTTP_404_NOT_FOUND)
 
 
+from .adapters.factory import get_payment_adapter
+
 class InitiatePaymentView(APIView):
     """
     POST /api/payments/initiate/
-    Body: { booking_id, card_number?, payment_method_id?, expiry?, cvv?, holder?, insurance_plan_id? }
+    Body: { booking_id, provider, method }
     """
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'payment_initiate'
 
     def post(self, request):
         booking_id = request.data.get('booking_id')
-        payment_type = (request.data.get('payment_type') or 'card').lower()
-        payment_method_id = request.data.get('payment_method_id')
-        card_number = (request.data.get('card_number') or '').replace(' ', '')
-        payment_method = None
-        qr_methods = {'payme', 'click', 'uzum'}
-
-        if payment_type not in {'card', 'payme', 'click', 'uzum'}:
-            return Response({'error': 'payment_type noto\'g\'ri'}, status=status.HTTP_400_BAD_REQUEST)
+        provider_name = request.data.get('provider', 'mock')
+        method = request.data.get('method', 'card')
 
         if not booking_id:
             return Response({'error': 'booking_id talab qilinadi'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if payment_method_id:
-            try:
-                payment_method = PaymentMethod.objects.get(id=payment_method_id, user=request.user)
-            except PaymentMethod.DoesNotExist:
-                return Response({'error': 'To\'lov kartasi topilmadi'}, status=status.HTTP_404_NOT_FOUND)
-
-        if payment_type == 'card' and not payment_method and len(card_number) < 12:
-            return Response({'error': 'Karta raqami noto\'g\'ri'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             booking = Booking.objects.get(id=booking_id, user=request.user)
         except Booking.DoesNotExist:
             return Response({'error': 'Bron topilmadi'}, status=status.HTTP_404_NOT_FOUND)
 
-        if payment_type == 'card' and payment_method and payment_method.masked_pan.startswith('0000'):
-            return Response(
-                {
-                    'error': 'Kartada mablag\' yetarli emas',
-                    'code': 'INSUFFICIENT_FUNDS',
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if payment_type == 'card' and not payment_method and card_number.startswith('0000'):
-            return Response(
-                {
-                    'error': 'Kartada mablag\' yetarli emas',
-                    'code': 'INSUFFICIENT_FUNDS',
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        is_qr_payment = payment_type in qr_methods
-        otp_code = str(random.randint(100000, 999999)) if not is_qr_payment else None
-        payment_ref = f"RL-{date.today().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
-
+        # Create Transaction record
         transaction = PaymentTransaction.objects.create(
             user=request.user,
             booking=booking,
             amount=booking.total_price,
-            payment_type='qr' if is_qr_payment else ('card' if payment_method else 'new_card'),
-            payment_method=payment_method,
-            status='pending' if is_qr_payment else 'otp_sent',
-            otp_code=otp_code,
+            provider=provider_name,
+            method=method,
+            status='initiated'
         )
+
+        # Use Adapter to trigger provider logic
+        adapter = get_payment_adapter(provider_name)
+        result = adapter.initiate_payment(transaction)
+        logger.info(f"Payment initiated: TXN {transaction.id} for Booking {booking.id} ({transaction.amount} {transaction.currency})")
 
         response_data = {
             'transaction_id': transaction.id,
-            'payment_ref': payment_ref,
+            'payment_code': transaction.payment_code,
             'amount': str(transaction.amount),
+            'currency': transaction.currency,
+            'status': transaction.status,
+            'otp_required': result.get('otp_required', False),
+            'checkout_url': result.get('checkout_url'),
+            'expires_in': result.get('expires_in'),
+            'payment_ref': transaction.metadata.get('gateway_ref', ''),
+            '_dev_otp': transaction.metadata.get('debug_otp') if request.user.is_staff else None,
         }
-
-        if is_qr_payment:
-            response_data.update(
-                {
-                    'message': 'QR to\'lov yaratildi',
-                    'payment_type': payment_type,
-                    'qr_data': f'https://fake-payment.ridelux.uz/pay/{payment_ref}',
-                    'expires_in': 900,
-                }
-            )
-        else:
-            response_data.update(
-                {
-                    'message': 'OTP yuborildi',
-                    '_dev_otp': otp_code if request.user.is_staff else None,
-                }
-            )
-
-        return Response(response_data, status=status.HTTP_200_OK)
-
-
-def _finalize_successful_payment(txn, user):
-    txn.status = 'paid'
-    txn.save(update_fields=['status', 'updated_at'])
-
-    booking = txn.booking
-    if booking:
-        booking.status = 'approved'
-        booking.save(update_fields=['status'])
-
-    invoice, receipt = create_invoice_and_receipt(user, booking, txn)
-    loyalty_points = max(1, int(txn.amount / 100000) * 10)
-
-    try:
-        from apps.loyalty.models import LoyaltyAccount
-
-        account, _ = LoyaltyAccount.objects.get_or_create(user=user)
-        account.add_points(loyalty_points, f"Booking #{booking.id} payment", booking=booking)
-    except Exception:
-        # Loyalty module is optional for payment success.
-        pass
-
-    return invoice, receipt, booking, loyalty_points
-
-
-class VerifyPaymentView(APIView):
-    """
-    POST /api/payments/verify/
-    Body: { transaction_id, otp_code? }
-    """
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        transaction_id = request.data.get('transaction_id')
-        otp_code = request.data.get('otp_code')
-
-        if not transaction_id:
-            return Response({'error': 'transaction_id talab qilinadi'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            txn = PaymentTransaction.objects.get(
-                id=transaction_id,
-                user=request.user,
-                status__in=['otp_sent', 'pending'],
-            )
-        except PaymentTransaction.DoesNotExist:
-            return Response({'error': 'Tranzaksiya topilmadi'}, status=status.HTTP_404_NOT_FOUND)
-
-        if txn.payment_type in ['card', 'new_card']:
-            if not otp_code:
-                return Response({'error': 'otp_code talab qilinadi'}, status=status.HTTP_400_BAD_REQUEST)
-            if txn.otp_code != otp_code:
-                return Response(
-                    {
-                        'error': 'Noto\'g\'ri kod. Qayta urinib ko\'ring.',
-                        'code': 'INVALID_OTP',
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-        invoice, receipt, booking, loyalty_points = _finalize_successful_payment(txn, request.user)
-
-        return Response(
-            {
-                'status': 'success',
-                'receipt_id': receipt.id,
-                'receipt_number': receipt.receipt_number,
-                'invoice_id': invoice.id,
-                'invoice_number': invoice.invoice_number,
-                'amount_paid': str(txn.amount),
-                'booking_status': booking.status if booking else None,
-                'loyalty_points_earned': loyalty_points,
-            },
-            status=status.HTTP_200_OK,
-        )
-
+        return Response(response_data)
 
 class VerifyOTPView(APIView):
     """
@@ -322,50 +216,38 @@ class VerifyOTPView(APIView):
         otp_code = request.data.get('otp_code')
 
         if not transaction_id or not otp_code:
-            return Response(
-                {'error': 'transaction_id va otp_code talab qilinadi'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({'error': 'transaction_id va otp_code talab qilinadi'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            txn = PaymentTransaction.objects.get(
-                id=transaction_id,
-                user=request.user,
-                status='otp_sent',
-            )
+            txn = PaymentTransaction.objects.get(id=transaction_id, user=request.user)
         except PaymentTransaction.DoesNotExist:
             return Response({'error': 'Tranzaksiya topilmadi'}, status=status.HTTP_404_NOT_FOUND)
 
-        if txn.otp_code != otp_code:
-            return Response(
-                {
-                    'error': 'Noto\'g\'ri kod. Qayta urinib ko\'ring.',
-                    'code': 'INVALID_OTP',
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        adapter = get_payment_adapter(txn.provider)
+        result = adapter.verify_otp(txn, otp_code)
 
-        invoice, receipt, booking, loyalty_points = _finalize_successful_payment(txn, request.user)
-
-        return Response(
-            {
-                'status': 'success',
-                'receipt_id': receipt.id,
-                'receipt_number': receipt.receipt_number,
-                'invoice_id': invoice.id,
-                'invoice_number': invoice.invoice_number,
-                'amount_paid': str(txn.amount),
-                'booking_status': booking.status if booking else None,
-                'loyalty_points_earned': loyalty_points,
-            },
-            status=status.HTTP_200_OK,
-        )
+        if result['status'] == 'success':
+            # Auto-capture for mock
+            capture_result = adapter.capture_payment(txn)
+            if capture_result['status'] == 'success':
+                _finalize_successful_payment(txn, request.user)
+                logger.info(f"Payment successful: TXN {txn.id} verified with OTP")
+                return Response({
+                    'status': 'success',
+                    'payment_status': txn.status,
+                    'message': 'To\'lov muvaffaqiyatli amalga oshirildi'
+                })
+        
+        return Response({'error': result.get('message', 'OTP xatosi')}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ResendOTPView(APIView):
+class CheckPaymentStatusView(APIView):
     """
-    POST /api/payments/resend-otp/
-    Body: { transaction_id }
+    POST /api/payments/verify/
+    Body: { transaction_id, payment_type }
+    
+    Polls the payment provider to check if the QR/redirect payment
+    has been completed by the user.
     """
     permission_classes = [IsAuthenticated]
 
@@ -375,39 +257,93 @@ class ResendOTPView(APIView):
             return Response({'error': 'transaction_id talab qilinadi'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            txn = PaymentTransaction.objects.get(
-                id=transaction_id,
-                user=request.user,
-                status='otp_sent',
-            )
+            txn = PaymentTransaction.objects.get(id=transaction_id, user=request.user)
         except PaymentTransaction.DoesNotExist:
-            return Response({'error': 'Tranzaksiya topilmadi yoki holati yaroqsiz'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Tranzaksiya topilmadi'}, status=status.HTTP_404_NOT_FOUND)
 
-        otp_code = str(random.randint(100000, 999999))
-        txn.otp_code = otp_code
-        txn.save(update_fields=['otp_code', 'updated_at'])
+        # If already paid, return success immediately
+        if txn.status == 'paid':
+            return Response({'status': 'success', 'payment_status': 'paid'})
 
-        return Response(
-            {
-                'message': 'OTP qayta yuborildi',
-                '_dev_otp': otp_code if request.user.is_staff else None,
-            },
-            status=status.HTTP_200_OK,
-        )
+        adapter = get_payment_adapter(txn.provider)
 
+        # Check if adapter supports status checking
+        check_fn = getattr(adapter, 'check_payment_status', None)
+        if check_fn:
+            result = check_fn(txn)
+            if result.get('status') == 'paid':
+                _finalize_successful_payment(txn, request.user)
+                logger.info(f"Payment confirmed via status check: TXN {txn.id}")
+                return Response({'status': 'success', 'payment_status': 'paid'})
+            elif result.get('status') == 'cancelled':
+                return Response({'status': 'cancelled', 'payment_status': 'cancelled'})
+            else:
+                return Response({'status': 'pending', 'payment_status': 'pending'})
+
+        # For mock provider: auto-confirm
+        if txn.provider == 'mock':
+            _finalize_successful_payment(txn, request.user)
+            return Response({'status': 'success', 'payment_status': 'paid'})
+
+        return Response({'status': 'pending', 'payment_status': txn.status})
+
+
+def _finalize_successful_payment(txn, user):
+    txn.status = 'paid'
+    if not txn.paid_at:
+        txn.paid_at = timezone.now()
+    txn.save()
+
+    booking = txn.booking
+    if booking:
+        # Move to payment_pending: user paid, admin needs to give final CONFIRMED status
+        booking.status = 'payment_pending'
+        booking.save()
+
+    from services.payment_service import create_invoice_and_receipt
+    invoice, receipt = create_invoice_and_receipt(user, booking, txn)
+    
+    # Loyalty logic
+    try:
+        from apps.loyalty.models import LoyaltyAccount
+        loyalty_points = max(1, int(txn.amount / 100000) * 10)
+        # Note: we might defer point addition until COMPLETED as per user request
+    except Exception:
+        pass
+
+    return invoice, receipt, booking
 
 def _pdf_escape(value):
     return str(value).replace('\\', '\\\\').replace('(', '\\(').replace(')', '\\)')
 
-
-def _build_receipt_pdf(receipt, user):
+def _build_invoice_pdf(invoice, user):
+    booking = invoice.booking
+    car = booking.car
+    
     lines = [
-        'RIDELUX PAYMENT RECEIPT',
-        f'Receipt: {receipt.receipt_number}',
-        f'Invoice: {receipt.invoice.invoice_number if receipt.invoice else "-"}',
-        f'Amount: {receipt.amount} UZS',
-        f'Paid At: {receipt.paid_at.strftime("%Y-%m-%d %H:%M:%S") if receipt.paid_at else "-"}',
-        f'User: {user.username}',
+        'RIDELUX PREMIUM RENTALS',
+        '-----------------------------------',
+        f'INVOICE:  {invoice.invoice_number}',
+        f'DATE:     {invoice.created_at.strftime("%Y-%m-%d %H:%M")}',
+        '',
+        'CUSTOMER DETAILS:',
+        f'Name:     {user.get_full_name() or user.username}',
+        f'Phone:    {user.phone_number or "N/A"}',
+        '',
+        'BOOKING DETAILS:',
+        f'Reference: {booking.booking_code}',
+        f'Vehicle:   {car.model_info.brand} {car.model_info.model_name}',
+        f'Period:    {booking.start_datetime.strftime("%d.%m %H:%M")} - {booking.end_datetime.strftime("%d.%m %H:%M")}',
+        '',
+        'PRICE BREAKDOWN:',
+        f'Base Price: {invoice.amount} UZS',
+        f'VAT (0%):   0 UZS',
+        '-----------------------------------',
+        f'TOTAL PAID: {invoice.amount} UZS',
+        '',
+        'STATUS:    PAID & SECURED',
+        '-----------------------------------',
+        'Thank you for choosing Ridelux!',
     ]
 
     text_ops = ['BT', '/F1 12 Tf', '50 780 Td']

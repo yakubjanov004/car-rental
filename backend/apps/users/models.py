@@ -31,14 +31,32 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    title = models.CharField(max_length=100)
+    NOTIFICATION_TYPES = [
+        ('booking_created', 'New Booking Created'),
+        ('payment_completed', 'Payment Successful'),
+        ('booking_pending_admin', 'Booking Pending Admin Review'),
+        ('booking_approved', 'Booking Approved'),
+        ('booking_rejected', 'Booking Rejected'),
+        ('kyc_submitted', 'KYC Documents Submitted'),
+        ('kyc_approved', 'KYC Approved'),
+        ('kyc_rejected', 'KYC Rejected'),
+        ('system', 'System Message'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications', null=True, blank=True)
+    admin_only = models.BooleanField(default=False)
+    type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, default='system')
+    title = models.CharField(max_length=255)
     message = models.TextField()
+    metadata = models.JSONField(default=dict, blank=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
-        return f"Notification for {self.user.username} - {self.title}"
+        return f"[{self.type}] {self.title} - {self.user.username if self.user else 'ADMIN'}"
 
 
 class KYCProfile(models.Model):

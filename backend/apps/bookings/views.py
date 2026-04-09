@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Booking, Fine, Waitlist
 from .serializers import BookingSerializer, FineSerializer, WaitlistSerializer
+import logging
+
+logger = logging.getLogger('apps.bookings')
 
 class WaitlistViewSet(viewsets.ModelViewSet):
     serializer_class = WaitlistSerializer
@@ -23,6 +26,7 @@ class BookingCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         booking = serializer.save(user=self.request.user)
+        logger.info(f"Booking created: {booking.booking_code} by user {self.request.user.username}")
         
         # Award loyalty points: 1 point for every 100,000 UZS
         points = int(booking.total_price // 100000)
@@ -45,12 +49,12 @@ class MyBookingsView(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
-        return Booking.objects.filter(user=self.request.user).order_by('-created_at')
+        return Booking.objects.filter(user=self.request.user).select_related('car', 'user').order_by('-created_at')
 
 
 class BookingListView(generics.ListAPIView):
     """Admin — barcha bronlarni ko'rish."""
-    queryset = Booking.objects.all().order_by('-created_at')
+    queryset = Booking.objects.all().select_related('car', 'user').order_by('-created_at')
     serializer_class = BookingSerializer
     permission_classes = (permissions.IsAdminUser,)
 
@@ -61,12 +65,12 @@ class BookingDetailView(generics.RetrieveUpdateAPIView):
 
     def get_queryset(self):
         if self.request.user.is_staff:
-            return Booking.objects.all()
-        return Booking.objects.filter(user=self.request.user)
+            return Booking.objects.all().select_related('car', 'user')
+        return Booking.objects.filter(user=self.request.user).select_related('car', 'user')
 
 
 class BookingStatusUpdateView(APIView):
-    """Admin — bron statusini o'zgartirish (pending/approved/rejected/cancelled)."""
+    """Admin — bron statusini o'zgartirish."""
     permission_classes = (permissions.IsAdminUser,)
 
     def patch(self, request, pk):
@@ -76,7 +80,7 @@ class BookingStatusUpdateView(APIView):
             return Response({'detail': 'Topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
 
         new_status = request.data.get('status')
-        valid_statuses = ['pending', 'approved', 'rejected', 'cancelled', 'completed']
+        valid_statuses = [s[0] for s in Booking.STATUS_CHOICES]
         if new_status not in valid_statuses:
             return Response(
                 {'detail': f"Noto'g'ri status. Mumkin: {', '.join(valid_statuses)}"},
@@ -84,6 +88,9 @@ class BookingStatusUpdateView(APIView):
             )
 
         booking.status = new_status
+        reason = request.data.get('rejection_reason')
+        if reason:
+            booking.rejection_reason = reason
         booking.save()
         serializer = BookingSerializer(booking)
         return Response(serializer.data)
@@ -94,36 +101,58 @@ class BookingAvailabilityView(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def get(self, request, car_id):
-        from_date = request.query_params.get('from')
-        to_date = request.query_params.get('to')
+        from_dt_str = request.query_params.get('from')
+        to_dt_str = request.query_params.get('to')
 
-        if not from_date or not to_date:
-            return Response({'detail': 'from va to parametrlari kerak.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not from_dt_str or not to_dt_str:
+            return Response({'detail': 'from va to (ISO format) parametrlari kerak.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            from_date = datetime.strptime(from_date, '%Y-%m-%d').date()
-            to_date = datetime.strptime(to_date, '%Y-%m-%d').date()
+            # Handle both date and datetime formats for flexibility
+            if len(from_dt_str) <= 10:
+                from_dt = datetime.strptime(from_dt_str, '%Y-%m-%d')
+                to_dt = datetime.strptime(to_dt_str, '%Y-%m-%d')
+            else:
+                from_dt = datetime.fromisoformat(from_dt_str.replace('Z', '+00:00'))
+                to_dt = datetime.fromisoformat(to_dt_str.replace('Z', '+00:00'))
         except ValueError:
-            return Response({'detail': 'Sana formati: YYYY-MM-DD'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Sana formati: YYYY-MM-DD yoki ISO DateTime'}, status=status.HTTP_400_BAD_REQUEST)
 
         conflicting = Booking.objects.filter(
             car_id=car_id,
-            status__in=['pending', 'approved'],
-            start_date__lte=to_date,
-            end_date__gte=from_date,
+            status__in=['pending', 'payment_pending', 'confirmed', 'active'],
+            start_datetime__lt=to_dt,
+            end_datetime__gt=from_dt,
         )
 
-        booked_dates = []
+        from apps.cars.models import MaintenanceRecord
+        maintenance = MaintenanceRecord.objects.filter(
+            car_id=car_id,
+            start_datetime__lt=to_dt,
+            end_datetime__gt=from_dt,
+        )
+
+        booked_ranges = []
         for b in conflicting:
-            booked_dates.append({
-                'start_date': b.start_date.isoformat(),
-                'end_date': b.end_date.isoformat(),
+            booked_ranges.append({
+                'start': b.start_datetime.isoformat(),
+                'end': b.end_datetime.isoformat(),
                 'status': b.status,
+                'type': 'booking'
+            })
+            
+        for m in maintenance:
+            booked_ranges.append({
+                'start': m.start_datetime.isoformat(),
+                'end': m.end_datetime.isoformat(),
+                'status': 'maintenance',
+                'type': 'maintenance',
+                'reason': m.reason
             })
 
         return Response({
-            'available': not conflicting.exists(),
-            'booked_ranges': booked_dates,
+            'available': not conflicting.exists() and not maintenance.exists(),
+            'booked_ranges': booked_ranges,
         })
 
 

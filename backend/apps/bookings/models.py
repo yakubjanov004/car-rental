@@ -4,22 +4,27 @@ from apps.cars.models import Car
 
 class Booking(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
-        ('cancelled', 'Cancelled'),
+        ('pending', 'Pending Review'),
+        ('payment_pending', 'Payment Pending'),
+        ('confirmed', 'Confirmed'),
+        ('active', 'Active Rental'),
         ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('failed', 'Payment Failed'),
+        ('rejected', 'Rejected by Admin'),
     ]
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    car = models.ForeignKey(Car, on_delete=models.CASCADE)
-    start_date = models.DateField()
-    end_date = models.DateField()
+    booking_code = models.CharField(max_length=10, unique=True, db_index=True, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
+    car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='bookings')
+    start_datetime = models.DateTimeField(db_index=True)
+    end_datetime = models.DateTimeField(db_index=True)
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True)
     full_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20)
     comment = models.TextField(blank=True, null=True)
+    rejection_reason = models.TextField(blank=True, null=True)
     
     # Chauffeur Service
     is_chauffeur = models.BooleanField(default=False)
@@ -31,8 +36,14 @@ class Booking(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if not self.booking_code:
+            from apps.bookings.utils import generate_booking_code
+            self.booking_code = generate_booking_code()
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"Booking {self.id} - {self.car.model_info.brand} {self.car.model_info.model_name} by {self.user.username}"
+        return f"Booking {self.id} - {self.booking_code} by {self.user.username}"
 
 class Fine(models.Model):
     STATUS_CHOICES = [

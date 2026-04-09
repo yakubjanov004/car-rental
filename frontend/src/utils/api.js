@@ -123,6 +123,26 @@ export const fetchNotifications = async () => {
     }
 };
 
+export const markNotificationAsRead = async (id) => {
+    try {
+        const response = await apiClient.post(`/users/notifications/${id}/read/`);
+        return response.data;
+    } catch (error) {
+        console.error("Error marking notification as read:", error);
+        throw error;
+    }
+};
+
+export const markAllNotificationsAsRead = async () => {
+    try {
+        const response = await apiClient.post('/users/notifications/read-all/');
+        return response.data;
+    } catch (error) {
+        console.error("Error marking all notifications as read:", error);
+        throw error;
+    }
+};
+
 export const validatePromoCode = async (code) => {
     try {
       const response = await apiClient.post('/payments/promos/validate/', { code });

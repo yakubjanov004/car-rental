@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Car, CarImage, CarModel, Amenity
+from .models import Car, CarImage, CarModel, Amenity, MaintenanceRecord
 from apps.reviews.models import Review
 from apps.districts.serializers import DistrictSerializer
 
@@ -225,3 +225,8 @@ class CarSerializer(serializers.ModelSerializer):
         except Exception as e:
             logging.error(f"Price engine error: {e}")
             return None
+
+class MaintenanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MaintenanceRecord
+        fields = '__all__'

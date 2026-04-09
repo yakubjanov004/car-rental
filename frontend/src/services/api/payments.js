@@ -37,8 +37,14 @@ export const fetchReceipts = async () => {
   return response.data?.results || [];
 };
 
-export const downloadReceiptFile = async (receiptId) => {
-  const response = await apiClient.get(`/payments/receipts/${receiptId}/download/`, {
+export const fetchInvoices = async () => {
+  const response = await apiClient.get('/payments/invoices/');
+  if (Array.isArray(response.data)) return response.data;
+  return response.data?.results || [];
+};
+
+export const downloadInvoiceFile = async (invoiceId) => {
+  const response = await apiClient.get(`/payments/invoices/${invoiceId}/download/`, {
     responseType: 'blob',
   });
   return response.data;

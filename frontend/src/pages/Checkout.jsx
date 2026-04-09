@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
   CreditCard, ShieldCheck, CheckCircle2, ChevronRight, 
    Calendar, MapPin, QrCode, Lock, Zap, Clock, ArrowRight,
-  Info, Sparkles, MessageSquare
+  Info, Sparkles, MessageSquare, Copy, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatNarx } from '../utils/formatPrice';
@@ -12,8 +12,10 @@ import { fetchCarDetail, createBooking, validatePromoCode } from '../utils/api';
 import { initiatePayment, verifyOtp, verifyPayment, fetchPaymentMethods } from '../services/api/payments';
 import { fetchInsurancePlans, createBookingInsurance } from '../services/api/insurance';
 import { calculateDynamicPrice } from '../services/api/pricing';
+import { useAuth } from '../context/AuthContext';
 
 const Checkout = () => {
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,6 +32,8 @@ const Checkout = () => {
    const [isSMSModalOpen, setIsSMSModalOpen] = useState(false);
    const [transactionId, setTransactionId] = useState(null);
    const [pendingBookingId, setPendingBookingId] = useState(null);
+   const [bookingCode, setBookingCode] = useState('');
+   const [copied, setCopied] = useState(false); 
   const [cardData, setCardData] = useState({
     number: '',
     holder: '',
@@ -47,6 +51,7 @@ const Checkout = () => {
    const [useSavedCard, setUseSavedCard] = useState(false);
    const [selectedMethodId, setSelectedMethodId] = useState(null);
    const [qrSeed, setQrSeed] = useState(0);
+   const [checkoutUrl, setCheckoutUrl] = useState('');
 
   // Booking data from navigation state if available
   const bookingMeta = location.state || {
@@ -200,6 +205,14 @@ const Checkout = () => {
   };
 
    const nextStep = async () => {
+      if (step === 1) {
+         if (!user?.kyc || user.kyc.status !== 'approved') {
+            alert("Sizning profilingiz hali tasdiqlanmagan. Bron qilish uchun 'Tasdiqlangan' (APPROVED) holatida bo'lishingiz shart.");
+            navigate('/profile');
+            return;
+         }
+      }
+
       if (step === 2) {
          if (!paymentMethod) return;
 
@@ -207,12 +220,16 @@ const Checkout = () => {
          try {
             const booking = await createBooking({
                car: id,
-               start_date: bookingMeta.startDate,
-               end_date: bookingMeta.endDate,
+               start_datetime: bookingMeta.startDate,
+               end_datetime: bookingMeta.endDate,
                total_price: totalAmount,
-               full_name: cardData.holder || 'Guest Client',
-               phone_number: '998901234567',
+               full_name: cardData.holder || `${user?.first_name} ${user?.last_name || ''}`.trim() || 'Guest Client',
+               phone_number: user?.phone_number || '998901234567',
             });
+
+            if (booking.booking_code) {
+               setBookingCode(booking.booking_code);
+            }
 
             if (selectedInsuranceId) {
               await createBookingInsurance({
@@ -224,9 +241,18 @@ const Checkout = () => {
 
             setPendingBookingId(booking.id);
 
+            // Map frontend payment method to backend provider name
+            const providerMap = {
+              card: 'mock',   // Card flow uses mock (OTP simulation) in dev
+              payme: 'payme',
+              click: 'click',
+              uzum: 'mock',   // Uzum uses mock for now
+            };
+
             const initPayload = {
               booking_id: booking.id,
-              payment_type: paymentMethod,
+              provider: providerMap[paymentMethod] || 'mock',
+              method: paymentMethod === 'card' ? 'card' : 'card',
             };
 
             if (paymentMethod === 'card') {
@@ -239,9 +265,14 @@ const Checkout = () => {
 
             const initResult = await initiatePayment(initPayload);
             setTransactionId(initResult.transaction_id);
-            setPaymentRef(initResult.payment_ref || '');
+            setPaymentRef(initResult.payment_ref || initResult.payment_code || '');
             setRandomOTP(initResult._dev_otp || '');
             setOtpError('');
+
+            // Store checkout URL for Payme/Click QR
+            if (initResult.checkout_url) {
+              setCheckoutUrl(initResult.checkout_url);
+            }
 
             if (paymentMethod === 'card') {
               setIsSMSModalOpen(Boolean(initResult._dev_otp));
@@ -802,8 +833,33 @@ const Checkout = () => {
                      <CheckCircle2 className="w-14 h-14 text-green-500" />
                   </div>
                   <h3 className="text-5xl font-black text-white italic uppercase tracking-tighter mb-4">TO'LOV <span className="text-green-500">MUVAFFAQIYATLI!</span></h3>
+                  
+                  {bookingCode && (
+                    <motion.div 
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className="mb-8 p-6 bg-white/5 border border-white/10 rounded-3xl flex flex-col items-center gap-3"
+                    >
+                      <p className="text-[10px] text-white/20 uppercase font-black tracking-[0.2em]">Sizning Broningiz Kodi</p>
+                      <div className="flex items-center gap-4">
+                        <span className="text-4xl font-display font-black text-primary tracking-widest italic">{bookingCode}</span>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(bookingCode);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          }}
+                          className={`p-3 rounded-xl transition-all ${copied ? 'bg-green-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                        >
+                          {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                        </button>
+                      </div>
+                      <p className="text-[9px] text-white/40 font-bold uppercase italic">Ushbu kodni saqlab qo'ying, u loyiha referensi hisoblanadi.</p>
+                    </motion.div>
+                  )}
+
                   <p className="text-sm text-white/40 max-w-sm font-medium mb-16 leading-relaxed">
-                     Sizning broningiz tasdiqlandi. Barcha ma'lumotlar profilning buyurtmalar bo'limiga yuborildi.
+                     Sizning broningiz muvaffaqiyatli rasmiylashtirildi. Tez orada Adminlarimiz siz bilan bog'lanishadi.
                   </p>
                   
                   <div className="flex gap-4">

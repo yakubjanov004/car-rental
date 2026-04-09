@@ -1,9 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Phone, ChevronDown, User, LogOut, LayoutDashboard, Bell } from 'lucide-react';
+import { Menu, X, Phone, ChevronDown, User, LogOut, LayoutDashboard, Bell, Info } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { fetchNotifications } from '../utils/api';
+import { fetchNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../utils/api';
+
+const NotificationList = ({ onRead }) => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      const data = await fetchNotifications();
+      setNotifications(Array.isArray(data) ? data.slice(0, 10) : []);
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const handleRead = async (id) => {
+    try {
+      await markNotificationAsRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? {...n, is_read: true} : n));
+      onRead();
+    } catch(e) {}
+  };
+
+  if (loading) return <div className="p-10 text-center text-white/20 italic text-[10px] uppercase font-black">Yuklanmoqda...</div>;
+  if (notifications.length === 0) return <div className="p-10 text-center text-white/10 italic text-[10px] uppercase font-bold">Hozircha xabarlar yo'q</div>;
+
+  return (
+    <div className="flex flex-col">
+      {notifications.map(n => (
+        <div key={n.id} className={`p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition-colors relative ${!n.is_read ? 'bg-primary/[0.02]' : ''}`}>
+           {!n.is_read && <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full shadow-[0_0_10px_rgba(255,107,1,0.5)]" />}
+           <div className="flex justify-between items-start mb-1">
+              <span className={`text-[9px] font-black uppercase tracking-tighter ${n.type?.includes('kyc') ? 'text-blue-400' : 'text-primary'}`}>
+                 {n.type?.replace(/_/g, ' ')}
+              </span>
+              <span className="text-[8px] text-white/20 font-medium">{new Date(n.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+           </div>
+           <h4 className="text-[11px] font-bold text-white mb-1 leading-tight">{n.title}</h4>
+           <p className="text-[10px] text-white/40 leading-relaxed line-clamp-2">{n.message}</p>
+           {!n.is_read && (
+             <button onClick={() => handleRead(n.id)} className="mt-2 text-[8px] font-black uppercase text-white/20 hover:text-white transition-colors underline underline-offset-4 pointer-events-auto">O'qildi</button>
+           )}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const NAV_LINKS = [
   { to: '/', label: 'Bosh sahifa' },
@@ -163,12 +209,52 @@ const Navbar = () => {
             
             {user ? (
               <div className="flex items-center gap-3">
-                <Link to="/profile?tab=notifications" className="relative p-2 text-white/40 hover:text-white transition-colors group">
-                   <Bell className="w-5 h-5" />
-                   {unreadCount > 0 && (
-                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border border-bg-dark" />
-                   )}
-                </Link>
+                <div className="relative">
+                  <button 
+                    onClick={() => {
+                        setDropdownOpen(dropdownOpen === 'notifications' ? null : 'notifications');
+                        setLangOpen(false);
+                    }}
+                    className="relative p-2 text-white/40 hover:text-white transition-colors group"
+                  >
+                     <Bell className="w-5 h-5" />
+                     {unreadCount > 0 && (
+                       <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border border-bg-dark animate-pulse" />
+                     )}
+                  </button>
+
+                  <AnimatePresence>
+                    {dropdownOpen === 'notifications' && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute top-full right-0 mt-3 w-80 glass border-white/10 rounded-[24px] overflow-hidden shadow-2xl z-[100]"
+                      >
+                        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
+                           <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Sizning Xabarlaringiz</span>
+                           {unreadCount > 0 && (
+                             <button 
+                               onClick={async () => {
+                                 await markAllNotificationsAsRead();
+                                 setUnreadCount(0);
+                               }}
+                               className="text-[9px] font-black uppercase tracking-tighter text-primary hover:text-white transition-colors"
+                             >
+                               Hammasini o'qish
+                             </button>
+                           )}
+                        </div>
+                        <div className="max-h-[360px] overflow-y-auto scrollbar-hide">
+                           <NotificationList onRead={() => setUnreadCount(prev => Math.max(0, prev - 1))} />
+                        </div>
+                        <Link to="/profile?tab=buyurtmalar" className="block p-4 text-center text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-primary border-t border-white/5 bg-white/[0.02] transition-colors">
+                           Barcha bildirishnomalar
+                        </Link>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 <Link to="/profile" className="btn-secondary text-[10px] uppercase font-black tracking-widest px-4 py-2.5">
                   <User className="w-3.5 h-3.5" />

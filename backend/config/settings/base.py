@@ -6,7 +6,7 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-car-rental-secret-key-31032026')
+SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
@@ -24,7 +24,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'drf_spectacular',
-    'apps.users',
+    'apps.users.apps.UsersConfig',
     'apps.districts',
     'apps.cars',
     'apps.bookings',
@@ -71,10 +71,25 @@ WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': config(
+        'DATABASE_URL',
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        cast=lambda v: {
+            'ENGINE': 'django.db.backends.postgresql' if v.startswith('postgres') else 'django.db.backends.sqlite3',
+            'NAME': v.split('/')[-1] if v.startswith('postgres') else BASE_DIR / 'db.sqlite3',
+            'USER': v.split('//')[1].split(':')[0] if v.startswith('postgres') else '',
+            'PASSWORD': v.split(':')[2].split('@')[0] if v.startswith('postgres') else '',
+            'HOST': v.split('@')[1].split(':')[0] if v.startswith('postgres') else '',
+            'PORT': v.split(':')[-1].split('/')[0] if v.startswith('postgres') else '',
+        } if '://' in v else {
+            'ENGINE': 'django.db.backends.postgresql' if config('DB_HOST', default='') else 'django.db.backends.sqlite3',
+            'NAME': config('DB_NAME', default=str(BASE_DIR / 'db.sqlite3')),
+            'USER': config('DB_USER', default=''),
+            'PASSWORD': config('DB_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default=''),
+            'PORT': config('DB_PORT', default=''),
+        }
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -99,11 +114,22 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day',
+        'payment_initiate': '10/hour',
+        'kyc_submit': '5/hour',
+    },
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'core.pagination.StandardResultsSetPagination',
+    'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
 }
 
 SIMPLE_JWT = {
@@ -120,12 +146,7 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174',
-]
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in config('CORS_ALLOWED_ORIGINS', default='http://localhost:5173,http://localhost:5174').split(',')]
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
@@ -202,3 +223,54 @@ JAZZMIN_UI_TWEAKS = {
         'success': 'btn-success',
     },
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'apps': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
+# ============================================================
+#  PAYMENT GATEWAY CONFIGURATION
+# ============================================================
+
+# --- Payme (payme.uz) ---
+PAYME_ID = config('PAYME_ID', default='')
+PAYME_KEY = config('PAYME_KEY', default='')
+PAYME_TEST_MODE = config('PAYME_TEST_MODE', default=True, cast=bool)
+PAYME_RETURN_URL = config('PAYME_RETURN_URL', default='http://localhost:5173/profile')
+
+# --- Click (click.uz) ---
+CLICK_SERVICE_ID = config('CLICK_SERVICE_ID', default='')
+CLICK_MERCHANT_ID = config('CLICK_MERCHANT_ID', default='')
+CLICK_MERCHANT_USER_ID = config('CLICK_MERCHANT_USER_ID', default='')
+CLICK_SECRET_KEY = config('CLICK_SECRET_KEY', default='')
+CLICK_RETURN_URL = config('CLICK_RETURN_URL', default='http://localhost:5173/profile')

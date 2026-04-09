@@ -26,36 +26,52 @@ class PaymentMethod(models.Model):
 
 class PaymentTransaction(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Kutilmoqda'),
-        ('otp_sent', 'OTP Yuborildi'),
-        ('paid', 'To\'landi'),
-        ('failed', 'Xatolik'),
-        ('cancelled', 'Bekor qilindi'),
-        ('refunded', 'Qaytarildi'),
+        ('initiated', 'INITIATED'),
+        ('otp_pending', 'OTP_PENDING'),
+        ('authorized', 'AUTHORIZED'),
+        ('paid', 'PAID'),
+        ('failed', 'FAILED'),
+        ('refunded', 'REFUNDED'),
     ]
 
-    PAYMENT_TYPES = [
-        ('card', 'Saqlangan Karta'),
-        ('new_card', 'Yangi Karta'),
-        ('qr', 'QR orqali'),
-        ('deposit', 'Depozit'),
-        ('full_payment', 'To\'liq to\'lov'),
+    METHODS = [
+        ('card', 'Card'),
+        ('cash', 'Cash'),
+        ('terminal', 'Terminal'),
+        ('transfer', 'Bank Transfer'),
     ]
 
+    PROVIDERS = [
+        ('mock', 'Mock Gateway'),
+        ('stripe', 'Stripe'),
+        ('payme', 'Payme'),
+        ('click', 'Click'),
+    ]
+
+    payment_code = models.CharField(max_length=50, unique=True, db_index=True, null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='transactions')
     booking = models.ForeignKey(Booking, on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPES)
-    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    currency = models.CharField(max_length=10, default='UZS')
+    provider = models.CharField(max_length=20, choices=PROVIDERS, default='mock', db_index=True)
+    method = models.CharField(max_length=20, choices=METHODS, default='card', db_index=True)
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='initiated', db_index=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    
+    otp_code = models.CharField(max_length=6, blank=True, null=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
-    # Fake verification
-    otp_code = models.CharField(max_length=6, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.payment_code:
+            import uuid
+            self.payment_code = f"PAY-{uuid.uuid4().hex[:8].upper()}"
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"TXN {self.id} - {self.amount} UZS - {self.status}"
+        return f"{self.payment_code} - {self.amount} {self.currency} - {self.status}"
 
 
 class BillingInvoice(models.Model):

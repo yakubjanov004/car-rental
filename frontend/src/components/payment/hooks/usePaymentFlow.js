@@ -15,6 +15,7 @@ export const usePaymentFlow = (booking) => {
   const [paymentStatus, setPaymentStatus] = useState('idle');
   const [error, setError] = useState(null);
   const [paymentResult, setPaymentResult] = useState(null);
+  const [devOtp, setDevOtp] = useState(null);
   const [savedMethods, setSavedMethods] = useState([]);
   const [useSavedMethod, setUseSavedMethod] = useState(false);
   const [selectedMethodId, setSelectedMethodId] = useState(null);
@@ -67,6 +68,7 @@ export const usePaymentFlow = (booking) => {
         insurance_plan_id: selectedInsurance?.id,
       });
       setTransactionId(result.transaction_id);
+      setDevOtp(result._dev_otp);
       setPaymentStatus('otp_sent');
       setPaymentResult(null);
       setStep(4);
@@ -132,6 +134,7 @@ export const usePaymentFlow = (booking) => {
     initiatePaymentFlow: initiate,
     verifyOtpFlow: verify,
     resendOtpFlow: resend,
+    devOtp,
     error,
   };
 };

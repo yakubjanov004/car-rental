@@ -9,9 +9,9 @@ class PaymentMethodAdmin(admin.ModelAdmin):
 
 @admin.register(PaymentTransaction)
 class PaymentTransactionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'amount', 'payment_type', 'status', 'created_at')
-    list_filter = ('status', 'payment_type')
-    search_fields = ('user__username',)
+    list_display = ('payment_code', 'user', 'amount', 'provider', 'method', 'status', 'created_at')
+    list_filter = ('status', 'provider', 'method')
+    search_fields = ('user__username', 'payment_code')
 
 @admin.register(DepositHold)
 class DepositHoldAdmin(admin.ModelAdmin):

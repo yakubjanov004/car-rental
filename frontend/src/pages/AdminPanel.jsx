@@ -81,23 +81,45 @@ const AdminPanel = () => {
     fetchData();
   }, [user, navigate]);
 
-  const updateBookingStatus = async (id, status) => {
+  const updateBookingStatus = async (id, status, reason = "") => {
     try {
-      await apiClient.patch(`/bookings/${id}/status/`, { status });
-      setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+      const response = await apiClient.patch(`/bookings/${id}/status/`, { status, rejection_reason: reason });
+      setBookings(prev => prev.map(b => b.id === id ? { ...b, status: response.data.status } : b));
     } catch (err) {
       console.error(err);
       alert("Xatolik yuz berdi!");
     }
   };
 
-  const handleVerifyUser = async (userId, status) => {
+  const handleVerifyUser = async (userId, status, reason = "") => {
     try {
-      await apiClient.post(`/users/admin/users/${userId}/verify/`, { status });
+      await apiClient.post(`/users/admin/users/${userId}/verify/`, { status, rejection_reason: reason });
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, verification_status: status } : u));
     } catch (err) {
       console.error(err);
       alert("Xatolik!");
+    }
+  };
+
+  const addMaintenance = async (carId) => {
+    const reason = prompt("Texnik xizmat/Maintenance sababi:");
+    if (!reason) return;
+    const start = prompt("Boshlanish vaqti (YYYY-MM-DD HH:MM):", new Date().toISOString().slice(0, 16).replace('T', ' '));
+    const end = prompt("Tugash vaqti (YYYY-MM-DD HH:MM):", new Date(Date.now() + 86400000).toISOString().slice(0, 16).replace('T', ' '));
+    
+    if(!start || !end) return;
+
+    try {
+       await apiClient.post('/cars/maintenance/', {
+          car: carId,
+          reason,
+          start_datetime: start,
+          end_datetime: end
+       });
+       alert("Muvaffaqiyatli saqlandi! Ushbu vaqtda avtomobil bron uchun yopiq bo'ladi.");
+    } catch(err) {
+       console.error(err);
+       alert("Xatolik! Sana formatini tekshiring (YYYY-MM-DD HH:MM)");
     }
   };
 
@@ -458,7 +480,10 @@ const AdminPanel = () => {
                                  <CheckCircle className="w-4 h-4" /> TASDIQLASH
                                </button>
                                <button 
-                                 onClick={() => handleVerifyUser(u.id, 'rejected')}
+                                 onClick={() => {
+                                   const r = prompt("Rad etish sababi:");
+                                   if(r) handleVerifyUser(u.id, 'rejected', r);
+                                 }}
                                  className="flex-1 py-5 rounded-[28px] bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all duration-500 flex items-center justify-center gap-3"
                                >
                                  <XCircle className="w-4 h-4" /> RAD ETISH
@@ -628,7 +653,9 @@ const AdminPanel = () => {
                                           b.status === 'pending' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20 shadow-orange-500/10' :
                                           'bg-red-500/10 text-red-500 border border-red-500/20'
                                        }`}>
-                                          {b.status === 'approved' ? 'TASDIQLANGAN' : b.status === 'pending' ? 'KUTILMOQDA' : 'RAD ETILGAN'}
+                                          {b.status === 'confirmed' ? 'TASDIQLANGAN' : 
+                                            b.status === 'payment_pending' ? 'TO\'LOV KUTILMOQDA' : 
+                                            b.status === 'pending' ? 'MODERATSIYA' : b.status.toUpperCase()}
                                        </div>
                                        {b.is_chauffeur && (
                                          <div className="px-5 py-2 rounded-full bg-gradient-to-r from-primary to-orange-600 text-white text-[8px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-[0_0_20px_rgba(239,55,42,0.4)] border border-white/20 animate-pulse">
@@ -657,18 +684,21 @@ const AdminPanel = () => {
                                    <div className="flex gap-3">
                                       {b.status === 'pending' && (
                                         <>
-                                          <button 
-                                             onClick={() => updateBookingStatus(b.id, 'approved')} 
-                                             className="h-14 w-14 bg-white/5 text-green-500 rounded-3xl hover:bg-green-500 hover:text-white transition-all duration-700 flex items-center justify-center border border-white/5 shadow-xl hover:shadow-green-500/30"
-                                          >
-                                             <CheckCircle size={20} />
-                                          </button>
-                                          <button 
-                                             onClick={() => updateBookingStatus(b.id, 'rejected')} 
-                                             className="h-14 w-14 bg-white/5 text-red-500 rounded-3xl hover:bg-red-500 hover:text-white transition-all duration-700 flex items-center justify-center border border-white/5 shadow-xl hover:shadow-red-500/30"
-                                          >
-                                             <XCircle size={20} />
-                                          </button>
+                                           <button 
+                                              onClick={() => updateBookingStatus(b.id, 'confirmed')} 
+                                              className="h-14 w-14 bg-white/5 text-green-500 rounded-3xl hover:bg-green-500 hover:text-white transition-all duration-700 flex items-center justify-center border border-white/5 shadow-xl hover:shadow-green-500/30"
+                                           >
+                                              <CheckCircle size={20} />
+                                           </button>
+                                           <button 
+                                              onClick={() => {
+                                                const reason = prompt("Rad etish sababini kiriting:");
+                                                if (reason) updateBookingStatus(b.id, 'rejected', reason);
+                                              }} 
+                                              className="h-14 w-14 bg-white/5 text-red-500 rounded-3xl hover:bg-red-500 hover:text-white transition-all duration-700 flex items-center justify-center border border-white/5 shadow-xl hover:shadow-red-500/30"
+                                           >
+                                              <XCircle size={20} />
+                                           </button>
                                         </>
                                       )}
                                       <button 
@@ -722,9 +752,12 @@ const AdminPanel = () => {
                                 </div>
                              </div>
                              
-                             <div className="flex items-center gap-4">
+                             <div className="flex flex-wrap items-center gap-3">
                                 <button className="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all text-white/60 hover:text-white flex items-center justify-center gap-2">
                                    <Edit size={14} /> TAHRIRLASH
+                                </button>
+                                <button onClick={() => addMaintenance(car.id)} className="flex-1 py-4 bg-orange-500/10 hover:bg-orange-500/20 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all text-orange-500 flex items-center justify-center gap-2">
+                                   <Clock size={14} /> MAINTENANCE
                                 </button>
                                 <button onClick={() => deleteCar(car.id)} className="w-14 h-14 bg-white/5 hover:bg-red-500/10 hover:text-red-500 rounded-2xl text-white/40 transition-all flex items-center justify-center border border-white/5">
                                    <Trash2 size={18} />

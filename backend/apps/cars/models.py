@@ -147,3 +147,16 @@ class CarImage(models.Model):
 
     def __str__(self):
         return f"{self.car_model.brand} {self.car_model.model_name} - {self.slot}"
+class MaintenanceRecord(models.Model):
+    car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='maintenances')
+    reason = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_datetime']
+
+    def __str__(self):
+        return f"M: {self.car.plate_number} | {self.reason}"

@@ -1,0 +1,107 @@
+import React from 'react';
+import { ShieldCheck, CheckCircle, Upload, CreditCard } from 'lucide-react';
+
+const KYCSection = ({ kycData, uploading, onFileUpload, getImageUrl }) => {
+   return (
+      <div className="space-y-8">
+         <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold tracking-tight">Hujjatlarni Tasdiqlash</h2>
+            {kycData && (
+               <div className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                  kycData.status === 'approved' ? 'bg-green-500/10 text-green-500' :
+                  kycData.status === 'under_review' ? 'bg-orange-500/10 text-orange-500' :
+                  kycData.status === 'rejected' ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-white/40'
+               }`}>
+                  Status: {kycData.status.replace('_', ' ')}
+               </div>
+            )}
+         </div>
+
+         <div className="grid md:grid-cols-2 gap-8">
+            {/* Passport */}
+            <div className="glass p-10 space-y-6 border-white/10 relative overflow-hidden group">
+               <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+                     <ShieldCheck className="w-6 h-6 text-primary" />
+                  </div>
+                  {kycData?.passport_front_image && <CheckCircle className="text-green-500 w-6 h-6" />}
+               </div>
+               <div className="h-40 bg-white/5 rounded-2xl overflow-hidden border border-white/5">
+                  {kycData?.passport_front_image ? (
+                     <img src={getImageUrl(kycData.passport_front_image)} className="w-full h-full object-cover" alt="Passport" />
+                  ) : (
+                     <div className="w-full h-full flex items-center justify-center text-white/10 italic text-[10px] uppercase font-bold">Rasm yo'q</div>
+                  )}
+               </div>
+               <div>
+                  <h3 className="text-xl font-black italic tracking-tighter uppercase mb-2">Passport (Oldi)</h3>
+                  <p className="text-xs text-white/30 leading-relaxed font-medium">Passportingizning asosiy sahifasini yuklang.</p>
+               </div>
+               <div className="relative pt-4">
+                  <input
+                     type="file"
+                     id="passport-upload"
+                     className="hidden"
+                     disabled={kycData?.status === 'approved' || kycData?.status === 'under_review'}
+                     accept="image/*"
+                     onChange={(e) => onFileUpload('passport', e.target.files[0])}
+                  />
+                  <label
+                     htmlFor="passport-upload"
+                     className={`flex items-center justify-center gap-3 w-full py-5 rounded-2xl border-2 border-dashed transition-all cursor-pointer ${uploading.passport ? 'border-primary/50 bg-primary/5' : 'border-white/10 hover:border-primary/30 hover:bg-white/5'} ${(kycData?.status === 'approved' || kycData?.status === 'under_review') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                     {uploading.passport ? (
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                     ) : (
+                        <><Upload className="w-5 h-5 text-white/20" /> <span className="text-[10px] font-black uppercase tracking-widest">Almashtirish</span></>
+                     )}
+                  </label>
+               </div>
+            </div>
+
+            {/* License */}
+            <div className="glass p-10 space-y-6 border-white/10 relative overflow-hidden group">
+               <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+                     <CreditCard className="w-6 h-6 text-primary" />
+                  </div>
+                  {kycData?.license_image && <CheckCircle className="text-green-500 w-6 h-6" />}
+               </div>
+               <div className="h-40 bg-white/5 rounded-2xl overflow-hidden border border-white/5">
+                  {kycData?.license_image ? (
+                     <img src={getImageUrl(kycData.license_image)} className="w-full h-full object-cover" alt="License" />
+                  ) : (
+                     <div className="w-full h-full flex items-center justify-center text-white/10 italic text-[10px] uppercase font-bold">Rasm yo'q</div>
+                  )}
+               </div>
+               <div>
+                  <h3 className="text-xl font-black italic tracking-tighter uppercase mb-2">Haydovchilik Guvohnomasi</h3>
+                  <p className="text-xs text-white/30 leading-relaxed font-medium">Guvohnomangizning rasmini yuklang.</p>
+               </div>
+               <div className="relative pt-4">
+                  <input
+                     type="file"
+                     id="license-upload"
+                     className="hidden"
+                     disabled={kycData?.status === 'approved' || kycData?.status === 'under_review'}
+                     accept="image/*"
+                     onChange={(e) => onFileUpload('license', e.target.files[0])}
+                  />
+                  <label
+                     htmlFor="license-upload"
+                     className={`flex items-center justify-center gap-3 w-full py-5 rounded-2xl border-2 border-dashed transition-all cursor-pointer ${uploading.license ? 'border-primary/50 bg-primary/5' : 'border-white/10 hover:border-primary/30 hover:bg-white/5'} ${(kycData?.status === 'approved' || kycData?.status === 'under_review') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                     {uploading.license ? (
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                     ) : (
+                        <><Upload className="w-5 h-5 text-white/20" /> <span className="text-[10px] font-black uppercase tracking-widest">Almashtirish</span></>
+                     )}
+                  </label>
+               </div>
+            </div>
+         </div>
+      </div>
+   );
+};
+
+export default KYCSection;

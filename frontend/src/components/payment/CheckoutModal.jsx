@@ -32,6 +32,7 @@ const CheckoutModal = ({ isOpen, onClose, booking }) => {
     verifyOtpFlow,
     resendOtpFlow,
     error,
+    devOtp,
   } = usePaymentFlow(booking);
 
   const selectedMethod = savedMethods.find((method) => method.id === selectedMethodId);
@@ -69,6 +70,7 @@ const CheckoutModal = ({ isOpen, onClose, booking }) => {
         isProcessing={paymentStatus === 'processing'}
         transactionId={transactionId}
         cardLast4={cardLast4}
+        devOtp={devOtp}
         error={error}
       />
     ),

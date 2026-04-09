@@ -15,53 +15,73 @@ from django.db.models import Q
 
 class BookingSerializer(serializers.ModelSerializer):
     car_info = CarSerializer(source='car', read_only=True)
+    invoice_id = serializers.SerializerMethodField()
+    invoice_number = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
         fields = '__all__'
         read_only_fields = ('user', 'total_price', 'status')
 
+    def get_invoice_id(self, obj):
+        invoice = obj.invoices.first()
+        return invoice.id if invoice else None
+
+    def get_invoice_number(self, obj):
+        invoice = obj.invoices.first()
+        return invoice.invoice_number if invoice else None
+
     def validate(self, data):
         user = self.context['request'].user
         
+        # KYC check
+        if not hasattr(user, 'kyc') or user.kyc.status != 'approved':
+            raise serializers.ValidationError("Ma'lumotlaringiz tasdiqlanmagan. Bron qilish uchun KYC tekshiruvidan o'tishingiz shart.")
+        
         # Blacklist check
         if getattr(user, 'is_blacklisted', False):
-            raise serializers.ValidationError("Kechirasiz, sizning hisobingiz qora ro'yxatga kiritilgan. Bron yaratish mumkin emas.")
+            raise serializers.ValidationError("Hisobingiz qora ro'yxatga olingan.")
         
         car = data.get('car')
-        start_date = data.get('start_date')
-        end_date = data.get('end_date')
+        start = data.get('start_datetime')
+        end = data.get('end_datetime')
 
-        if start_date and end_date:
-            if start_date >= end_date:
-                raise serializers.ValidationError({"end_date": "Qaytarish sanasi olish sanasidan keyin bo'lishi kerak."})
+        if start and end:
+            if start >= end:
+                raise serializers.ValidationError({"end_datetime": "Qaytarish vaqti olish vaqtidan keyin bo'lishi kerak."})
             
-            # Overlap check
             overlapping = Booking.objects.filter(
                 car=car,
-                status__in=['pending', 'approved']
+                status__in=['pending', 'payment_pending', 'confirmed', 'active']
             ).filter(
-                Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
+                Q(start_datetime__lt=end) & Q(end_datetime__gt=start)
+            )
+            
+            # Maintenance check
+            from apps.cars.models import MaintenanceRecord
+            maintenance = MaintenanceRecord.objects.filter(
+                car=car
+            ).filter(
+                Q(start_datetime__lt=end) & Q(end_datetime__gt=start)
             )
             
             if self.instance:
                 overlapping = overlapping.exclude(pk=self.instance.pk)
                 
-            if overlapping.exists():
-                raise serializers.ValidationError("Ushbu avtomobil tanlangan sanalarda allaqachon band qilingan.")
+            if overlapping.exists() or maintenance.exists():
+                raise serializers.ValidationError("Ushbu avtomobil tanlangan vaqtda band (bron yoki texnik xizmat).")
                 
         return data
 
     def create(self, validated_data):
         car = validated_data['car']
-        start_date = validated_data['start_date']
-        end_date = validated_data['end_date']
+        start = validated_data['start_datetime']
+        end = validated_data['end_datetime']
         is_chauffeur = validated_data.get('is_chauffeur', False)
         
-        # Calculate total price
-        days = (end_date - start_date).days
-        if days <= 0:
-            days = 1
+        # Calculate duration in days (including partial days as full days)
+        duration = end - start
+        days = max(1, (duration.days + (1 if duration.seconds > 0 else 0)))
             
         # Base car price
         base_price = car.daily_price * days

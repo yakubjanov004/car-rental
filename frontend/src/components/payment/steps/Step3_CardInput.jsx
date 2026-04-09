@@ -112,9 +112,14 @@ const Step3_CardInput = ({
       <button
         onClick={onSubmit}
         disabled={isProcessing || !canSubmit}
-        className="w-full rounded-xl bg-primary py-3 font-semibold text-white disabled:opacity-60"
+        className="btn-primary w-full py-4 text-xs font-bold uppercase tracking-widest mt-4"
       >
-        {isProcessing ? 'Tekshirilmoqda...' : 'Xavfsiz to\'lash'}
+        {isProcessing ? (
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ISHLANMOQDA...
+          </div>
+        ) : 'XAVFSIZ TO\'LOV'}
       </button>
     </div>
   );
