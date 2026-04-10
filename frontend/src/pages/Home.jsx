@@ -5,6 +5,7 @@ import {
   Search, ArrowRight, Star, Shield, Clock, MapPin,
   Zap, ChevronRight, Phone, CheckCircle, Quote, Users, Sparkles, Car, ChevronDown
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { TOSHKENT_TUMANLARI } from '../data/districts';
 import evHero from '../assets/ev-hero.png';
 import catBusiness from '../assets/cat-business.png';
@@ -33,17 +34,12 @@ const BrendTicker = () => (
 );
 
 // ===================== REVIEWS DATA =====================
-const REVIEWS = [
-  { id: 1, name: 'Azamat Rasulov', role: 'Business Owner', text: 'Eng yaxshi servis! BYD Han ijaraga oldim, mashina yangi va judayam toza edi. Xizmat ko\'rsatish 10/10.', img: 'https://i.pravatar.cc/150?u=1' },
-  { id: 2, name: 'Malika Karimova', role: 'Premium Client', text: 'Aeroportda kutib olishdi, mashina tayyor edi. Juda qulay va tez. Tavsiya qilaman!', img: 'https://i.pravatar.cc/150?u=2' },
-  { id: 3, name: 'Sardor Aliev', role: 'Traveler', text: 'Chevrolet Tahoe ijaraga oldik, oilaviy sayohat uchun ajoyib bo\'ldi. Shartlar judayam oson ekan.', img: 'https://i.pravatar.cc/150?u=3' },
-];
-
 const ReviewCard = ({ review, index }) => {
-  const name = review.user_name || review.name || "Mijoz";
-  const comment = review.comment || review.text || "Ajoyib xizmat!";
+  const { t } = useTranslation();
+  const name = review.user_name || review.name || t('reviews.defaultName');
+  const comment = review.comment || review.text || t('reviews.defaultComment');
   const avatar = review.user_avatar || review.img || `https://i.pravatar.cc/150?u=${index}`;
-  const role = review.role || "Premium Client";
+  const role = review.role || t('reviews.premiumClient');
 
   return (
     <ScrollReveal direction="up" delay={index * 0.1}>
@@ -79,6 +75,7 @@ const ReviewCard = ({ review, index }) => {
 
 // ===================== HERO =====================
 const Hero = ({ filterTuman, setFilterTuman, filterKategoriya, setFilterKategoriya }) => {
+  const { t } = useTranslation();
   const heroRef = useRef(null);
   const [isOpenTuman, setIsOpenTuman] = useState(false);
   const [isOpenKateg, setIsOpenKateg] = useState(false);
@@ -118,7 +115,7 @@ const Hero = ({ filterTuman, setFilterTuman, filterKategoriya, setFilterKategori
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 text-[10px] text-white/50 font-bold uppercase tracking-[0.2em] mb-10 backdrop-blur-md"
             >
               <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
-              Toshkentdagi #1 Premium Ijara
+              {t('hero.tagline')}
             </motion.div>
   
             <motion.h1
@@ -127,9 +124,9 @@ const Hero = ({ filterTuman, setFilterTuman, filterKategoriya, setFilterKategori
               transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="font-display font-extrabold text-6xl md:text-8xl leading-[0.85] tracking-tighter mb-8 text-white drop-shadow-2xl"
             >
-              Premium<br />
-              <span className="text-white/40 italic">Erkinlik</span><br />
-              Sizni kutmoqda
+              {t('hero.title1')}<br />
+              <span className="text-white/40 italic">{t('hero.title2')}</span><br />
+              {t('hero.title3')}
             </motion.h1>
   
             <motion.p
@@ -138,7 +135,7 @@ const Hero = ({ filterTuman, setFilterTuman, filterKategoriya, setFilterKategori
               transition={{ duration: 0.8, delay: 0.3 }}
               className="text-white/60 text-lg md:text-xl leading-relaxed mb-12 max-w-md font-light italic"
             >
-              "Sizning yo'lingiz, sizning uslubingiz. Har bir sayohat biz bilan unutilmas premium tajribaga aylanadi."
+              "{t('hero.subtitle')}"
             </motion.p>
   
             {/* Search form */}
@@ -158,7 +155,7 @@ const Hero = ({ filterTuman, setFilterTuman, filterKategoriya, setFilterKategori
                 >
                   <div className="flex items-center gap-3 text-white/70">
                     <MapPin className="w-4 h-4 text-primary" />
-                    <span>{filterTuman || 'Barcha tumanlar'}</span>
+                    <span>{filterTuman || t('hero.allDistricts')}</span>
                   </div>
                   <ChevronDown className={`w-4 h-4 transition-transform ${isOpenTuman ? 'rotate-180' : ''}`} />
                 </button>
@@ -175,7 +172,7 @@ const Hero = ({ filterTuman, setFilterTuman, filterKategoriya, setFilterKategori
                         onClick={() => { setFilterTuman(''); setIsOpenTuman(false); }}
                         className="px-6 py-4 hover:bg-white/5 cursor-pointer text-sm transition-colors text-white/50 border-b border-white/5"
                       >
-                        📍 Barcha tumanlar
+                        📍 {t('hero.allDistricts')}
                       </div>
                       {TOSHKENT_TUMANLARI.map(tuman => (
                         <div
@@ -199,7 +196,7 @@ const Hero = ({ filterTuman, setFilterTuman, filterKategoriya, setFilterKategori
                 >
                   <div className="flex items-center gap-3 text-white/70">
                     <Car className="w-4 h-4 text-primary" />
-                    <span>{filterKategoriya ? filterKategoriya.toUpperCase() : 'Kategoriya'}</span>
+                    <span>{filterKategoriya ? filterKategoriya.toUpperCase() : t('hero.category')}</span>
                   </div>
                   <ChevronDown className={`w-4 h-4 transition-transform ${isOpenKateg ? 'rotate-180' : ''}`} />
                 </button>
@@ -213,12 +210,12 @@ const Hero = ({ filterTuman, setFilterTuman, filterKategoriya, setFilterKategori
                       className="absolute bottom-full left-0 w-full mb-2 py-2 bg-[#0F0F0F]/95 backdrop-blur-2xl border border-white/10 z-[999] shadow-2xl rounded-2xl"
                     >
                       {[
-                        { val: '', lab: 'Barcha kategoriyalar' },
-                        { val: 'sedan', lab: 'Sedan' },
-                        { val: 'crossover', lab: 'Krossover' },
-                        { val: 'suv', lab: 'SUV' },
-                        { val: 'elektro', lab: '⚡ Elektro' },
-                        { val: 'premium', lab: '💎 Premium' },
+                        { val: '', lab: t('hero.allCategories') },
+                        { val: 'sedan', lab: t('hero.sedan') },
+                        { val: 'crossover', lab: t('hero.crossover') },
+                        { val: 'suv', lab: t('hero.suv') },
+                        { val: 'elektro', lab: t('hero.electric') },
+                        { val: 'premium', lab: t('hero.premium') },
                       ].map(cat => (
                         <div
                           key={cat.val}
@@ -238,7 +235,7 @@ const Hero = ({ filterTuman, setFilterTuman, filterKategoriya, setFilterKategori
                 className="btn-primary h-14 px-8 w-full md:w-auto shrink-0 text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 group-hover:scale-105 transition-transform shadow-xl shadow-primary/20"
               >
                 <Search className="w-4 h-4" />
-                QIDIRISH
+                {t('hero.search')}
               </Link>
             </div>
             </motion.div>
@@ -260,6 +257,7 @@ const Hero = ({ filterTuman, setFilterTuman, filterKategoriya, setFilterKategori
 };
 
 const Home = () => {
+  const { t } = useTranslation();
   const [cars, setCars] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [filterTuman, setFilterTuman] = useState('');
@@ -327,10 +325,10 @@ const Home = () => {
          <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-24">
                {[
-                  { label: "Modellar", value: "33+", sub: "Eng so'nggi avlod" },
-                  { label: "Buyurtmalar", value: "1500+", sub: "Mamnun mijozlar" },
-                  { label: "Xizmat", value: "24/7", sub: "Professional support" },
-                  { label: "Filiallar", value: "12+", sub: "Toshkent bo'ylab" }
+                  { label: t('stats.models'), value: t('stats.modelsValue'), sub: t('stats.modelsSub') },
+                  { label: t('stats.orders'), value: t('stats.ordersValue'), sub: t('stats.ordersSub') },
+                  { label: t('stats.service'), value: t('stats.serviceValue'), sub: t('stats.serviceSub') },
+                  { label: t('stats.branches'), value: t('stats.branchesValue'), sub: t('stats.branchesSub') }
                ].map((stat, i) => (
                   <ScrollReveal key={i} direction="up" delay={i * 0.1}>
                      <div className="text-center group">
@@ -359,28 +357,28 @@ const Home = () => {
                   </div>
                   {/* Floating Label */}
                   <div className="absolute -bottom-10 -right-10 p-10 glass border-white/10 rounded-[40px] shadow-2xl z-20 backdrop-blur-2xl hidden md:block">
-                     <p className="text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-3">VIP Xizmat</p>
-                     <h4 className="text-2xl font-bold tracking-tight mb-4">Shaxsiy Haydovchi</h4>
-                     <p className="text-xs text-white/40 leading-relaxed font-medium uppercase tracking-wider">Professional va xushmuomala jamoa</p>
+                     <p className="text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-3">{t('chauffeurSection.vipService')}</p>
+                     <h4 className="text-2xl font-bold tracking-tight mb-4">{t('chauffeurSection.personalDriver')}</h4>
+                     <p className="text-xs text-white/40 leading-relaxed font-medium uppercase tracking-wider">{t('chauffeurSection.teamDesc')}</p>
                   </div>
                </div>
             </ScrollReveal>
 
             <ScrollReveal direction="right">
                <div className="space-y-10">
-                  <div className="text-[10px] text-primary font-black uppercase tracking-[0.4em]">— Eksklyuziv Imkoniyat</div>
+                  <div className="text-[10px] text-primary font-black uppercase tracking-[0.4em]">{t('chauffeurSection.badge')}</div>
                   <h2 className="font-display text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight">
-                     Rulda emas,<br />
-                     <span className="text-white/20 italic">Komfortda</span> bo'ling
+                     {t('chauffeurSection.title1')}<br />
+                     <span className="text-white/20 italic">{t('chauffeurSection.title2')}</span> {t('chauffeurSection.title3')}
                   </h2>
                   <p className="text-white/40 text-lg font-light leading-relaxed">
-                     Biznes uchrashuvlar, aeroport transporti va maxsus tadbirlar uchun professional haydovchi xizmati. O'z ishingizga e'tibor qarating, yo'ldagi barcha mas'uliyatni bizga topshiring.
+                     {t('chauffeurSection.description')}
                   </p>
                   <div className="flex flex-col gap-6 pt-6">
                      {[
-                        { icon: Shield, text: "To'liq xavfsizlik kafolati" },
-                        { icon: Users, text: "Professional haydovchilar" },
-                        { icon: Clock, text: "Vaqtni maksimal tejash" }
+                        { icon: Shield, text: t('chauffeurSection.safety') },
+                        { icon: Users, text: t('chauffeurSection.drivers') },
+                        { icon: Clock, text: t('chauffeurSection.time') }
                      ].map((item, i) => (
                         <div key={i} className="flex items-center gap-5 group">
                            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-primary/20 transition-all">
@@ -391,7 +389,7 @@ const Home = () => {
                      ))}
                   </div>
                   <div className="pt-10">
-                     <Link to="/chauffeur" className="btn-primary px-12 h-16 text-xs shadow-2xl shadow-primary/20">XIZMATNI KO'RISH</Link>
+                     <Link to="/chauffeur" className="btn-primary px-12 h-16 text-xs shadow-2xl shadow-primary/20">{t('chauffeurSection.cta')}</Link>
                   </div>
                </div>
             </ScrollReveal>
@@ -402,16 +400,16 @@ const Home = () => {
       <section className="py-24 max-w-7xl mx-auto px-6">
          <ScrollReveal direction="up">
             <div className="text-center mb-16">
-               <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tighter mb-4">Har bir <span className="text-white/40">Manzil</span> uchun</h2>
-               <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">Sizning maqsadlaringiz — bizning tanlovimiz</p>
+               <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tighter mb-4">{t('categories.title')} <span className="text-white/40">{t('categories.titleHighlight')}</span> {t('categories.titleEnd')}</h2>
+               <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">{t('categories.subtitle')}</p>
             </div>
          </ScrollReveal>
 
          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-               { title: 'Biznes Klass', desc: 'Muhim uchrashuvlar uchun', img: catBusiness, link: '/fleet?kategoriya=business' },
-               { title: 'Oilaviy SUV', desc: 'Katta sarguzashtlar uchun', img: catSuv, link: '/fleet?kategoriya=suv' },
-               { title: '⚡ Elektro Markaz', desc: 'Kelajak energiyasi', img: catEv, link: '/fleet?kategoriya=elektro' },
+               { title: t('categories.business'), desc: t('categories.businessDesc'), img: catBusiness, link: '/fleet?kategoriya=business' },
+               { title: t('categories.familySuv'), desc: t('categories.familySuvDesc'), img: catSuv, link: '/fleet?kategoriya=suv' },
+               { title: t('categories.evCenter'), desc: t('categories.evCenterDesc'), img: catEv, link: '/fleet?kategoriya=elektro' },
             ].map((cat, i) => (
                <ScrollReveal key={i} direction="up" delay={i * 0.1}>
                   <Link to={cat.link} className="relative aspect-[4/3] rounded-[40px] overflow-hidden group block border border-white/5">
@@ -430,14 +428,14 @@ const Home = () => {
       <section className="py-24 max-w-7xl mx-auto px-6">
         <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
           <ScrollReveal direction="left">
-            <div className="text-[10px] text-primary font-bold uppercase tracking-[0.2em] mb-4">— Eksklyuziv Park</div>
+            <div className="text-[10px] text-primary font-bold uppercase tracking-[0.2em] mb-4">{t('premiumSelection.badge')}</div>
             <h2 className="font-display text-4xl md:text-6xl font-extrabold tracking-tighter leading-none">
-              Premium Tanlovlar
+              {t('premiumSelection.title')}
             </h2>
           </ScrollReveal>
           <ScrollReveal direction="right">
             <Link to="/fleet" className="btn-secondary group">
-              Barchasini ko'rish 
+              {t('premiumSelection.viewAll')} 
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </ScrollReveal>
@@ -468,17 +466,17 @@ const Home = () => {
             <ScrollReveal direction="left">
                <div className="max-w-xl space-y-8">
                   <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00D97E]/20 border border-[#00D97E]/30 text-[10px] text-[#00D97E] font-black uppercase tracking-[0.2em] backdrop-blur-md">
-                     ⚡ Kelajak bu yerda
+                     {t('evPromo.badge')}
                   </div>
                   <h2 className="font-display text-6xl md:text-8xl font-extrabold tracking-tighter leading-[0.9]">
-                     Elektr <br />
-                     <span className="text-white/40 italic">Inqilobi</span>
+                     {t('evPromo.title1')} <br />
+                     <span className="text-white/40 italic">{t('evPromo.title2')}</span>
                   </h2>
                   <p className="text-white/50 text-xl font-light leading-relaxed">
-                     Tabiatni asrang va premium qulaylikdan bahra oling. Kelajak texnologiyasi endi sizning ixtiyoringizda.
+                     {t('evPromo.description')}
                   </p>
                   <div className="flex flex-wrap gap-6 pt-4">
-                     <Link to="/fleet?kategoriya=elektro" className="btn-primary bg-[#00D97E] hover:bg-[#00D97E]/90 border-none shadow-2xl shadow-[#00D97E]/20 px-12 h-16">KASHF ETISH</Link>
+                     <Link to="/fleet?kategoriya=elektro" className="btn-primary bg-[#00D97E] hover:bg-[#00D97E]/90 border-none shadow-2xl shadow-[#00D97E]/20 px-12 h-16">{t('evPromo.cta')}</Link>
                   </div>
                </div>
             </ScrollReveal>
@@ -492,19 +490,19 @@ const Home = () => {
       <section className="py-32 max-w-7xl mx-auto px-6">
          <ScrollReveal direction="up">
             <div className="text-center mb-20">
-               <h2 className="font-display text-4xl md:text-6xl font-extrabold tracking-tighter mb-4">Mijozlarimiz <span className="text-white/40 italic">Nima</span> Deyishadi</h2>
+               <h2 className="font-display text-4xl md:text-6xl font-extrabold tracking-tighter mb-4">{t('reviews.title1')} <span className="text-white/40 italic">{t('reviews.title2')}</span> {t('reviews.title3')}</h2>
                <div className="flex justify-center gap-1">
                   {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 text-primary fill-primary" />)}
-                  <span className="ml-3 text-sm font-bold text-white/50 tracking-widest uppercase">4.9/5.0 Premium Xizmat</span>
+                  <span className="ml-3 text-sm font-bold text-white/50 tracking-widest uppercase">{t('reviews.rating')}</span>
                </div>
             </div>
          </ScrollReveal>
 
          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {(reviews.length > 0 ? reviews : [
-              { id: 1, user_name: "Ahmad", rating: 5, comment: "Xizmat daxshat, mashinalar ideal holatda!", user_avatar: "https://i.pravatar.cc/150?u=1" },
-              { id: 2, user_name: "Laylo", rating: 5, comment: "BMW iX bilan sayohat unutilmas bo'ldi.", user_avatar: "https://i.pravatar.cc/150?u=2" },
-              { id: 3, user_name: "Aziz", rating: 4, comment: "Hammasi yaxshi, bron qilish juda oson.", user_avatar: "https://i.pravatar.cc/150?u=3" }
+              { id: 1, user_name: t('reviews.defaultReviews.0.name', { defaultValue: 'Ahmad' }), rating: 5, comment: t('reviews.defaultReviews.0.comment', { defaultValue: 'Great service!' }), user_avatar: "https://i.pravatar.cc/150?u=1" },
+              { id: 2, user_name: t('reviews.defaultReviews.1.name', { defaultValue: 'Laylo' }), rating: 5, comment: t('reviews.defaultReviews.1.comment', { defaultValue: 'Unforgettable trip.' }), user_avatar: "https://i.pravatar.cc/150?u=2" },
+              { id: 3, user_name: t('reviews.defaultReviews.2.name', { defaultValue: 'Aziz' }), rating: 4, comment: t('reviews.defaultReviews.2.comment', { defaultValue: 'Everything is great.' }), user_avatar: "https://i.pravatar.cc/150?u=3" }
             ]).map((review, i) => (
                <ReviewCard key={review.id} review={review} index={i} />
             ))}
@@ -515,17 +513,12 @@ const Home = () => {
       <section className="py-32 max-w-4xl mx-auto px-6">
          <ScrollReveal direction="up">
             <div className="text-center mb-20">
-               <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tighter">Ko'p so'raladigan <br /><span className="text-white/40 italic">Savollar</span></h2>
+               <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tighter">{t('faqSection.title1')} <br /><span className="text-white/40 italic">{t('faqSection.title2')}</span></h2>
             </div>
          </ScrollReveal>
 
          <div className="space-y-4">
-            {[
-               { q: "Mashina band qilish uchun qanday hujjatlar kerak?", a: "Sizga passport va haydovchilik guvohnomasi kifoya. Hujjatlarni onlayn profilingiz orqali yuklashingiz mumkin." },
-               { q: "Depozit qaytariladimi?", a: "Ha, depozit mashina topshirilgandan so'ng, jarimalar va boshqa kamchiliklar yo'qligi tasdiqlangach, 3-7 ish kuni ichida qaytariladi." },
-               { q: "Haydovchi bilan xizmat ko'rsatish narxi qancha?", a: "Narx tanlangan avtomobil va xizmat davomiyligiga bog'liq. Chauffeur sahifasida batafsil narxlar bilan tanishishingiz mumkin." },
-               { q: "Eng kam ijara muddati qancha?", a: "Bizda eng kam ijara muddati — 24 soat (1 kun). Shuningdek, uzoq muddatli ijara uchun maxsus chegirmalar mavjud." }
-            ].map((faq, i) => (
+            {(t('faqSection.items', { returnObjects: true }) || []).map((faq, i) => (
                <ScrollReveal key={i} direction="up" delay={i * 0.1}>
                   <details className="group glass border-white/5 transition-all duration-500">
                      <summary className="list-none p-8 cursor-pointer flex items-center justify-between">
@@ -548,14 +541,14 @@ const Home = () => {
                <div className="glass p-12 md:p-24 rounded-[64px] relative overflow-hidden border-white/5 shardow-2xl text-center">
                   <div className="absolute top-0 left-0 w-full h-full bg-primary/[0.03] blur-[120px] pointer-events-none" />
                   <h2 className="font-display text-5xl md:text-8xl font-extrabold tracking-tighter mb-10 leading-none">
-                     Sayohatni <span className="text-primary italic">Bugun</span><br />boshlang
+                     {t('cta.title1')} <span className="text-primary italic">{t('cta.title2')}</span><br />{t('cta.title3')}
                   </h2>
                   <p className="text-white/40 text-lg md:text-xl font-light mb-12 max-w-xl mx-auto">
-                     O'zbekistondagi eng yaxshi mashinalar sizni kutmoqda. Qulaylik va sifat — bizning asosiy qoidamiz.
+                     {t('cta.description')}
                   </p>
                   <div className="flex flex-wrap justify-center gap-6">
-                     <Link to="/fleet" className="btn-primary px-12 h-16 text-sm">MASHINA TANLASH</Link>
-                     <a href="tel:+998901234567" className="btn-secondary px-12 h-16 text-sm">BOG'LANISH</a>
+                     <Link to="/fleet" className="btn-primary px-12 h-16 text-sm">{t('cta.chooseCar')}</Link>
+                     <a href="tel:+998901234567" className="btn-secondary px-12 h-16 text-sm">{t('cta.contactUs')}</a>
                   </div>
                </div>
             </ScrollReveal>

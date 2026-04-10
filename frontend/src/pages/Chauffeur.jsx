@@ -5,43 +5,42 @@ import {
   Car, ArrowRight, Sparkles, Phone, MessageCircle, CheckCircle2,
   Calendar, CreditCard, ChevronRight
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import ScrollReveal from '../components/ScrollReveal';
 import { fetchCarModels } from '../utils/api';
 import ChauffeurCarCard from '../components/ChauffeurCarCard';
 
-const AFZALLIKLAR = [
-  {
-    icon: UserCheck,
-    title: "Professional",
-    desc: "Kamida 10 yillik tajribaga ega xushmuomala haydovchilar jamoasi."
-  },
-  {
-    icon: Clock,
-    title: "Vaqtni tejash",
-    desc: "Tirbandlik va mashina to'xtash joyi haqida qayg'urmasdan o'z ishingizga e'tibor qarating."
-  },
-  {
-    icon: Shield,
-    title: "Xavfsizlik",
-    desc: "Haydovchi yo'lda barcha mas'uliyatni o'z zimmasiga oladi."
-  },
-  {
-    icon: Coffee,
-    title: "Maksimal Qulaylik",
-    desc: "Mehmonlarni kutib olish yoki uzoq masofali sayohatlar uchun ideal tanlov."
-  }
-];
+const BENEFIT_ICONS = [UserCheck, Clock, Shield, Coffee];
+const STEP_ICONS = [Car, Calendar, CheckCircle2, UserCheck];
 
-const STEPS = [
-  { icon: Car, title: "Tanlash", desc: "Premium avtoparkimizdan o'zingizga mos mashinani tanlang." },
-  { icon: Calendar, title: "Sana", desc: "Xizmat vaqti va yo'nalishni ko'rsatib biz bilan bog'laning." },
-  { icon: CheckCircle2, title: "Tasdiqlash", desc: "Operatorimiz variantlarni va narxni tasdiqlaydi." },
-  { icon: UserCheck, title: "Uchrashuv", desc: "Haydovchi belgilangan vaqtda va joyda sizni kutadi." },
-];
+// Custom icon for events
+const Crown = ({ className }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" />
+  </svg>
+);
+
+const TRANSFER_ICONS = [Briefcase, Car, MapPin, Crown];
 
 const Chauffeur = () => {
+  const { t } = useTranslation();
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const benefits = t('chauffeurPage.benefits', { returnObjects: true }) || [];
+  const steps = t('chauffeurPage.steps', { returnObjects: true }) || [];
+  const transferItems = t('chauffeurPage.transferItems', { returnObjects: true }) || [];
 
   useEffect(() => {
     const loadCars = async () => {
@@ -78,16 +77,16 @@ const Chauffeur = () => {
           <ScrollReveal direction="up">
             <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-primary/20 bg-primary/5 text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-8 shadow-[0_0_20px_rgba(239,55,42,0.1)]">
               <Sparkles className="w-3.5 h-3.5" />
-              Eksklyuziv VIP Xizmat
+              {t('chauffeurPage.badge')}
             </div>
             
             <h1 className="font-display text-5xl md:text-8xl lg:text-[100px] font-black tracking-tighter mb-8 leading-[0.85] uppercase text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-              Haydovchi <br />
-              <span className="text-primary italic font-light lowercase">Bilan</span>
+              {t('chauffeurPage.title1')} <br />
+              <span className="text-primary italic font-light lowercase">{t('chauffeurPage.title2')}</span>
             </h1>
 
             <p className="max-w-xl mx-auto text-white/60 text-base md:text-lg font-light leading-relaxed mb-12">
-              Biznes uchrashuvlar va maxsus tadbirlar uchun <br className="hidden md:block" /> professional haydovchilar jamoasi.
+              {t('chauffeurPage.description')}
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">
@@ -97,7 +96,7 @@ const Chauffeur = () => {
                 href="#fleet" 
                 className="btn-primary px-10 h-16 rounded-2xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20"
               >
-                Katalogga o'tish
+                {t('chauffeurPage.ctaFleet')}
                 <ArrowRight className="w-4 h-4" />
               </motion.a>
               <motion.button 
@@ -106,7 +105,7 @@ const Chauffeur = () => {
                 className="px-10 h-16 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-3"
               >
                 <Phone className="w-4 h-4 text-primary" />
-                Konsultatsiya
+                {t('chauffeurPage.ctaConsult')}
               </motion.button>
             </div>
           </ScrollReveal>
@@ -124,17 +123,20 @@ const Chauffeur = () => {
 
       {/* Benefits Grid */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-48">
-        {AFZALLIKLAR.map((item, i) => (
-          <ScrollReveal key={i} direction="up" delay={i * 0.1}>
-            <div className="card p-10 flex flex-col items-center text-center group hover:border-primary/30 transition-all duration-500">
-               <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-8 group-hover:bg-primary/20 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
-                  <item.icon className="w-7 h-7 text-primary" />
-               </div>
-               <h3 className="text-xl font-bold mb-4 tracking-tight group-hover:text-white transition-colors">{item.title}</h3>
-               <p className="text-xs text-white/40 leading-relaxed font-light uppercase tracking-wider">{item.desc}</p>
-            </div>
-          </ScrollReveal>
-        ))}
+        {benefits.map((item, i) => {
+          const IconComp = BENEFIT_ICONS[i] || Shield;
+          return (
+            <ScrollReveal key={i} direction="up" delay={i * 0.1}>
+              <div className="card p-10 flex flex-col items-center text-center group hover:border-primary/30 transition-all duration-500">
+                 <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-8 group-hover:bg-primary/20 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+                    <IconComp className="w-7 h-7 text-primary" />
+                 </div>
+                 <h3 className="text-xl font-bold mb-4 tracking-tight group-hover:text-white transition-colors">{item.title}</h3>
+                 <p className="text-xs text-white/40 leading-relaxed font-light uppercase tracking-wider">{item.desc}</p>
+              </div>
+            </ScrollReveal>
+          );
+        })}
       </div>
 
       {/* Premium Fleet Section */}
@@ -142,13 +144,13 @@ const Chauffeur = () => {
          <ScrollReveal direction="left">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
                <div>
-                  <div className="text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-4">— Avtoparkimiz</div>
+                  <div className="text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-4">{t('chauffeurPage.fleetBadge')}</div>
                   <h2 className="text-4xl md:text-6xl font-extrabold tracking-tighter">
-                     Tanlangan <span className="text-white/20 italic">Modellar</span>
+                     {t('chauffeurPage.fleetTitle1')} <span className="text-white/20 italic">{t('chauffeurPage.fleetTitle2')}</span>
                   </h2>
                </div>
                <p className="max-w-sm text-white/30 text-sm font-light leading-relaxed">
-                  Haydovchi bilan xizmat ko'rsatish uchun maxsus tayyorlangan, yuqori darajadagi komfort va xavfsizlikka ega avtomobillarimiz.
+                  {t('chauffeurPage.fleetDesc')}
                </p>
             </div>
          </ScrollReveal>
@@ -165,7 +167,7 @@ const Chauffeur = () => {
                   ))
                ) : (
                   <div className="py-20 text-center glass rounded-[40px] border border-white/5">
-                     <p className="text-white/40 uppercase tracking-widest text-xs">Ayni damda mashinalar mavjud emas</p>
+                     <p className="text-white/40 uppercase tracking-widest text-xs">{t('chauffeurPage.noCars')}</p>
                   </div>
                )
             )}
@@ -179,26 +181,29 @@ const Chauffeur = () => {
             
             <ScrollReveal direction="up">
                <div className="text-center mb-20">
-                  <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">Ishlash jarayoni</h2>
-                  <p className="text-white/30 max-w-xl mx-auto">Siz uchun xizmat ko'rsatish jarayoni maksimal darajada sodda va tushunarli qilib tuzilgan.</p>
+                  <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">{t('chauffeurPage.processTitle')}</h2>
+                  <p className="text-white/30 max-w-xl mx-auto">{t('chauffeurPage.processDesc')}</p>
                </div>
             </ScrollReveal>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative z-10">
-               {STEPS.map((step, i) => (
-                  <ScrollReveal key={i} direction="up" delay={i * 0.1}>
-                     <div className="relative group">
-                        {i < STEPS.length - 1 && (
-                           <ChevronRight className="absolute top-8 -right-6 w-6 h-6 text-white/5 hidden lg:block group-hover:text-primary transition-colors" />
-                        )}
-                        <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-8 group-hover:bg-primary group-hover:text-white transition-all duration-500">
-                           <step.icon className="w-6 h-6" />
-                        </div>
-                        <h4 className="text-xl font-bold mb-4 tracking-tight">{step.title}</h4>
-                        <p className="text-sm text-white/30 font-light leading-relaxed">{step.desc}</p>
-                     </div>
-                  </ScrollReveal>
-               ))}
+               {steps.map((step, i) => {
+                 const StepIcon = STEP_ICONS[i] || CheckCircle2;
+                 return (
+                   <ScrollReveal key={i} direction="up" delay={i * 0.1}>
+                      <div className="relative group">
+                         {i < steps.length - 1 && (
+                            <ChevronRight className="absolute top-8 -right-6 w-6 h-6 text-white/5 hidden lg:block group-hover:text-primary transition-colors" />
+                         )}
+                         <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-8 group-hover:bg-primary group-hover:text-white transition-all duration-500">
+                            <StepIcon className="w-6 h-6" />
+                         </div>
+                         <h4 className="text-xl font-bold mb-4 tracking-tight">{step.title}</h4>
+                         <p className="text-sm text-white/30 font-light leading-relaxed">{step.desc}</p>
+                      </div>
+                   </ScrollReveal>
+                 );
+               })}
             </div>
          </div>
       </section>
@@ -223,12 +228,12 @@ const Chauffeur = () => {
                        <UserCheck className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                       <p className="text-xs font-bold text-white uppercase tracking-widest">Sertifikatlangan</p>
-                       <p className="text-[10px] text-white/40">Professional Haydovchi</p>
+                       <p className="text-xs font-bold text-white uppercase tracking-widest">{t('chauffeurPage.certified')}</p>
+                       <p className="text-[10px] text-white/40">{t('chauffeurPage.proDriver')}</p>
                     </div>
                  </div>
                  <p className="text-[11px] text-white/60 leading-relaxed italic">
-                    "Mening maqsadim — sizning safaringizning har bir daqiqasini xavfsiz va qulay qilish."
+                    "{t('chauffeurPage.driverQuote')}"
                  </p>
               </div>
            </div>
@@ -236,28 +241,26 @@ const Chauffeur = () => {
 
         <div className="space-y-12">
           <ScrollReveal direction="right">
-            <div className="text-[11px] text-primary font-black uppercase tracking-[0.4em] mb-6">— VIP Transfer Xizmati</div>
+            <div className="text-[11px] text-primary font-black uppercase tracking-[0.4em] mb-6">{t('chauffeurPage.transferBadge')}</div>
             <h2 className="font-display text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight">
-              Kutib olish va <br /><span className="text-white/20 italic">Kuzatib qo'yish</span>
+              {t('chauffeurPage.transferTitle1')} <br /><span className="text-white/20 italic">{t('chauffeurPage.transferTitle2')}</span>
             </h2>
             <p className="text-white/40 text-lg font-light leading-relaxed">
-              Bizning haydovchilarimiz Toshkent xalqaro aeroportida kutib olish, mehmonxonalarga transfer va shaharlararo biznes sayohatlarni amalga oshiradilar.
+              {t('chauffeurPage.transferDesc')}
             </p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6">
-               {[
-                  { icon: Briefcase, text: "Biznes Uchrashuvlar" },
-                  { icon: Car, text: "Aeroport Transfer" },
-                  { icon: MapPin, text: "Shahar bo'ylab sayohat" },
-                  { icon: Crown, text: "Maxsus Tadbirlar" }
-               ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all">
-                     <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
-                        <item.icon className="w-4 h-4 text-primary" />
-                     </div>
-                     <span className="text-xs font-bold text-white/50 tracking-widest uppercase">{item.text}</span>
-                  </div>
-               ))}
+               {transferItems.map((text, i) => {
+                 const TIcon = TRANSFER_ICONS[i] || MapPin;
+                 return (
+                   <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all">
+                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                         <TIcon className="w-4 h-4 text-primary" />
+                      </div>
+                      <span className="text-xs font-bold text-white/50 tracking-widest uppercase">{text}</span>
+                   </div>
+                 );
+               })}
             </div>
           </ScrollReveal>
         </div>
@@ -271,31 +274,30 @@ const Chauffeur = () => {
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 blur-[100px] pointer-events-none rounded-full" />
               
               <div className="max-w-2xl text-center md:text-left relative z-10">
-                 <h2 className="font-display text-4xl md:text-6xl font-extrabold mb-8 tracking-tighter">O'z safaringizni <br /><span className="text-primary italic">rejalarishtiring</span></h2>
+                 <h2 className="font-display text-4xl md:text-6xl font-extrabold mb-8 tracking-tighter">{t('chauffeurPage.ctaTitle1')} <br /><span className="text-primary italic">{t('chauffeurPage.ctaTitle2')}</span></h2>
                  <p className="text-white/40 text-lg font-light leading-relaxed mb-12">
-                    Xizmat narxi tanlangan avtomobil, masofa va vaqtga qarab kelishuv asosida belgilanadi. 
-                    Barcha haydovchilarimiz xalqaro standartlarga javob beradi.
+                    {t('chauffeurPage.ctaDesc')}
                  </p>
                  <div className="flex flex-wrap gap-6 justify-center md:justify-start">
-                    <a href="https://t.me/ridelux" className="px-12 h-16 rounded-[20px] bg-primary text-white text-xs font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl shadow-primary/20 hover:scale-105 transition-transform">
+                    <a href="https://t.me/rentalcar" className="px-12 h-16 rounded-[20px] bg-primary text-white text-xs font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl shadow-primary/20 hover:scale-105 transition-transform">
                        <MessageCircle className="w-5 h-5" />
-                       Telegram orqali
+                       {t('chauffeurPage.viaTelegram')}
                     </a>
                     <a href="tel:+998901234567" className="px-12 h-16 rounded-[20px] bg-white text-black text-xs font-black uppercase tracking-widest flex items-center gap-3 shadow-2xl shadow-white/10 hover:scale-105 transition-transform">
                        <Phone className="w-5 h-5" />
-                       Qo'ng'iroq qilish
+                       {t('chauffeurPage.viaCall')}
                     </a>
                  </div>
               </div>
 
               <div className="grid grid-cols-1 gap-4 w-full md:w-80 relative z-10">
                   <div className="p-10 bg-white/5 backdrop-blur-3xl rounded-[32px] border border-white/10 text-center group hover:bg-primary/10 transition-all">
-                     <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mb-4 font-bold">Shahar ichida</p>
-                     <p className="text-lg font-display text-primary font-black uppercase tracking-widest">Kelishuv asosida</p>
+                     <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mb-4 font-bold">{t('chauffeurPage.inCity')}</p>
+                     <p className="text-lg font-display text-primary font-black uppercase tracking-widest">{t('chauffeurPage.byAgreement')}</p>
                   </div>
                   <div className="p-10 bg-white/5 backdrop-blur-3xl rounded-[32px] border border-white/10 text-center group hover:bg-primary/10 transition-all">
-                     <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mb-4 font-bold">Viloyatlarga</p>
-                     <p className="text-lg font-display text-primary font-black uppercase tracking-widest">Kelishuv asosida</p>
+                     <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mb-4 font-bold">{t('chauffeurPage.toRegions')}</p>
+                     <p className="text-lg font-display text-primary font-black uppercase tracking-widest">{t('chauffeurPage.byAgreement')}</p>
                   </div>
               </div>
            </div>
@@ -306,22 +308,5 @@ const Chauffeur = () => {
   );
 };
 
-// New icon for events
-const Crown = ({ className }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width="24" 
-    height="24" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" />
-  </svg>
-)
 
 export default Chauffeur;

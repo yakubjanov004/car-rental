@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Calendar, MapPin, Clock, Search, Plane, Building, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +13,7 @@ const OLISH_JOYLARI = [
 
 const BookingForm = ({ carPrice = 400000 }) => {
   const navigate = useNavigate();
+    const { t } = useTranslation();
   const [olishJoyi, setOlishJoyi] = useState('');
   const [qaytarishJoyi, setQaytarishJoyi] = useState('');
   const [boshlanish, setBoshlanish] = useState('');
@@ -63,7 +65,7 @@ const BookingForm = ({ carPrice = 400000 }) => {
                 onChange={(e) => setOlishJoyi(e.target.value)}
                 value={olishJoyi}
             >
-                <option value="" disabled>Select...</option>
+                <option value="" disabled>{t('bookingForm.selectOpt')}</option>
                 {OLISH_JOYLARI.map(j => (
                 <option key={j.id} value={j.id}>{j.nomi}</option>
                 ))}
@@ -77,7 +79,7 @@ const BookingForm = ({ carPrice = 400000 }) => {
         {/* Qaytarish joyi */}
         <div className="space-y-2">
           <label className="text-xs text-white/40 uppercase font-black tracking-widest flex items-center gap-1.5 ml-1">
-            <MapPin className="w-3 h-3 text-primary" /> Return Location
+            <MapPin className="w-3 h-3 text-primary" /> {t('bookingForm.returnLabel')}
           </label>
           <div className="relative">
             <select 
@@ -85,7 +87,7 @@ const BookingForm = ({ carPrice = 400000 }) => {
                 onChange={(e) => setQaytarishJoyi(e.target.value)}
                 value={qaytarishJoyi}
             >
-                <option value="" disabled>Select...</option>
+                <option value="" disabled>{t('bookingForm.selectOpt')}</option>
                 {OLISH_JOYLARI.map(j => (
                 <option key={j.id} value={j.id}>{j.nomi}</option>
                 ))}
@@ -111,7 +113,7 @@ const BookingForm = ({ carPrice = 400000 }) => {
         {/* Tugash sanasi */}
         <div className="space-y-2">
           <label className="text-xs text-white/40 uppercase font-black tracking-widest flex items-center gap-1.5 ml-1">
-            <Clock className="w-3 h-3 text-primary" /> Return Date and Time
+            <Clock className="w-3 h-3 text-primary" /> {t('bookingForm.returnDateTime')}
           </label>
           <input
             type="datetime-local"
@@ -129,11 +131,11 @@ const BookingForm = ({ carPrice = 400000 }) => {
           className="mb-8 p-6 bg-primary/10 border border-primary/20 rounded-[24px] flex justify-between items-center"
         >
           <div>
-            <p className="text-xs text-white/40 uppercase font-bold mb-1">Rental Duration</p>
+            <p className="text-xs text-white/40 uppercase font-bold mb-1">{t('bookingForm.rentalDuration')}</p>
             <p className="text-lg font-bold">{days} days</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-white/40 uppercase font-bold mb-1">Total Amount</p>
+            <p className="text-xs text-white/40 uppercase font-bold mb-1">{t('bookingForm.totalAmount')}</p>
             <p className="text-3xl font-black text-primary tracking-tighter">
               {formatNarx(total)}
             </p>

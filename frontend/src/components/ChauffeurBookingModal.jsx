@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Calendar, MapPin, Plane, User, Phone, 
@@ -16,6 +17,7 @@ const DRIVER_FEE_PER_DAY = 150000;
 const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+    const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -46,7 +48,7 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
 
   const handleSubmit = async () => {
     if (!user) {
-      alert('Iltimos, avval tizimga kiring.');
+      alert(t('chauffeurModal.loginRequired'));
       navigate('/login');
       return;
     }
@@ -73,7 +75,7 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
       const backendError = err.response?.data?.non_field_errors?.[0] || 
                            err.response?.data?.[0] || 
                            (typeof err.response?.data === 'string' ? err.response?.data : null) || 
-                           "Bron qilishda xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.";
+                           t('chauffeurModal.bookingError');
       setError(backendError);
     } finally {
       setLoading(false);
@@ -123,7 +125,7 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                   <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-3 group">
-                           <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">Olish sanasi</label>
+                           <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">{t('chauffeurModal.startDate')}</label>
                            <div className="relative">
                               <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                               <input 
@@ -135,7 +137,7 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                            </div>
                         </div>
                         <div className="space-y-3 group">
-                           <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">Qaytarish sanasi</label>
+                           <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">{t('chauffeurModal.endDate')}</label>
                            <div className="relative">
                               <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                               <input 
@@ -152,7 +154,7 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                        onClick={() => setStep(2)}
                        className="w-full btn-primary h-16 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale"
                      >
-                        Keyingisi <ArrowRight className="w-4 h-4" />
+                        {t('chauffeurModal.next')} <ArrowRight className="w-4 h-4" />
                      </button>
                   </motion.div>
                 )}
@@ -162,12 +164,12 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                      <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <div className="space-y-3">
-                              <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">Ism va familiya</label>
+                              <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">{t('chauffeurModal.fullName')}</label>
                               <div className="relative">
                                  <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                                  <input 
                                    type="text" 
-                                   placeholder="To'liq ismingiz"
+                                   placeholder={t('chauffeurModal.fullNamePh')}
                                    className="w-full bg-[#0A0A0A] border border-white/5 rounded-2xl p-5 pl-14 text-sm focus:border-primary/50 outline-none"
                                    value={formData.fullName}
                                    onChange={(e) => setFormData({...formData, fullName: e.target.value})}
@@ -175,7 +177,7 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                               </div>
                            </div>
                            <div className="space-y-3">
-                              <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">Telefon raqam</label>
+                              <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">{t('chauffeurModal.phone')}</label>
                               <div className="relative">
                                  <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                                  <input 
@@ -189,12 +191,12 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                            </div>
                         </div>
                         <div className="space-y-3">
-                           <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">Kutib olish joyi (Aeroport/Mehmonxona/Uy)</label>
+                           <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">{t('chauffeurModal.pickup')}</label>
                            <div className="relative">
                               <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                               <input 
                                 type="text" 
-                                placeholder="Masalan: Islom Karimov NOMIDAGI AEROPORT"
+                                placeholder={t('chauffeurModal.pickupPh')}
                                 className="w-full bg-[#0A0A0A] border border-white/5 rounded-2xl p-5 pl-14 text-sm focus:border-primary/50 outline-none"
                                 value={formData.pickupLocation}
                                 onChange={(e) => setFormData({...formData, pickupLocation: e.target.value})}
@@ -202,12 +204,12 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                            </div>
                         </div>
                         <div className="space-y-3">
-                           <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">Parvoz raqami (Ixtiyoriy)</label>
+                           <label className="text-[9px] text-white/30 uppercase font-black tracking-widest ml-1">{t('chauffeurModal.flight')}</label>
                            <div className="relative">
                               <Plane className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                               <input 
                                 type="text" 
-                                placeholder="Masalan: HY-231"
+                                placeholder={t('chauffeurModal.flightPh')}
                                 className="w-full bg-[#0A0A0A] border border-white/5 rounded-2xl p-5 pl-14 text-sm focus:border-primary/50 outline-none"
                                 value={formData.flightNumber}
                                 onChange={(e) => setFormData({...formData, flightNumber: e.target.value})}
@@ -216,13 +218,13 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                         </div>
                      </div>
                      <div className="flex gap-4">
-                        <button onClick={() => setStep(1)} className="flex-1 h-16 rounded-2xl bg-white/5 text-[10px] font-black uppercase tracking-widest">Orqaga</button>
+                        <button onClick={() => setStep(1)} className="flex-1 h-16 rounded-2xl bg-white/5 text-[10px] font-black uppercase tracking-widest">{t('chauffeurModal.back')}</button>
                         <button 
                            disabled={!formData.pickupLocation || !formData.fullName || !formData.phoneNumber}
                            onClick={() => setStep(3)}
                            className="flex-[2] btn-primary h-16 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50"
                         >
-                           Davom etish <ArrowRight className="w-4 h-4" />
+                           {t('chauffeurModal.continue')} <ArrowRight className="w-4 h-4" />
                         </button>
                      </div>
                   </motion.div>
@@ -232,16 +234,16 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                   <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
                      <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/5 space-y-4">
                         <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-widest text-white/30">
-                           <span>Muddati ({totalDays} kun):</span>
+                           <span>{t('chauffeurModal.duration')} ({totalDays} {t('chauffeurModal.days')}):</span>
                            <span className="text-white">{formatNarx(basePrice)}</span>
                         </div>
                         <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-widest text-primary">
-                           <span>Haydovchi xizmati:</span>
+                           <span>{t('chauffeurModal.chauffeurFee')}</span>
                            <span>{formatNarx(chauffeurFeeTotal)}</span>
                         </div>
                         <div className="h-px bg-white/5" />
                         <div className="flex justify-between items-center text-xl font-black uppercase tracking-tighter">
-                           <span>JAMI:</span>
+                           <span>{t('chauffeurModal.total')}</span>
                            <span className="text-white">{formatNarx(totalPrice)}</span>
                         </div>
                      </div>
@@ -253,13 +255,13 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                      )}
 
                      <div className="flex gap-4">
-                        <button onClick={() => setStep(2)} className="flex-1 h-16 rounded-2xl bg-white/5 text-[10px] font-black uppercase tracking-widest">Orqaga</button>
+                        <button onClick={() => setStep(2)} className="flex-1 h-16 rounded-2xl bg-white/5 text-[10px] font-black uppercase tracking-widest">{t('chauffeurModal.back')}</button>
                         <button 
                            onClick={handleSubmit}
                            disabled={loading}
                            className="flex-[2] btn-primary h-16 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3"
                         >
-                           {loading ? "Yuborilmoqda..." : "Tasdiqlash va Yuborish"} 
+                           {loading ? t('chauffeurModal.sending') : t('chauffeurModal.confirmSend')} 
                            {!loading && <CheckCircle2 className="w-5 h-5" />}
                         </button>
                      </div>
@@ -271,9 +273,9 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
                      <div className="w-24 h-24 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center mb-8">
                         <CheckCircle2 className="w-12 h-12 text-green-500" />
                      </div>
-                     <h3 className="text-3xl font-black uppercase tracking-tighter mb-4">So'rov yuborildi!</h3>
-                     <p className="text-sm text-white/40 max-w-sm mb-10">Sizning VIP Chauffeur xizmati uchun so'rovingiz qabul qilindi. Tez orada menejerimiz siz bilan bog'lanadi.</p>
-                     <button onClick={onClose} className="btn-primary px-12 h-14">Tushunarli</button>
+                     <h3 className="text-3xl font-black uppercase tracking-tighter mb-4">{t('chauffeurModal.successTitle')}</h3>
+                     <p className="text-sm text-white/40 max-w-sm mb-10">{t('chauffeurModal.successDesc')}</p>
+                     <button onClick={onClose} className="btn-primary px-12 h-14">{t('chauffeurModal.understood')}</button>
                   </motion.div>
                 )}
              </AnimatePresence>
@@ -283,10 +285,10 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
           {step < 4 && (
             <div className="p-6 bg-white/[0.01] border-t border-white/5 flex items-center justify-center gap-6">
                <div className="flex items-center gap-2 text-[8px] text-white/20 uppercase font-black tracking-widest">
-                  <ShieldCheck className="w-3.5 h-3.5" /> 100% Xavfsizlik
+                  <ShieldCheck className="w-3.5 h-3.5" /> {t('chauffeurModal.security')}
                </div>
                <div className="flex items-center gap-2 text-[8px] text-white/20 uppercase font-black tracking-widest">
-                  <Clock className="w-3.5 h-3.5" /> 24/7 Qo'llab-quvvatlash
+                  <Clock className="w-3.5 h-3.5" /> {t('chauffeurModal.support')}
                </div>
             </div>
           )}

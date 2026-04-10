@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Download } from 'lucide-react';
@@ -8,14 +9,14 @@ const BillingHistory = ({ invoices, downloadingInvoice, onDownload }) => {
       return (
          <div className="flex flex-col items-center justify-center py-24 glass rounded-[48px] border-white/5 border-dashed border-2">
             <FileText className="w-16 h-16 text-white/5 mb-6" />
-            <p className="text-white/20 font-bold uppercase tracking-widest text-xs">To'lovlar mavjud emas</p>
+            <p className="text-white/20 font-bold uppercase tracking-widest text-xs">{t('profileComps.billingEmpty')} emas</p>
          </div>
       );
    }
 
    return (
       <div className="space-y-6">
-         <h2 className="text-2xl font-bold tracking-tight mb-8">To'lovlar Tarixi</h2>
+         <h2 className="text-2xl font-bold tracking-tight mb-8">{t('profileComps.billingTitle2')}</h2>
          <div className="space-y-4">
             {invoices.map((invoice) => (
                <div key={invoice.id} className="glass p-6 rounded-3xl border-white/10 flex items-center justify-between group">

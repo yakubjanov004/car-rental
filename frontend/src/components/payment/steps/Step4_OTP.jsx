@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, ShieldCheck, Phone, CheckCircle2 } from 'lucide-react';
 
@@ -16,6 +17,7 @@ const Step4_OTP = ({
   paymentMethod,
   isPolling // preserving this for specific flows if needed
 }) => {
+    const { t } = useTranslation();
   const [expiryTime, setExpiryTime] = useState(5 * 60); // 04:59
   const [canResend, setCanResend] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false); 
@@ -126,11 +128,11 @@ const Step4_OTP = ({
           <span>{paymentMethod || 'BANK KARTASI'}</span>
         </div>
 
-        <h2 className="text-2xl font-black text-white uppercase tracking-widest leading-tight">Tasdiqlash kodini<br />kiriting</h2>
+        <h2 className="text-2xl font-black text-white uppercase tracking-widest leading-tight">{t('checkoutModal.otpTitle').split('\n').map((l, i) => <span key={i}>{l}{i===0?<br/>:''}</span>)}</h2>
         
         <div className="flex items-center justify-center gap-2 mt-4 text-white/50 text-sm bg-white/5 px-4 py-2 rounded-lg">
           <Phone className="w-4 h-4" />
-          <span>SMS kod yuborildi: <strong className="text-white tracking-widest ml-1">+998 ** *** **{phoneNumber.slice(-2)}</strong></span>
+          <span>{t('checkoutModal.smsSent')} <strong className="text-white tracking-widest ml-1">+998 ** *** **{phoneNumber.slice(-2)}</strong></span>
         </div>
       </div>
 
@@ -180,7 +182,7 @@ const Step4_OTP = ({
          {!isProcessing ? (
            <>
             <div className="text-sm font-bold text-white/40 tracking-widest uppercase">
-              Kod amal qilish muddati: <span className="text-white font-mono ml-2 text-lg">{formatTimer(expiryTime)}</span>
+              {t('checkoutModal.codeExpiry')} <span className="text-white font-mono ml-2 text-lg">{formatTimer(expiryTime)}</span>
             </div>
             
             <button 
@@ -209,7 +211,7 @@ const Step4_OTP = ({
                <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                <ShieldCheck className="w-6 h-6 text-primary absolute animate-pulse" />
              </div>
-             <p className="text-xs font-black uppercase tracking-widest text-primary animate-pulse">Bank tekshirmoqda...</p>
+             <p className="text-xs font-black uppercase tracking-widest text-primary animate-pulse">{t('checkoutModal.bankChecking')}</p>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import carPlaceholder from '../../assets/car-placeholder.png';
 import { motion } from 'framer-motion';

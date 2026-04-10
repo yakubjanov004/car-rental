@@ -2,9 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Car, ChevronLeft, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import ScrollReveal from '../components/ScrollReveal';
 
 const NotFound = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-[#0A0A0A] min-h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden">
       {/* Background decorations */}
@@ -28,18 +31,18 @@ const NotFound = () => {
         </ScrollReveal>
 
         <ScrollReveal direction="up" delay={0.2}>
-          <h2 className="font-display text-4xl md:text-6xl font-extrabold tracking-tight mb-6">Sahifa <span className="text-white/40">topilmadi</span></h2>
+          <h2 className="font-display text-4xl md:text-6xl font-extrabold tracking-tight mb-6">{t('notFound.title')}</h2>
           <p className="text-white/40 text-lg md:text-xl font-light mb-12 max-w-sm mx-auto leading-relaxed">
-            Afsuski, siz qidirayotgan yo'l mavjud emas yoki boshi berk ko'chaga kirib qoldingiz.
+            {t('notFound.description')}
           </p>
           
           <div className="flex flex-wrap justify-center gap-4">
             <Link to="/" className="btn-primary px-10 py-5 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 group">
               <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-              BOSH SAHIFA
+              {t('notFound.goHome')}
             </Link>
             <Link to="/fleet" className="btn-secondary px-10 py-5 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 group">
-              KATALOG
+              {t('nav.fleet')}
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>

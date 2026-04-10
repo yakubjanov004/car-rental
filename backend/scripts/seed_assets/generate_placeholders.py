@@ -1,5 +1,5 @@
 """
-RIDELUX — Demo Asset Generator
+RENTAL CAR — Demo Asset Generator
 Generates professional placeholder images for user avatars,
 passport documents, driver licenses, and KYC selfies.
 All images are deterministic and styled for demo purposes.
@@ -53,7 +53,7 @@ def generate_avatar(name, filename, bg_color=(30, 60, 120)):
 
     # Bottom label
     font_small = _get_font(18)
-    _draw_centered_text(draw, "RIDELUX DEMO", size - 60, size, font_small, (180, 200, 240))
+    _draw_centered_text(draw, "RENTAL CAR DEMO", size - 60, size, font_small, (180, 200, 240))
 
     filepath = os.path.join(USERS_DIR, filename)
     img.save(filepath, 'WEBP', quality=90)

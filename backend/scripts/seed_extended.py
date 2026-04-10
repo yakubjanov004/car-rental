@@ -1,5 +1,5 @@
 """
-RIDELUX — Professional Demo Data Generator (seed_extended.py)
+RENTAL CAR — Professional Demo Data Generator (seed_extended.py)
 =============================================================
 Generates complete, realistic demo data for ALL platform entities.
 Supports --fresh flag to reset all data before seeding.
@@ -111,7 +111,7 @@ def _generate_simple_image(text, w, h, bg):
     draw = ImageDraw.Draw(img)
     font = _get_font(20)
     _draw_centered(draw, text, h // 2 - 12, w, font, (255, 255, 255))
-    _draw_centered(draw, "RIDELUX DEMO", h - 35, w, font, (150, 170, 210))
+    _draw_centered(draw, "RENTAL CAR DEMO", h - 35, w, font, (150, 170, 210))
     import io
     buf = io.BytesIO()
     img.save(buf, 'WEBP', quality=85)
@@ -131,7 +131,7 @@ def generate_avatar(name, username):
     font = _get_font(96)
     _draw_centered(draw, initials, size//2 - 50, size, font, (255, 255, 255))
     font_s = _get_font(16)
-    _draw_centered(draw, "RIDELUX DEMO", size-55, size, font_s, (180, 200, 240))
+    _draw_centered(draw, "RENTAL CAR DEMO", size-55, size, font_s, (180, 200, 240))
     import io
     buf = io.BytesIO()
     img.save(buf, 'WEBP', quality=90)
@@ -382,7 +382,7 @@ def seed_users():
             username=uname,
             defaults={
                 'first_name': first, 'last_name': last,
-                'email': f"{uname}@ridelux.uz",
+                'email': f"{uname}@rentalcar.uz",
                 'phone_number': phone,
                 'address': random.choice(ADDRESSES),
                 'passport_number': passport_num,
@@ -708,7 +708,7 @@ def seed_promo_codes():
     """Create promo codes with various types."""
     print("\n══ PROMO CODES ════════════════════════════════")
     promos = [
-        ("RIDELUX10", "percentage", 10, 30, True),
+        ("RENTAL CAR10", "percentage", 10, 30, True),
         ("WELCOME25", "percentage", 25, 14, True),
         ("VIP50K", "fixed", 50000, 60, True),
         ("SPRING2026", "percentage", 15, 45, True),
@@ -764,14 +764,34 @@ def seed_cars():
                 'base_daily_price': Decimal(cfg['base_daily_price']),
                 'base_deposit': Decimal(cfg['base_deposit']),
                 'allows_chauffeur': cfg.get('allows_chauffeur', False),
-                'short_tagline': cfg['short_tagline'], 'short_description': cfg['short_description'],
-                'detail_title': cfg['detail_title'], 'detail_summary': cfg['detail_summary'],
+                'short_tagline_uz': cfg.get('short_tagline_uz'),
+                'short_tagline_ru': cfg.get('short_tagline_ru'),
+                'short_tagline_en': cfg.get('short_tagline_en'),
+                'short_description_uz': cfg.get('short_description_uz'),
+                'short_description_ru': cfg.get('short_description_ru'),
+                'short_description_en': cfg.get('short_description_en'),
+                'detail_title_uz': cfg.get('detail_title_uz'),
+                'detail_title_ru': cfg.get('detail_title_ru'),
+                'detail_title_en': cfg.get('detail_title_en'),
+                'detail_summary_uz': cfg.get('detail_summary_uz'),
+                'detail_summary_ru': cfg.get('detail_summary_ru'),
+                'detail_summary_en': cfg.get('detail_summary_en'),
                 'power': cfg.get('power'), 'top_speed': cfg.get('top_speed'),
                 'acceleration': cfg.get('acceleration'), 'fuel_consumption': cfg.get('fuel_consumption'),
                 'engine_type': cfg.get('engine_type'), 'drive_type': cfg.get('drive_type'),
                 'cargo_capacity': cfg.get('cargo_capacity'),
-                'rear_title': cfg.get('rear_title'), 'rear_description': cfg.get('rear_description'),
-                'interior_title': cfg.get('interior_title'), 'interior_description': cfg.get('interior_description'),
+                'rear_title_uz': cfg.get('rear_title_uz'),
+                'rear_title_ru': cfg.get('rear_title_ru'),
+                'rear_title_en': cfg.get('rear_title_en'),
+                'rear_description_uz': cfg.get('rear_description_uz'),
+                'rear_description_ru': cfg.get('rear_description_ru'),
+                'rear_description_en': cfg.get('rear_description_en'),
+                'interior_title_uz': cfg.get('interior_title_uz'),
+                'interior_title_ru': cfg.get('interior_title_ru'),
+                'interior_title_en': cfg.get('interior_title_en'),
+                'interior_description_uz': cfg.get('interior_description_uz'),
+                'interior_description_ru': cfg.get('interior_description_ru'),
+                'interior_description_en': cfg.get('interior_description_en'),
             },
         )
         model.amenities.set([amenity_map[a] for a in cfg.get('amenities', []) if a in amenity_map])
@@ -1107,7 +1127,7 @@ def seed_notifications(user_data):
         Notification.objects.get_or_create(
             user=user, type='system', title="Xush kelibsiz! 🎉",
             defaults={
-                'message': f"Salom {user.first_name}! RIDELUX platformasiga xush kelibsiz. Premium mashina ijarasi xizmati sizni kutmoqda.",
+                'message': f"Salom {user.first_name}! RENTAL CAR platformasiga xush kelibsiz. Premium mashina ijarasi xizmati sizni kutmoqda.",
                 'metadata': {'welcome': True},
             }
         )
@@ -1166,7 +1186,7 @@ def seed_reviews(user_data, all_cars):
         ("Oilaviy sayohat uchun eng yaxshi mashina! Bolalar uchun joy yetarli.", 5),
         ("Haydovchi bilan xizmat zo'r edi, aniq boshqa safar ham buyurtma beraman.", 5),
         ("Mashina yaxshi, lekin GPS navigatsiya eski versiyada edi.", 4),
-        ("Birinchi marta ijaraga oldim, tajribam ajoyib bo'ldi! RIDELUX jamoasiga rahmat.", 5),
+        ("Birinchi marta ijaraga oldim, tajribam ajoyib bo'ldi! RENTAL CAR jamoasiga rahmat.", 5),
         ("Krossfover sinfida eng yaxshisi! Tog' yo'llarida ham muammo bo'lmadi.", 4),
         ("Elektromobil tajribasi ajoyib edi. Zaryadlash punkti ham qulay joylashgan.", 5),
         ("Rangi va interyer juda chiroyli. Lekin yonilg'i ko'p sarfladi.", 3),
@@ -1252,7 +1272,7 @@ def seed_contact_messages():
         ("Behruz Rajabov", "behruz.r@gmail.com", "Elektromobil zaryadlash",
          "Tesla Model Y ijaraga olmoqchiman. Toshkentda zaryadlash stansiyalari yetarlimi?"),
         ("Sevara Zaripova", "sevara.z@mail.ru", "Chegirma kodi",
-         "Do'stim RIDELUX10 kodini berdi, lekin ishlamayapti. Muddati o'tib ketmaganmi?"),
+         "Do'stim RENTAL CAR10 kodini berdi, lekin ishlamayapti. Muddati o'tib ketmaganmi?"),
     ]
 
     for name, email, subject, message in messages:
@@ -1482,7 +1502,7 @@ def run():
     fresh = '--fresh' in sys.argv or '--reset' in sys.argv
 
     print("╔══════════════════════════════════════════════════╗")
-    print("║   RIDELUX — Professional Demo Seed v3.0         ║")
+    print("║   RENTAL CAR — Professional Demo Seed v3.0         ║")
     print("║   To'liq baza to'ldiruvchi (All Models Seeded)  ║")
     print("╚══════════════════════════════════════════════════╝")
     print(f"  Mode: {'🔄 FRESH (delete + re-seed)' if fresh else '➕ INCREMENTAL (skip existing)'}")
@@ -1585,7 +1605,7 @@ def run():
         if len(STATS['media_files']) > 10:
             print(f"   ... and {len(STATS['media_files']) - 10} more")
 
-    print("\n✅ RIDELUX seed v3.0 completed successfully!")
+    print("\n✅ RENTAL CAR seed v3.0 completed successfully!")
     print("   Barcha jadvallar to'ldirildi: Users, KYC, Cars, Bookings,")
     print("   Payments, Reviews, Loyalty, Insurance, Maintenance, Pricing,")
     print("   Notifications, Contacts, Waitlist, Favorites, Districts!\n")

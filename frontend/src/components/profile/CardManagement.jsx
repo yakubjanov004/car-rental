@@ -1,10 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { CreditCard, Trash2, Zap } from 'lucide-react';
 
 const CardManagement = ({ paymentMethods, onRemoveCard, onShowAddModal }) => {
    return (
       <div className="space-y-8">
-         <h2 className="text-2xl font-bold tracking-tight mb-8">To'lov Kartalari</h2>
+         <h2 className="text-2xl font-bold tracking-tight mb-8">{t('profileComps.paymentCards')}</h2>
          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {paymentMethods.map((method) => (
                <div key={method.id} className="relative group">
@@ -19,7 +20,7 @@ const CardManagement = ({ paymentMethods, onRemoveCard, onShowAddModal }) => {
                            <span className="text-[8px] font-black italic uppercase tracking-widest">{method.card_type}</span>
                         </div>
                         <div className="text-right">
-                           <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Karta statusi</p>
+                           <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">{t('profileComps.cardStatus')}</p>
                            <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest italic">{method.is_verified ? 'TASDIQLANGAN' : 'KUTILMOQDA'}</p>
                         </div>
                      </div>
@@ -29,7 +30,7 @@ const CardManagement = ({ paymentMethods, onRemoveCard, onShowAddModal }) => {
                         </p>
                         <div className="flex justify-between items-end">
                            <div className="space-y-1">
-                              <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Karta Egasi</p>
+                              <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">{t('profileComps.cardHolder')}</p>
                               <p className="text-xs font-bold text-white uppercase">{method.card_holder}</p>
                            </div>
                            <div className="space-y-1 text-right">
@@ -55,7 +56,7 @@ const CardManagement = ({ paymentMethods, onRemoveCard, onShowAddModal }) => {
                <Zap className="w-5 h-5 text-primary" />
             </div>
             <p className="text-[10px] text-white/30 leading-relaxed font-black uppercase tracking-widest italic">
-               Birinchi to'lovdan so'ng kartangiz avtomatik tarzda tasdiqlanadi.
+               {t('profileComps.cardAutoVerify')}
             </p>
          </div>
       </div>

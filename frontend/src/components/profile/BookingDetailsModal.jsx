@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XCircle, Calendar, User, Bell, Download } from 'lucide-react';

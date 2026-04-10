@@ -4,8 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Phone, ChevronDown, User, LogOut, LayoutDashboard, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../utils/api';
+import { useTranslation } from 'react-i18next';
+
+const LANG_MAP = { uz: 'UZ', ru: 'RU', en: 'EN' };
+const LANG_FLAGS = { uz: '🇺🇿', ru: '🇷🇺', en: '🇬🇧' };
 
 const NotificationList = ({ onRead }) => {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,16 +32,10 @@ const NotificationList = ({ onRead }) => {
   };
 
   const getTypeLabel = (type) => {
-    switch(type) {
-      case 'booking_created': return 'Yangi buyurtma';
-      case 'payment_completed': return "To'lov";
-      case 'booking_approved': return 'Tasdiqlandi';
-      case 'booking_rejected': return 'Rad etildi';
-      case 'kyc_approved': return 'KYC tasdiqlandi';
-      case 'kyc_rejected': return 'KYC rad etildi';
-      case 'system': return 'Tizim';
-      default: return type?.replace(/_/g, ' ') || 'Xabar';
-    }
+    const key = `notifications.${type}`;
+    const translated = t(key);
+    if (translated !== key) return translated;
+    return type?.replace(/_/g, ' ') || t('notifications.default');
   };
 
   const getTypeColor = (type) => {
@@ -46,8 +45,8 @@ const NotificationList = ({ onRead }) => {
     return 'text-blue-400 bg-blue-500/15';
   };
 
-  if (loading) return <div className="p-10 text-center text-white/30 text-xs">Yuklanmoqda...</div>;
-  if (notifications.length === 0) return <div className="p-10 text-center text-white/20 text-xs">Hozircha xabarlar yo'q</div>;
+  if (loading) return <div className="p-10 text-center text-white/30 text-xs">{t('notifications.loading')}</div>;
+  if (notifications.length === 0) return <div className="p-10 text-center text-white/20 text-xs">{t('notifications.empty')}</div>;
 
   return (
     <div className="flex flex-col">
@@ -65,7 +64,7 @@ const NotificationList = ({ onRead }) => {
              <p className="text-[11px] text-white/40 leading-relaxed line-clamp-2">{n.message}</p>
            </div>
            {!n.is_read && (
-             <button onClick={() => handleRead(n.id)} className="ml-2 mt-1.5 text-[9px] font-bold uppercase text-white/25 hover:text-primary transition-colors">O'qildi</button>
+             <button onClick={() => handleRead(n.id)} className="ml-2 mt-1.5 text-[9px] font-bold uppercase text-white/25 hover:text-primary transition-colors">{t('notifications.read')}</button>
            )}
         </div>
       ))}
@@ -73,33 +72,41 @@ const NotificationList = ({ onRead }) => {
   );
 };
 
-const NAV_LINKS = [
-  { to: '/', label: 'Bosh sahifa' },
-  { to: '/fleet', label: 'Katalog' },
-  { to: '/ev-fleet', label: '⚡ Elektro' },
-  { to: '/chauffeur', label: 'Haydovchi bilan' },
-  {
-    label: 'Yana',
-    children: [
-      { to: '/about-us', label: 'Biz haqimizda' },
-      { to: '/terms', label: 'Shartlar' },
-      { to: '/faq', label: 'FAQ' },
-      { to: '/contact', label: 'Aloqa' },
-    ]
-  }
-];
-
 const Navbar = () => {
+  const { t, i18n } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [navDropdownOpen, setNavDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [lang, setLang] = useState('UZ');
   const [langOpen, setLangOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, logout } = useAuth();
   const location = useLocation();
   const notifRef = useRef(null);
+
+  const langKey = i18n.language?.split('-')[0] || 'uz';
+  const currentLang = LANG_MAP[langKey] || 'UZ';
+
+  const changeLang = (langCode) => {
+    i18n.changeLanguage(langCode);
+    setLangOpen(false);
+  };
+
+  const NAV_LINKS = [
+    { to: '/', label: t('nav.home') },
+    { to: '/fleet', label: t('nav.fleet') },
+    { to: '/ev-fleet', label: t('nav.electric') },
+    { to: '/chauffeur', label: t('nav.chauffeur') },
+    {
+      label: t('nav.more'),
+      children: [
+        { to: '/about-us', label: t('nav.about') },
+        { to: '/terms', label: t('nav.terms') },
+        { to: '/faq', label: t('nav.faq') },
+        { to: '/contact', label: t('nav.contact') },
+      ]
+    }
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -150,7 +157,7 @@ const Navbar = () => {
               <span className="text-white font-black text-sm font-display">R</span>
             </div>
             <span className="font-display font-extrabold text-lg tracking-tight">
-              Ride<span className="text-primary">Lux</span>
+              Rental<span className="text-primary">Car</span>
             </span>
           </Link>
 
@@ -224,15 +231,16 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-3">
             {/* Language Switcher */}
             <div className="relative mr-2">
-              <button onClick={() => { setLangOpen(!langOpen); setNotifOpen(false); setNavDropdownOpen(false); }} className="flex items-center gap-1 text-sm text-white/55 hover:text-white transition-colors uppercase font-bold">
-                {lang} <ChevronDown className={`w-3.5 h-3.5 transition-transform ${langOpen ? 'rotate-180' : ''}`} />
+              <button onClick={() => { setLangOpen(!langOpen); setNotifOpen(false); setNavDropdownOpen(false); }} className="flex items-center gap-1.5 text-sm text-white/55 hover:text-white transition-colors uppercase font-bold">
+                <span className="text-base">{LANG_FLAGS[langKey] || '🇺🇿'}</span>
+                {currentLang} <ChevronDown className={`w-3.5 h-3.5 transition-transform ${langOpen ? 'rotate-180' : ''}`} />
               </button>
               <AnimatePresence>
                 {langOpen && (
-                  <motion.div initial={{opacity:0, y:8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:8}} className="absolute top-full right-0 mt-2 bg-[#141414] rounded-xl border border-white/10 overflow-hidden w-24 shadow-2xl">
-                     <button onClick={() => {setLang('UZ'); setLangOpen(false)}} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white/70 hover:text-white">UZ</button>
-                     <button onClick={() => {setLang('RU'); setLangOpen(false)}} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white/70 hover:text-white">RU</button>
-                     <button onClick={() => {setLang('EN'); setLangOpen(false)}} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-white/70 hover:text-white">EN</button>
+                  <motion.div initial={{opacity:0, y:8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:8}} className="absolute top-full right-0 mt-2 bg-[#141414] rounded-xl border border-white/10 overflow-hidden w-32 shadow-2xl">
+                     <button onClick={() => changeLang('uz')} className={`w-full text-left px-4 py-2.5 text-xs hover:bg-white/10 transition-colors flex items-center gap-2 ${langKey === 'uz' ? 'text-primary bg-white/5' : 'text-white/70 hover:text-white'}`}>🇺🇿 O'zbekcha</button>
+                     <button onClick={() => changeLang('ru')} className={`w-full text-left px-4 py-2.5 text-xs hover:bg-white/10 transition-colors flex items-center gap-2 ${langKey === 'ru' ? 'text-primary bg-white/5' : 'text-white/70 hover:text-white'}`}>🇷🇺 Русский</button>
+                     <button onClick={() => changeLang('en')} className={`w-full text-left px-4 py-2.5 text-xs hover:bg-white/10 transition-colors flex items-center gap-2 ${langKey === 'en' ? 'text-primary bg-white/5' : 'text-white/70 hover:text-white'}`}>🇬🇧 English</button>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -240,7 +248,7 @@ const Navbar = () => {
 
             <a href="tel:+998901234567" className="flex items-center gap-2 text-sm text-white/55 hover:text-white transition-colors">
               <Phone className="w-4 h-4" />
-              <span className="font-medium">+998 90 123-45-67</span>
+              <span className="font-medium">{t('nav.phone')}</span>
             </a>
             
             {user ? (
@@ -272,7 +280,7 @@ const Navbar = () => {
                       >
                         {/* Header */}
                         <div className="px-4 py-3 border-b border-white/[0.06] flex justify-between items-center bg-white/[0.03]">
-                           <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Bildirishnomalar</span>
+                           <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">{t('notifications.title')}</span>
                            {unreadCount > 0 && (
                              <button 
                                onClick={async () => {
@@ -281,7 +289,7 @@ const Navbar = () => {
                                }}
                                className="text-[9px] font-bold uppercase tracking-wider text-primary hover:text-primary/80 transition-colors"
                              >
-                               Hammasini o'qish
+                               {t('notifications.readAll')}
                              </button>
                            )}
                         </div>
@@ -295,7 +303,7 @@ const Navbar = () => {
                           onClick={() => setNotifOpen(false)}
                           className="block px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-white/25 hover:text-primary border-t border-white/[0.06] bg-white/[0.02] transition-colors"
                         >
-                           Barcha bildirishnomalar
+                           {t('notifications.viewAll')}
                         </Link>
                       </motion.div>
                     )}
@@ -305,13 +313,13 @@ const Navbar = () => {
                 {!user.is_staff && (
                   <Link to="/profile" className="btn-secondary text-[10px] uppercase font-black tracking-widest px-4 py-2.5">
                     <User className="w-3.5 h-3.5" />
-                    Profil
+                    {t('nav.profile')}
                   </Link>
                 )}
                 {user.is_staff && (
                   <Link to="/admin" className="btn-primary text-[10px] font-black uppercase tracking-widest px-4 py-2.5 flex items-center gap-2">
                     <LayoutDashboard className="w-3.5 h-3.5" />
-                    Admin Panel
+                    {t('nav.adminPanel')}
                   </Link>
                 )}
                 <button onClick={logout} className="p-2 text-white/40 hover:text-primary transition-colors">
@@ -320,8 +328,8 @@ const Navbar = () => {
               </div>
             ) : (
               <>
-                <Link to="/signin" className="btn-secondary text-xs px-4 py-2.5">Kirish</Link>
-                <Link to="/fleet" className="btn-primary text-xs px-4 py-2.5">Bron qilish</Link>
+                <Link to="/signin" className="btn-secondary text-xs px-4 py-2.5">{t('nav.signIn')}</Link>
+                <Link to="/fleet" className="btn-primary text-xs px-4 py-2.5">{t('nav.bookNow')}</Link>
               </>
             )}
           </div>
@@ -355,11 +363,30 @@ const Navbar = () => {
               className="fixed bottom-0 left-0 right-0 z-50 bg-[#0F0F0F] border-t border-white/8 rounded-t-3xl p-6 pb-10 md:hidden"
             >
               <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6" />
+              
+              {/* Mobile Language Switcher */}
+              <div className="flex gap-2 mb-6 justify-center">
+                {Object.entries(LANG_MAP).map(([code, label]) => (
+                  <button
+                    key={code}
+                    onClick={() => changeLang(code)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                      i18n.language === code
+                        ? 'bg-primary border-primary text-white'
+                        : 'bg-white/5 border-white/10 text-white/50 hover:text-white'
+                    }`}
+                  >
+                    {LANG_FLAGS[code]} {label}
+                  </button>
+                ))}
+              </div>
+
               <nav className="flex flex-col gap-1">
                 {NAV_LINKS.flatMap((l) => l.children || [l]).map((link) => (
                   <NavLink
                     key={link.to}
                     to={link.to}
+                    onClick={() => setMobileOpen(false)}
                     className={({ isActive }) =>
                       `flex items-center justify-between px-4 py-3.5 rounded-2xl text-base font-medium transition-colors ${
                         isActive ? 'bg-primary/15 text-primary' : 'text-white/70 hover:bg-white/5 hover:text-white'
@@ -373,14 +400,14 @@ const Navbar = () => {
               <div className="mt-6 flex gap-3">
                 {user ? (
                   user.is_staff ? (
-                    <Link to="/admin" className="btn-primary flex-1 text-sm py-3.5">Admin Panel</Link>
+                    <Link to="/admin" onClick={() => setMobileOpen(false)} className="btn-primary flex-1 text-sm py-3.5">{t('nav.adminPanel')}</Link>
                   ) : (
-                    <Link to="/profile" className="btn-secondary flex-1 text-sm py-3.5">Profil</Link>
+                    <Link to="/profile" onClick={() => setMobileOpen(false)} className="btn-secondary flex-1 text-sm py-3.5">{t('nav.profile')}</Link>
                   )
                 ) : (
                   <>
-                    <Link to="/signin" className="btn-secondary flex-1 text-sm py-3.5">Kirish</Link>
-                    <Link to="/fleet" className="btn-primary flex-1 text-sm py-3.5">Bron qilish</Link>
+                    <Link to="/signin" onClick={() => setMobileOpen(false)} className="btn-secondary flex-1 text-sm py-3.5">{t('nav.signIn')}</Link>
+                    <Link to="/fleet" onClick={() => setMobileOpen(false)} className="btn-primary flex-1 text-sm py-3.5">{t('nav.bookNow')}</Link>
                   </>
                 )}
               </div>

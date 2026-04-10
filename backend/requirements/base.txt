@@ -9,3 +9,4 @@ python-decouple>=3.8
 django-jazzmin>=3.0.0
 requests
 payme-pkg
+django-modeltranslation>=0.18.0

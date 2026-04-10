@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Lock, ChevronRight, Car, Send, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import ScrollReveal from '../components/ScrollReveal';
 
 const SignIn = () => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
@@ -21,7 +23,7 @@ const SignIn = () => {
          navigate('/profile');
       }
     } catch (err) {
-      alert("Login yoki parol xato.");
+      alert(t('signIn.error'));
     }
   };
 
@@ -40,9 +42,9 @@ const SignIn = () => {
                </div>
             </Link>
             <h1 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-              Xush <span className="text-white/40">kelibsiz</span>
+              {t('signIn.welcome')} <span className="text-white/40">{t('signIn.welcomeHighlight')}</span>
             </h1>
-            <p className="text-white/40 text-sm font-medium">Shaxsiy kabinetingiz orqali ijaralarni kuzatib boring.</p>
+            <p className="text-white/40 text-sm font-medium">{t('signIn.subtitle')}</p>
           </div>
         </ScrollReveal>
 
@@ -50,14 +52,14 @@ const SignIn = () => {
           <div className="glass p-8 md:p-10 border-white/10 shadow-2xl">
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-2">
-                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">Login</label>
+                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">{t('signIn.loginLabel')}</label>
                 <div className="relative group">
                   <input 
                     type="text" 
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full bg-[#111] border border-white/5 rounded-2xl py-4.5 pl-12 pr-4 text-sm focus:border-primary/50 transition-all outline-none"
-                    placeholder="Loginni kiriting..." 
+                    placeholder={t('signIn.loginPlaceholder')} 
                     required
                   />
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-primary transition-colors" />
@@ -66,8 +68,8 @@ const SignIn = () => {
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center mb-1 px-1">
-                  <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em]">Parol</label>
-                  <Link to="#" className="text-[10px] text-primary font-bold uppercase tracking-widest hover:text-white transition-colors">Tiklash?</Link>
+                  <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em]">{t('signIn.passwordLabel')}</label>
+                  <Link to="#" className="text-[10px] text-primary font-bold uppercase tracking-widest hover:text-white transition-colors">{t('signIn.forgotPassword')}</Link>
                 </div>
                 <div className="relative group">
                   <input 
@@ -83,16 +85,16 @@ const SignIn = () => {
               </div>
 
               <button className="btn-primary w-full py-4 rounded-2xl text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 group">
-                KIRISH
+                {t('signIn.submitBtn')}
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
             </form>
 
             <div className="mt-10 pt-8 border-t border-white/5 text-center">
               <p className="text-xs text-white/30 font-medium">
-                Akkauntingiz yo'qmi?
+                {t('signIn.noAccount')}
                 <Link to="/signup" className="text-primary font-bold ml-2 hover:text-white transition-colors">
-                  Ro'yxatdan o'tish
+                  {t('signIn.register')}
                 </Link>
               </p>
             </div>

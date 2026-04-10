@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Star, Zap, Calendar, Heart } from 'lucide-react';
 import { formatNarx } from '../../utils/formatPrice';

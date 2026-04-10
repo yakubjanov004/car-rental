@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { ShieldCheck, CheckCircle, Upload, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';

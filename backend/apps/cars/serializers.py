@@ -46,6 +46,7 @@ class CarModelSerializer(serializers.ModelSerializer):
             'year', 'available_districts', 'allows_chauffeur', 'amenities',
             'images', 'power', 'top_speed', 'acceleration', 
             'fuel_consumption', 'engine_type', 'drive_type', 'cargo_capacity',
+            'detail_title', 'detail_summary',
             'rear_title', 'rear_description', 'interior_title', 'interior_description'
         ]
 

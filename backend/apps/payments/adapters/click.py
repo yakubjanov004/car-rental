@@ -1,5 +1,5 @@
 """
-Click Payment Adapter for RIDELUX.
+Click Payment Adapter for RENTAL CAR.
 
 Click integration uses the SHOP-API pattern:
   - Merchant creates an invoice via Click Merchant API
@@ -267,7 +267,7 @@ class ClickPaymentAdapter(BasePaymentAdapter):
 
         # For completed payments, mark as refunded (actual refund via Click dashboard)
         transaction.status = 'refunded'
-        transaction.metadata['refund_note'] = 'Refund initiated via RIDELUX. Process in Click merchant dashboard.'
+        transaction.metadata['refund_note'] = 'Refund initiated via RENTAL CAR. Process in Click merchant dashboard.'
         transaction.save()
         
         logger.info(f"Click refund marked for TXN {transaction.id}, payment_id {payment_id}")

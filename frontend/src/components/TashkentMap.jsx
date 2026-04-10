@@ -18,7 +18,7 @@ let DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 const OFISLAR = [
-  { id: 1, lat: 41.3111, lng: 69.2797, nomi: "RIDELUX Markaziy Ofis — Amir Temur 15", tur: "ofis" },
+  { id: 1, lat: 41.3111, lng: 69.2797, nomi: "RENTAL CAR Markaziy Ofis — Amir Temur 15", tur: "ofis" },
   { id: 2, lat: 41.2581, lng: 69.2811, nomi: "Toshkent Aeroport — Kutib olish nuqtasi", tur: "airport" },
   { id: 3, lat: 41.2995, lng: 69.2401, nomi: "Samarqand Darvoza — Avtoturargoh", tur: "ofis" },
 ];

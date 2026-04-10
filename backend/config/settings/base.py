@@ -11,6 +11,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 INSTALLED_APPS = [
+    'modeltranslation',
     'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,6 +43,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -100,6 +102,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'uz'
+
+gettext_noop = lambda s: s
+LANGUAGES = (
+    ('uz', gettext_noop('Uzbek')),
+    ('ru', gettext_noop('Russian')),
+    ('en', gettext_noop('English')),
+)
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'uz'
+
 TIME_ZONE = 'Asia/Tashkent'
 USE_I18N = True
 USE_TZ = True
@@ -154,12 +165,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 JAZZMIN_SETTINGS = {
-    'site_title': 'RIDELUX Admin',
-    'site_header': 'RIDELUX',
-    'site_brand': 'RIDELUX',
+    'site_title': 'RENTAL CAR Admin',
+    'site_header': 'RENTAL CAR',
+    'site_brand': 'RENTAL CAR',
     'site_logo': None,
-    'welcome_sign': "RIDELUX Ma'muriyat Paneliga Xush Kelibsiz",
-    'copyright': 'RIDELUX Ltd',
+    'welcome_sign': "RENTAL CAR Ma'muriyat Paneliga Xush Kelibsiz",
+    'copyright': 'RENTAL CAR Ltd',
     'search_model': ['users.User', 'cars.Car'],
     'user_avatar': None,
     'topmenu_links': [

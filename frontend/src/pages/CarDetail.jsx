@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   Users, Fuel, Settings2, Calendar, 
   CheckCircle2, ChevronLeft, 
@@ -75,6 +76,7 @@ const BentoCell = ({ icon: Icon, label, value, delay = 0 }) => (
    MAIN COMPONENT
    ═══════════════════════════════════════════════════ */
 const CarDetail = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -191,7 +193,7 @@ const CarDetail = () => {
   useEffect(() => {
     const loadCarData = async () => {
       if (!id || id === 'undefined') {
-        setError("Noto'g'ri URL");
+        setError(t('carDetail.invalidUrl'));
         setLoading(false);
         return;
       }
@@ -205,10 +207,10 @@ const CarDetail = () => {
           setCar(carData);
           setAvailability(availData || { booked_dates: [], booked_ranges: [] });
         } else {
-          setError("Mashina topilmadi");
+          setError(t('carDetail.notFound'));
         }
       } catch (err) {
-        setError("Ma'lumotlarni yuklashda xatolik");
+        setError(t('carDetail.loadError'));
       } finally {
         setLoading(false);
       }
@@ -223,11 +225,11 @@ const CarDetail = () => {
   const validateDates = (start, end) => {
     if (!start || !end) return true;
     const s = new Date(start), e = new Date(end);
-    if (e <= s) { setDateError("Qaytarish sanasi olish sanasidan keyin bo'lishi kerak."); return false; }
+    if (e <= s) { setDateError(t('carDetail.returnDateError')); return false; }
     let cur = new Date(s);
     while (cur <= e) {
       if (isDateBooked(cur.toISOString().split('T')[0])) {
-        setDateError(`${cur.toISOString().split('T')[0]} sanasi allaqachon band.`);
+        setDateError(`${cur.toISOString().split('T')[0]} ${t('carDetail.dateBooked')}`);
         return false;
       }
       cur.setDate(cur.getDate() + 1);
@@ -242,7 +244,7 @@ const CarDetail = () => {
     
     const digits = bookingData.phone_number.replace(/\D/g, '');
     if (digits.length !== 12) {
-      alert("Telefon raqamini to'liq kiriting (+998 ...)");
+      alert(t('carDetail.enterPhone'));
       return;
     }
 
@@ -269,7 +271,7 @@ const CarDetail = () => {
     <div className="cd-error">
       <AlertCircle size={64} className="cd-error__icon" />
       <h2 className="cd-error__title">Mashina <span>topilmadi</span></h2>
-      <Link to="/fleet" className="cd-error__btn">Katalogga qaytish</Link>
+      <Link to="/fleet" className="cd-error__btn">{t('carDetail.backToFleet')}</Link>
     </div>
   );
 
@@ -314,7 +316,7 @@ const CarDetail = () => {
             {brand}<span>{model}</span>
           </h1>
           <p className="cd-hero__subtitle">
-            {car.model_info?.detail_title || "Premium sport sedan — yuqori tezlik va barqarorlik ramzi."}
+            {car.detail_title || car.short_tagline || ''}
           </p>
         </motion.div>
 
@@ -323,7 +325,7 @@ const CarDetail = () => {
 
         {/* Scroll indicator */}
         <div className="cd-hero__scroll">
-          <span className="cd-hero__scroll-label">Scroll</span>
+          <span className="cd-hero__scroll-label">{t('carDetail.scroll')}</span>
           <div className="cd-hero__scroll-line">
             <div className="cd-hero__scroll-dot" />
           </div>
@@ -336,7 +338,7 @@ const CarDetail = () => {
           transition={{ delay: 0.8 }}
         >
           <Link to="/fleet" className="cd-back-btn">
-            <span>Back to fleet</span>
+            <span>{t('carDetail.back')}</span>
             <ChevronLeft size={16} />
           </Link>
         </motion.div>
@@ -360,19 +362,19 @@ const CarDetail = () => {
             <div>
               <div className="cd-desc__accent" />
               <h2 className="cd-desc__title">
-                {car.model_info?.detail_title || `${brand} ${model} — bu kuch, texnologiya va dizayn uyg'unligi.`}
+                {car.detail_title || car.short_tagline || ''}
               </h2>
               <p className="cd-desc__text">
-                {car.model_info?.detail_summary || "Zamonaviy klassika bilan boyitilgan tizim va maksimal darajadagi komfort."}
+                {car.detail_summary || car.short_description || ''}
               </p>
             </div>
           </Reveal>
 
           <div className="cd-info-grid">
-            <InfoCard icon={Zap} label="KUCH" val={`${car.power || '600'} OT`} delay={0} />
-            <InfoCard icon={ShieldCheck} label="TEZLANISH" val={car.acceleration || "4.5s"} delay={0.1} />
-            <InfoCard icon={Fuel} label="SARF" val={car.fuel_consumption || "12.5 L"} delay={0.15} />
-            <InfoCard icon={Users} label="O'RINLAR" val={`${car.seats || 5} TA`} delay={0.2} />
+            <InfoCard icon={Zap} label={t('carDetail.power')} val={`${car.power || '600'} OT`} delay={0} />
+            <InfoCard icon={ShieldCheck} label={t('carDetail.acceleration')} val={car.acceleration || "4.5s"} delay={0.1} />
+            <InfoCard icon={Fuel} label={t('carDetail.consumption')} val={car.fuel_consumption || "12.5 L"} delay={0.15} />
+            <InfoCard icon={Users} label={t('carDetail.seatsNum')} val={`${car.seats || 5} TA`} delay={0.2} />
           </div>
         </div>
       </section>
@@ -400,11 +402,11 @@ const CarDetail = () => {
                     <span>{car.rear_title.split(' ').slice(-1)}</span>
                   </>
                 ) : (
-                  <>XARAKTER VA<br /><span>BARQARORLIK</span></>
+                  <>Texnologiya va<br /><span>Barqarorlik</span></>
                 )}
               </h3>
               <p className="cd-rear__body">
-                {car.rear_description || "Har bir detal mukammallikka intilgan. RideLux faqat eng yaxshi xususiyatlarni taqdim etadi."}
+                {car.rear_description || ""}
               </p>
             </div>
           </Reveal>
@@ -418,7 +420,7 @@ const CarDetail = () => {
         <div className="cd-bento__header">
           <Reveal>
             <div>
-              <h2 className="cd-bento__heading">Asosiy <span>xususiyatlar</span></h2>
+              <h2 className="cd-bento__heading">{t('carDetail.featuresTitle')} <span>{t('carDetail.featuresTitleSpan')}</span></h2>
               <div className="cd-bento__accent" />
             </div>
           </Reveal>
@@ -437,15 +439,15 @@ const CarDetail = () => {
                 {gallery.gallery_front && <img src={gallery.gallery_front} alt="Front view" />}
                 <div className="cd-bento__img-overlay" />
                 <div className="cd-bento__img-label">
-                  <span>Dynamic View</span>
-                  <h4>AERODINAMIK DIZAYN</h4>
+                  <span>{t('carDetail.dynamicView')}</span>
+                  <h4>{t('carDetail.aeroDesign')}</h4>
                 </div>
               </div>
             </Reveal>
 
             <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: '1.5rem' }}>
-              <BentoCell icon={Settings2} label="Yuritma" value={car.drive_type?.toUpperCase() || 'AWD'} delay={0.05} />
-              <BentoCell icon={Fuel} label="Hajmi" value={car.cargo_capacity || '500 L'} delay={0.1} />
+              <BentoCell icon={Settings2} label={t('carDetail.driveType')} value={car.drive_type?.toUpperCase() || 'AWD'} delay={0.05} />
+              <BentoCell icon={Fuel} label={t('carDetail.capacity')} value={car.cargo_capacity || '500 L'} delay={0.1} />
             </div>
           </div>
 
@@ -454,26 +456,26 @@ const CarDetail = () => {
             <div className="cd-bento__sidebar">
               <div>
                 <h5 className="cd-bento__sidebar-title">
-                  <Sparkles size={14} color="#E8372A" /> MODEL INFO
+                  <Sparkles size={14} color="#E8372A" /> {t('carDetail.modelInfo')}
                 </h5>
                 <div>
                   <div className="cd-bento__sidebar-row">
-                    <span className="cd-bento__sidebar-row-label">Variant</span>
+                    <span className="cd-bento__sidebar-row-label">{t('carDetail.variant')}</span>
                     <span className="cd-bento__sidebar-row-value">{car.color_name}</span>
                   </div>
                   <div className="cd-bento__sidebar-row">
-                    <span className="cd-bento__sidebar-row-label">Yil</span>
+                    <span className="cd-bento__sidebar-row-label">{t('carDetail.year')}</span>
                     <span className="cd-bento__sidebar-row-value">{year}</span>
                   </div>
                   <div className="cd-bento__sidebar-row">
-                    <span className="cd-bento__sidebar-row-label">Status</span>
-                    <span className="cd-bento__sidebar-row-value" style={{ color: '#22c55e' }}>ACTIVE</span>
+                    <span className="cd-bento__sidebar-row-label">{t('carDetail.status')}</span>
+                    <span className="cd-bento__sidebar-row-value" style={{ color: '#22c55e' }}>{t('carDetail.active')}</span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h5 className="cd-bento__sidebar-title">LOYIHA UNITLARI</h5>
+                <h5 className="cd-bento__sidebar-title">{t('carDetail.fleetUnits')}</h5>
                 <div className="cd-bento__colors">
                   {car.same_model_units?.map((unit) => (
                     <motion.button
@@ -507,11 +509,11 @@ const CarDetail = () => {
                     {car.interior_title.split(' ').slice(0, -1).join(' ')} <span>{car.interior_title.split(' ').slice(-1)}</span>
                   </>
                 ) : (
-                  <>SALON <span>PREMIUM KLASS</span></>
+                  <>{t('carDetail.interiorTitle1')} <span>{t('carDetail.interiorTitle2')}</span></>
                 )}
               </h2>
               <p className="cd-interior__body">
-                {car.interior_description || "Har bir harakatda qulaylikni his eting. Yuqori sifatli materiallar va eng zamonaviy elektronika."}
+                {car.interior_description || ""}
               </p>
             </div>
           </Reveal>
@@ -543,14 +545,14 @@ const CarDetail = () => {
             <Reveal>
               <div>
                 <h3 className="cd-booking__heading">
-                  BANDLIK <span>KALENDARI</span>
+                  {t('carDetail.calendarTitle1')} <span>{t('carDetail.calendarTitle2')}</span>
                 </h3>
                 <p className="cd-booking__sub">
-                  Sayohat rejasini hoziroq tuzing. Mashina bo'sh sanalarini ko'rib chiqing.
+                  {t('carDetail.calendarSub')}
                 </p>
 
                 <div className="cd-calendar">
-                  {['Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan', 'Yak'].map(d => (
+                  {t('carDetail.months', { returnObjects: true }).map(d => (
                     <div key={d} className="cd-calendar__day-header">{d}</div>
                   ))}
                   {Array.from({ length: 35 }).map((_, i) => {
@@ -571,11 +573,11 @@ const CarDetail = () => {
                 <div className="cd-calendar__legend">
                   <div className="cd-calendar__legend-item">
                     <div className="cd-calendar__legend-dot cd-calendar__legend-dot--booked" />
-                    <span className="cd-calendar__legend-text">BAND QILINGAN</span>
+                    <span className="cd-calendar__legend-text">{t('carDetail.booked')}</span>
                   </div>
                   <div className="cd-calendar__legend-item">
                     <div className="cd-calendar__legend-dot cd-calendar__legend-dot--free" />
-                    <span className="cd-calendar__legend-text">BO'SH SANALAR</span>
+                    <span className="cd-calendar__legend-text">{t('carDetail.free')}</span>
                   </div>
                 </div>
               </div>
@@ -591,17 +593,17 @@ const CarDetail = () => {
 
                   <div className="cd-form__header">
                     <div>
-                      <div className="cd-form__price-label">Kunlik Narxi</div>
+                      <div className="cd-form__price-label">{t('carDetail.dailyPrice')}</div>
                       <div className="cd-form__price">{formatNarx(price)}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div className="cd-form__location-label">Manzil</div>
-                      <div className="cd-form__location">TOSHKENT, UZ</div>
+                      <div className="cd-form__location-label">{t('carDetail.location')}</div>
+                      <div className="cd-form__location">{t('carDetail.city')}</div>
                     </div>
                   </div>
 
                   <div>
-                    <h4 className="cd-form__section-title">RESERVATION DETAILS</h4>
+                    <h4 className="cd-form__section-title">{t('carDetail.resDetails')}</h4>
                     <div className="cd-form__row" style={{ marginBottom: '1rem' }}>
                       <input
                         type="date"
@@ -618,7 +620,7 @@ const CarDetail = () => {
                     </div>
                     <input
                       type="text"
-                      placeholder="FULL NAME"
+                      placeholder={t('carDetail.fullName')}
                       className="cd-form__input cd-form__input--full"
                       value={bookingData.fullName}
                       onChange={(e) => setBookingData({ ...bookingData, fullName: e.target.value })}
@@ -641,13 +643,13 @@ const CarDetail = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <span className="cd-form__submit-text">RESERVE THIS ASSET</span>
+                      <span className="cd-form__submit-text">{t('carDetail.reserve')}</span>
                       <ArrowRight size={20} className="cd-form__submit-icon" />
                     </motion.button>
                   </div>
 
                   <div className="cd-form__footer">
-                    <p>RIDE LUXURY · SECURED TRANSACTION</p>
+                    <p>{t('carDetail.footerText')}</p>
                   </div>
                 </div>
               </Reveal>

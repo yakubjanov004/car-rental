@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useComparison } from '../context/ComparisonContext';
 import { X, ArrowLeftRight, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ComparisonDrawer = () => {
+    const { t } = useTranslation();
   const { comparisonList, removeFromComparison, clearComparison } = useComparison();
   const navigate = useNavigate();
 
@@ -40,8 +42,8 @@ const ComparisonDrawer = () => {
           </div>
 
           <div className="flex-1 px-4">
-            <h4 className="text-xs font-black uppercase tracking-widest text-white italic">Solishtirish</h4>
-            <p className="text-[10px] text-white/40 font-bold uppercase">{comparisonList.length} ta mashina tanlandi</p>
+            <h4 className="text-xs font-black uppercase tracking-widest text-white italic">{t('comparisonDrawer.title')}</h4>
+            <p className="text-[10px] text-white/40 font-bold uppercase">{comparisonList.length} {t('comparisonDrawer.selected')}</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -55,7 +57,7 @@ const ComparisonDrawer = () => {
               onClick={() => navigate('/compare')}
               className="btn-primary py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
             >
-              SOLISHTIRISH <ArrowLeftRight className="w-3.5 h-3.5" />
+              {t('comparisonDrawer.compare')} <ArrowLeftRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

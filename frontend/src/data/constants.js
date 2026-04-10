@@ -1,13 +1,13 @@
 export const SAYT = {
-  nomi: "RIDELUX",
+  nomi: "RENTAL CAR",
   shiori: "O'zbekistonning eng ishonchli avtomobil ijarasi",
   telefon: "+998 99 123 45 67",
-  email: "info@ridelux.uz",
+  email: "info@rentalcar.uz",
   manzil: "Toshkent shahri, Mirobod tumani, Amir Temur ko'chasi 45",
   ijtimoiy: {
-    telegram: "https://t.me/ridelux",
-    instagram: "https://instagram.com/ridelux.uz",
-    facebook: "https://facebook.com/ridelux.uz",
+    telegram: "https://t.me/rentalcar",
+    instagram: "https://instagram.com/rentalcar.uz",
+    facebook: "https://facebook.com/rentalcar.uz",
   },
   ish_vaqti: "Dushanba — Shanba, 09:00 — 21:00",
 };

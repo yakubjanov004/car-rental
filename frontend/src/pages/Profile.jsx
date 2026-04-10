@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { formatNarx } from '../utils/formatPrice';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import apiClient, { BASE_ORIGIN } from '../services/api/apiClient';
 import { fetchMyLoyaltyAccount, fetchLoyaltyTiers } from '../services/api/loyalty';
@@ -25,6 +26,7 @@ import BookingDetailsModal from '../components/profile/BookingDetailsModal';
 import NotificationsSection from '../components/profile/Notifications';
 
 const Profile = () => {
+   const { t } = useTranslation();
    const { user, logout } = useAuth();
    const [activeTab, setActiveTab] = useState('buyurtmalar');
    const [bookings, setBookings] = useState([]);
@@ -273,13 +275,13 @@ const Profile = () => {
    };
 
    const tabs = [
-      { id: 'buyurtmalar', label: 'BUYURTMALARIM', icon: Calendar },
-      { id: 'hujjatlar', label: 'HUJJATLAR', icon: ShieldCheck },
-      { id: 'kartalar', label: 'TO\'LOV KARTALARI', icon: CreditCard },
-      { id: 'to\'lovlar', label: 'TO\'LOVLAR TARIXI', icon: CardIcon },
-      { id: 'bildirishnomalar', label: 'BILDIRISHNOMALAR', icon: Bell },
-      { id: 'sevimlilar', label: 'SEVIMLILAR', icon: Heart },
-      { id: 'profil', label: 'PROFIL', icon: Settings },
+      { id: 'buyurtmalar', label: t('profile.tabs.buyurtmalar'), icon: Calendar },
+      { id: 'hujjatlar', label: t('profile.tabs.hujjatlar'), icon: ShieldCheck },
+      { id: 'kartalar', label: t('profile.tabs.kartalar'), icon: CreditCard },
+      { id: 'to\'lovlar', label: t('profile.tabs.tolovlar'), icon: CardIcon },
+      { id: 'bildirishnomalar', label: t('profile.tabs.bildirishnomalar'), icon: Bell },
+      { id: 'sevimlilar', label: t('profile.tabs.sevimlilar'), icon: Heart },
+      { id: 'profil', label: t('profile.tabs.profil'), icon: Settings },
    ];
 
    if (loading) {
@@ -287,7 +289,7 @@ const Profile = () => {
          <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
             <div className="flex flex-col items-center gap-6">
                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-               <p className="text-[10px] font-black tracking-[0.3em] text-white/20 uppercase">Ma'lumotlar yuklanmoqda</p>
+               <p className="text-[10px] font-black tracking-[0.3em] text-white/20 uppercase">{t('profile.loading')}</p>
             </div>
          </div>
       );
@@ -301,14 +303,14 @@ const Profile = () => {
                <div className="space-y-4">
                   <div className="flex items-center gap-4 text-primary">
                      <div className="h-px w-12 bg-primary/30" />
-                     <span className="text-[10px] font-black uppercase tracking-[0.4em] italic">Shaxsiy Kabinet</span>
+                     <span className="text-[10px] font-black uppercase tracking-[0.4em] italic">{t('profile.cabinet')}</span>
                   </div>
                   <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter uppercase italic">
-                     Salom, {user?.first_name || user?.username}
+                     {t('profile.hello')}{user?.first_name || user?.username}
                   </h1>
                </div>
                <button onClick={logout} className="group flex items-center gap-4 text-white/30 hover:text-white transition-all pb-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest">Tizimdan chiqish</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">{t('profile.logout')}</span>
                   <div className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center group-hover:bg-red-500 group-hover:border-red-500 transition-all">
                      <LogOut className="w-4 h-4" />
                   </div>
@@ -405,10 +407,10 @@ const Profile = () => {
 
                      {activeTab === 'sevimlilar' && (
                         <motion.div key="sevimlilar" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                           <h2 className="text-2xl font-bold tracking-tight mb-8">Saralangan Avtomobillar</h2>
+                           <h2 className="text-2xl font-bold tracking-tight mb-8">{t('profile.favorites.title')}</h2>
                            <div className="flex flex-col items-center justify-center py-24 glass rounded-[48px] border-white/5">
                               <Heart className="w-16 h-16 text-white/5 mb-6" />
-                              <p className="text-white/20 font-bold uppercase tracking-widest text-xs">Hozircha sevimlilar yo'q</p>
+                              <p className="text-white/20 font-bold uppercase tracking-widest text-xs">{t('profile.favorites.empty')}</p>
                            </div>
                         </motion.div>
                      )}
@@ -434,11 +436,11 @@ const Profile = () => {
                <div className="fixed inset-0 z-[120] flex items-center justify-center px-4">
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCardModal(false)} className="absolute inset-0 bg-black/90 backdrop-blur-xl" />
                   <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative w-full max-w-md glass p-10 border-white/10 rounded-[40px]">
-                     <h3 className="text-2xl font-black italic tracking-tighter uppercase mb-2">Yangi Karta</h3>
-                     <p className="text-[10px] text-white/30 uppercase font-black tracking-widest mb-10 italic">Tasdiqlash uchun amaldagi kartani kiriting</p>
+                     <h3 className="text-2xl font-black italic tracking-tighter uppercase mb-2">{t('profile.newCard.title')}</h3>
+                     <p className="text-[10px] text-white/30 uppercase font-black tracking-widest mb-10 italic">{t('profile.newCard.desc')}</p>
                      <form onSubmit={handleAddCard} className="space-y-6">
                         <div className="space-y-2">
-                           <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">Karta turi</label>
+                           <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">{t('profile.newCard.type')}</label>
                            <div className="grid grid-cols-2 gap-4">
                               {[{type: 'uzcard', logo: uzcardLogo}, {type: 'humo', logo: humoLogo}].map(({type, logo}) => (
                                  <button key={type} type="button" onClick={() => setNewCard({...newCard, card_type: type})} className={`py-4 rounded-xl border-2 transition-all flex items-center justify-center gap-3 ${newCard.card_type === type ? 'border-primary bg-primary/10' : 'border-white/5 bg-white/5'}`}>
@@ -448,7 +450,7 @@ const Profile = () => {
                            </div>
                         </div>
                         <div className="space-y-2">
-                           <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">Karta raqami</label>
+                           <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">{t('profile.newCard.number')}</label>
                            <input 
                               type="text" 
                               value={newCard.pan.replace(/(\d{4})(?=\d)/g, '$1 ')} 
@@ -462,7 +464,7 @@ const Profile = () => {
                         </div>
                          <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">Muddati</label>
+                                <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">{t('profile.newCard.expiry')}</label>
                                 <input 
                                    type="text" 
                                    value={newCard.expiry} 
@@ -479,7 +481,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">Egasi</label>
+                                <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">{t('profile.newCard.holder')}</label>
                                 <input 
                                    type="text" 
                                    value={newCard.holder} 
@@ -492,7 +494,7 @@ const Profile = () => {
                                 />
                             </div>
                          </div>
-                         <button type="submit" className="btn-primary w-full py-5 text-[10px] font-black tracking-widest mt-4 uppercase">KARTANI BOG'LASH</button>
+                         <button type="submit" className="btn-primary w-full py-5 text-[10px] font-black tracking-widest mt-4 uppercase">{t('profile.newCard.btn')}</button>
                      </form>
                   </motion.div>
                </div>
@@ -508,11 +510,11 @@ const Profile = () => {
                      <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-10 border border-primary/20">
                         <Lock className="w-8 h-8 text-primary" />
                      </div>
-                     <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">Kod tasdiqlash</h3>
-                     <p className="text-xs text-white/30 max-w-xs mb-10">Sizning <strong className="text-white">{user?.phone_number}</strong> raqamingizga yuborilgan 6-xonali kodni kiriting.</p>
+                     <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">{t('profile.otp.title')}</h3>
+                     <p className="text-xs text-white/30 max-w-xs mb-10">Sizning <strong className="text-white">{user?.phone_number}</strong> {t('profile.otp.desc')}</p>
                      
                      <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-10 w-full">
-                        <span className="text-[10px] text-white/20 uppercase font-black block mb-3">Simulyatsiya (OTP):</span>
+                        <span className="text-[10px] text-white/20 uppercase font-black block mb-3">{t('profile.otp.sim')}</span>
                         <span className="text-4xl font-display font-black text-primary tracking-[0.4em] blur-[1px] hover:blur-none transition-all">{randomOTP}</span>
                      </div>
 
@@ -531,8 +533,8 @@ const Profile = () => {
                      {otpError && <p className="mt-4 text-xs font-bold text-red-500">{otpError}</p>}
 
                      <div className="flex gap-4 w-full mt-12">
-                        <button onClick={() => { setShowOtpModal(false); setShowCardModal(true); }} className="flex-1 py-4 glass rounded-[20px] text-[10px] font-black uppercase text-white/40">Orqaga</button>
-                        <button onClick={handleVerifyOtp} className="flex-[2] py-4 btn-primary rounded-[20px] text-[10px] font-black uppercase shadow-lg shadow-primary/20">TASDIQLASH</button>
+                        <button onClick={() => { setShowOtpModal(false); setShowCardModal(true); }} className="flex-1 py-4 glass rounded-[20px] text-[10px] font-black uppercase text-white/40">{t('profile.otp.back')}</button>
+                        <button onClick={handleVerifyOtp} className="flex-[2] py-4 btn-primary rounded-[20px] text-[10px] font-black uppercase shadow-lg shadow-primary/20">{t('profile.otp.confirm')}</button>
                      </div>
                   </motion.div>
                </div>

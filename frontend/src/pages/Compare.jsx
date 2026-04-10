@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useComparison } from '../context/ComparisonContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   X, ArrowLeft, ArrowLeftRight, Users, Fuel, 
   Settings2, Star, Calendar, Trash2, ArrowRight 
@@ -9,6 +10,7 @@ import {
 import { formatNarx } from '../utils/formatPrice';
 
 const Compare = () => {
+  const { t } = useTranslation();
   const { comparisonList, removeFromComparison, clearComparison } = useComparison();
   const navigate = useNavigate();
 
@@ -16,23 +18,23 @@ const Compare = () => {
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center text-center px-6">
         <ArrowLeftRight className="w-20 h-20 text-white/10 mb-8" />
-        <h1 className="text-4xl font-black text-white uppercase italic tracking-tighter mb-4">Solishtirish uchun mashina tanlanmagan</h1>
-        <p className="text-sm text-white/30 max-w-sm mb-12">Iltimos, katalogdan 2 tadan 4 tagacha mashina tanlang.</p>
-        <Link to="/fleet" className="btn-primary py-4 px-12 rounded-2xl text-xs font-black uppercase tracking-widest">KATALOGGA QAYTISH</Link>
+        <h1 className="text-4xl font-black text-white uppercase italic tracking-tighter mb-4">{t('comparePage.emptyTitle')}</h1>
+        <p className="text-sm text-white/30 max-w-sm mb-12">{t('comparePage.emptySub')}</p>
+        <Link to="/fleet" className="btn-primary py-4 px-12 rounded-2xl text-xs font-black uppercase tracking-widest">{t('comparePage.backToFleet')}</Link>
       </div>
     );
   }
 
   const features = [
-    { label: 'Brend', key: 'brand' },
-    { label: 'Model', key: 'model' },
-    { label: 'Yil', key: 'year' },
-    { label: 'Kategoriya', key: 'category' },
-    { label: 'Kunlik Narx', key: 'dynamic_price', format: (val, car) => formatNarx(val || car.daily_price) },
-    { label: 'Yoqilg\'i', key: 'fuel_type' },
-    { label: 'Uzatma qutisi', key: 'transmission' },
-    { label: 'O\'rindiqlar', key: 'seats' },
-    { label: 'Reyting', key: 'rating', icon: Star },
+    { label: t('comparePage.brand'), key: 'brand' },
+    { label: t('comparePage.model'), key: 'model' },
+    { label: t('comparePage.year'), key: 'year' },
+    { label: t('comparePage.category'), key: 'category' },
+    { label: t('comparePage.dailyPrice'), key: 'dynamic_price', format: (val, car) => formatNarx(val || car.daily_price) },
+    { label: t('comparePage.fuel'), key: 'fuel_type' },
+    { label: t('comparePage.transmission'), key: 'transmission' },
+    { label: t('comparePage.seats'), key: 'seats' },
+    { label: t('comparePage.rating'), key: 'rating', icon: Star },
   ];
 
   return (
@@ -43,18 +45,18 @@ const Compare = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
           <div className="space-y-4">
             <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-              <ArrowLeft className="w-3 h-3" /> ORQAGA
+              <ArrowLeft className="w-3 h-3" /> {t('comparePage.back')}
             </button>
             <h1 className="font-display text-6xl md:text-8xl font-extrabold tracking-tighter">
-              Soli<span className="text-primary">shtirish.</span>
+              {t('comparePage.title1')}<span className="text-primary">{t('comparePage.title2')}</span>
             </h1>
-            <p className="text-white/30 text-sm font-medium uppercase tracking-[0.1em] italic">Eng yaxshi variantni tanlang</p>
+            <p className="text-white/30 text-sm font-medium uppercase tracking-[0.1em] italic">{t('comparePage.subtitle')}</p>
           </div>
           <button 
             onClick={clearComparison}
             className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-red-500/60 hover:text-red-500 transition-colors"
           >
-            <Trash2 className="w-3.5 h-3.5" /> RO'YXATNI TOZALASH
+            <Trash2 className="w-3.5 h-3.5" /> {t('comparePage.clear')}
           </button>
         </div>
 
@@ -77,7 +79,7 @@ const Compare = () => {
                 </div>
                 <div className="text-center">
                    <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">{car.brand} {car.model}</h3>
-                   <div className="text-[10px] text-primary italic font-black uppercase tracking-widest mt-1">{formatNarx(car.dynamic_price || car.daily_price)} / kun</div>
+                   <div className="text-[10px] text-primary italic font-black uppercase tracking-widest mt-1">{formatNarx(car.dynamic_price || car.daily_price)} / {t('comparePage.day')}</div>
                 </div>
               </div>
             ))}
@@ -105,7 +107,7 @@ const Compare = () => {
                   to={`/car/${car.slug || car.id}`} 
                   className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-white/5 hover:bg-primary text-[10px] font-black uppercase tracking-widest transition-all group"
                 >
-                  Batafsil <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  {t('comparePage.details')} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
             ))}

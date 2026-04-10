@@ -1,5 +1,5 @@
 """
-Payme Payment Adapter for RIDELUX.
+Payme Payment Adapter for RENTAL CAR.
 Uses the payme-pkg SDK (Subscribe API) for card tokenization and receipts,
 and generates checkout links for QR/redirect payments.
 
@@ -93,7 +93,7 @@ class PaymePaymentAdapter(BasePaymentAdapter):
                 response = payme.receipts_create(
                     account={"order_id": str(order_id)},
                     amount=amount_tiyin,
-                    description=f"RIDELUX: Booking #{order_id}",
+                    description=f"RENTAL CAR: Booking #{order_id}",
                 )
                 receipt_id = response.result.receipt._id
                 logger.info(f"Payme receipt created: {receipt_id} for TXN {transaction.id}")

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, XCircle, Download, ArrowRight, Home, HeadphonesIcon } from 'lucide-react';
@@ -46,6 +47,7 @@ const Step5_Success = ({
   onRetry
 }) => {
   const navigate = useNavigate();
+    const { t } = useTranslation();
   const [showCheck, setShowCheck] = useState(false);
   
   // Kutish qismi (status polling holatida kelsa yoki boshida animatsiya uchun)
@@ -64,7 +66,7 @@ const Step5_Success = ({
          const url = window.URL.createObjectURL(blob);
          const link = document.createElement('a');
          link.href = url;
-         link.setAttribute('download', `RIDELUX_Invoice_${paymentResult.invoice_number || paymentResult.invoice_id}.pdf`);
+         link.setAttribute('download', `RENTAL CAR_Invoice_${paymentResult.invoice_number || paymentResult.invoice_id}.pdf`);
          document.body.appendChild(link);
          link.click();
          link.parentNode.removeChild(link);
@@ -104,7 +106,7 @@ const Step5_Success = ({
             <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
                <XCircle className="w-12 h-12 text-red-500" />
             </div>
-            <h2 className="text-2xl font-black uppercase tracking-widest text-red-500 mb-2">To`lov amalga oshmadi</h2>
+            <h2 className="text-2xl font-black uppercase tracking-widest text-red-500 mb-2">{t('checkoutModal.paymentFailed')}</h2>
             <p className="text-sm text-white/50 mb-8 max-w-[280px]">
                {paymentResult?.error || "Qandaydir xatolik yuz berdi. Iltimos kartangiz balansini tekshiring yoki boshqa karta orqali urining."}
             </p>
@@ -127,7 +129,7 @@ const Step5_Success = ({
             {!showCheck && (
               <motion.div exit={{ opacity: 0, scale: 0.8 }} className="absolute inset-0 flex flex-col items-center justify-center z-20">
                 <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                <p className="mt-4 text-xs font-black text-primary uppercase tracking-widest animate-pulse">Ma`lumotlar olinmoqda...</p>
+                <p className="mt-4 text-xs font-black text-primary uppercase tracking-widest animate-pulse">{t('checkoutModal.dataLoading')}</p>
               </motion.div>
             )}
 
@@ -161,29 +163,29 @@ const Step5_Success = ({
                    <div className="px-5 space-y-4">
                       <div className="text-center pt-4 pb-2 border-b border-dashed border-white/20">
                         <div className="font-playfair text-lg text-white font-black italic mb-1 flex justify-center items-center gap-1">
-                          <CheckCircle2 className="w-4 h-4 text-primary" /> RIDELUX
+                          <CheckCircle2 className="w-4 h-4 text-primary" /> RENTAL CAR
                         </div>
-                        <p className="font-sans text-[9px] uppercase tracking-widest text-primary font-bold">To`lov tasdiqlandi</p>
+                        <p className="font-sans text-[9px] uppercase tracking-widest text-primary font-bold">{t('checkoutModal.paymentConfirmed')}</p>
                       </div>
 
                       <div className="space-y-1.5 border-b border-dashed border-white/20 pb-4 pt-2">
-                        <div className="flex justify-between"><span>Summa:</span><span className="text-white font-bold text-[13px]">{formatMoney(totalAmount)}</span></div>
-                        <div className="flex justify-between"><span>Sana:</span><span>{currentDate}</span></div>
-                        <div className="flex justify-between"><span>Vaqt:</span><span>{currentTime}</span></div>
-                        <div className="flex justify-between"><span>Tranzaksiya:</span><span className="text-white">#{paymentResult?.receipt_number || 'TXN-' + Math.floor(Math.random()*9999)}</span></div>
-                        <div className="flex justify-between"><span>Karta:</span><span>**** **** {paymentResult?.masked_pan?.slice(-4) || '****'}</span></div>
+                        <div className="flex justify-between"><span>{t('checkoutModal.amount')}</span><span className="text-white font-bold text-[13px]">{formatMoney(totalAmount)}</span></div>
+                        <div className="flex justify-between"><span>{t('checkoutModal.date')}</span><span>{currentDate}</span></div>
+                        <div className="flex justify-between"><span>{t('checkoutModal.time')}</span><span>{currentTime}</span></div>
+                        <div className="flex justify-between"><span>{t('checkoutModal.transaction')}</span><span className="text-white">#{paymentResult?.receipt_number || 'TXN-' + Math.floor(Math.random()*9999)}</span></div>
+                        <div className="flex justify-between"><span>{t('checkoutModal.card')}</span><span>**** **** {paymentResult?.masked_pan?.slice(-4) || '****'}</span></div>
                       </div>
 
                       <div className="space-y-1.5 border-b border-dashed border-white/20 pb-4 pt-2">
-                        <div className="flex justify-between"><span>Bron raqami:</span><span className="text-white">#{booking?.id ? `BKG-${booking.id}` : 'N/A'}</span></div>
-                        <div className="flex justify-between"><span>Mashina:</span><span className="text-white truncate max-w-[120px]">{booking?.car_info?.brand} {booking?.car_info?.model}</span></div>
-                        <div className="flex justify-between"><span>Muddat:</span><span>{booking?.start_datetime ? new Date(booking?.start_datetime).toLocaleDateString('uz-UZ', {day:'2-digit', month:'2-digit'}) : ''} — {booking?.end_datetime ? new Date(booking?.end_datetime).toLocaleDateString('uz-UZ', {day:'2-digit', month:'2-digit'}) : ''}</span></div>
-                        <div className="flex justify-between"><span>Sug`urta:</span><span className="text-primary font-bold">Premium</span></div>
+                        <div className="flex justify-between"><span>{t('checkoutModal.bookingNum')}</span><span className="text-white">#{booking?.id ? `BKG-${booking.id}` : 'N/A'}</span></div>
+                        <div className="flex justify-between"><span>{t('checkoutModal.car')}</span><span className="text-white truncate max-w-[120px]">{booking?.car_info?.brand} {booking?.car_info?.model}</span></div>
+                        <div className="flex justify-between"><span>{t('checkoutModal.duration')}</span><span>{booking?.start_datetime ? new Date(booking?.start_datetime).toLocaleDateString('uz-UZ', {day:'2-digit', month:'2-digit'}) : ''} — {booking?.end_datetime ? new Date(booking?.end_datetime).toLocaleDateString('uz-UZ', {day:'2-digit', month:'2-digit'}) : ''}</span></div>
+                        <div className="flex justify-between"><span>{t('checkoutModal.insurance')}</span><span className="text-primary font-bold">Premium</span></div>
                       </div>
 
                       <div className="space-y-1.5 pt-2 font-bold text-white/50">
-                        <div className="flex justify-between"><span className="text-primary">Loyalty ball:</span><span className="text-primary">+{paymentResult?.loyalty_points_earned || Math.floor(totalAmount/10000)} ball</span></div>
-                        <div className="flex justify-between text-[10px] items-center pt-2"><span>Invoice:</span><span className="tracking-tighter break-all ml-4 text-right">{paymentResult?.invoice_number || paymentResult?.invoice_id || 'INV-XXXX'}</span></div>
+                        <div className="flex justify-between"><span className="text-primary">{t('checkoutModal.loyalty')}</span><span className="text-primary">+{paymentResult?.loyalty_points_earned || Math.floor(totalAmount/10000)} ball</span></div>
+                        <div className="flex justify-between text-[10px] items-center pt-2"><span>{t('checkoutModal.invoice')}</span><span className="tracking-tighter break-all ml-4 text-right">{paymentResult?.invoice_number || paymentResult?.invoice_id || 'INV-XXXX'}</span></div>
                       </div>
                    </div>
 
@@ -193,7 +195,7 @@ const Step5_Success = ({
 
                 <div className="mt-8 space-y-3 relative z-10 w-full max-w-[320px] mx-auto">
                    <button onClick={handleGoProfile} className="w-full flex items-center justify-between px-6 py-4 rounded-xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary/90 transition-colors shadow-[0_0_20px_rgba(255,107,1,0.3)]">
-                     <span>Bronlarimga o`tish</span>
+                     <span>{t('checkoutModal.goBookings')}</span>
                      <ArrowRight className="w-4 h-4" />
                    </button>
                    

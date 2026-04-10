@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Bell, CheckCircle, Info, AlertTriangle, AlertCircle, Clock } from 'lucide-react';
@@ -23,7 +24,7 @@ const Notifications = ({ notifications, onMarkAsRead, onMarkAllAsRead, onDelete 
    return (
       <div className="space-y-8">
          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold tracking-tight">Bildirishnomalar</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{t('profileComps.notificationsTitle')}</h2>
             {notifications.length > 0 && (
                <button 
                   onClick={onMarkAllAsRead}
@@ -74,7 +75,7 @@ const Notifications = ({ notifications, onMarkAsRead, onMarkAllAsRead, onDelete 
          ) : (
             <div className="py-24 flex flex-col items-center justify-center glass rounded-[48px] border-white/5 opacity-50">
                <Bell className="w-16 h-16 text-white/10 mb-6" />
-               <p className="text-[10px] font-black uppercase tracking-widest">Bildirishnomalar yo'q</p>
+               <p className="text-[10px] font-black uppercase tracking-widest">{t('profileComps.noNotifications2')}</p>
             </div>
          )}
       </div>

@@ -32,7 +32,7 @@ def kyc_status_changed(sender, instance, **kwargs):
             instance.user,
             'kyc_approved',
             'Profilingiz tasdiqlandi!',
-            "Tabriklaymiz, endi siz RIDELUX xizmatlaridan to'liq foydalanishingiz mumkin."
+            "Tabriklaymiz, endi siz RENTAL CAR xizmatlaridan to'liq foydalanishingiz mumkin."
         )
     elif instance.status == 'rejected':
         send_notification(

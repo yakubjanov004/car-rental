@@ -325,7 +325,7 @@ def _build_invoice_pdf(invoice, user):
     car = booking.car
     
     lines = [
-        'RIDELUX PREMIUM RENTALS',
+        'RENTAL CAR PREMIUM RENTALS',
         '-----------------------------------',
         f'INVOICE:  {invoice.invoice_number}',
         f'DATE:     {invoice.created_at.strftime("%Y-%m-%d %H:%M")}',
@@ -391,7 +391,7 @@ def _build_receipt_pdf(receipt, user):
     booking = transaction.booking
     
     lines = [
-        'RIDELUX OFFICIAL RECEIPT',
+        'RENTAL CAR OFFICIAL RECEIPT',
         '-----------------------------------',
         f'RECEIPT NO: {receipt.receipt_number}',
         f'TXN ID:     {transaction.payment_code}',

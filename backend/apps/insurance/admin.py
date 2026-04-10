@@ -1,9 +1,10 @@
 from django.contrib import admin
+from modeltranslation.admin import TranslationAdmin
 from .models import InsurancePlan, BookingInsurance
 
 
 @admin.register(InsurancePlan)
-class InsurancePlanAdmin(admin.ModelAdmin):
+class InsurancePlanAdmin(TranslationAdmin):
     list_display = ('name', 'coverage_level', 'daily_price', 'is_active', 'sort_order')
     list_filter = ('coverage_level', 'is_active')
     search_fields = ('name', 'slug')

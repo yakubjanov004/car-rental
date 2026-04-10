@@ -6,7 +6,7 @@ export const ComparisonProvider = ({ children }) => {
   const [comparisonList, setComparisonList] = useState([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('ridelux_comparison');
+    const saved = localStorage.getItem('rentalcar_comparison');
     if (saved) {
       try {
         setComparisonList(JSON.parse(saved));
@@ -25,18 +25,18 @@ export const ComparisonProvider = ({ children }) => {
     
     const newList = [...comparisonList, car];
     setComparisonList(newList);
-    localStorage.setItem('ridelux_comparison', JSON.stringify(newList));
+    localStorage.setItem('rentalcar_comparison', JSON.stringify(newList));
   };
 
   const removeFromComparison = (id) => {
     const newList = comparisonList.filter(c => c.id !== id);
     setComparisonList(newList);
-    localStorage.setItem('ridelux_comparison', JSON.stringify(newList));
+    localStorage.setItem('rentalcar_comparison', JSON.stringify(newList));
   };
 
   const clearComparison = () => {
     setComparisonList([]);
-    localStorage.removeItem('ridelux_comparison');
+    localStorage.removeItem('rentalcar_comparison');
   };
 
   const isInComparison = (id) => comparisonList.some(c => c.id === id);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 import apiClient from "../services/api/apiClient";
 import { useNavigate, Link } from "react-router-dom";
 import {
@@ -42,6 +43,7 @@ import { formatNarx } from "../utils/formatPrice";
 import { MEDIA_BASE_URL } from "../utils/api";
 
 const AdminPanel = () => {
+   const { t } = useTranslation();
    const { user } = useAuth();
    const navigate = useNavigate();
    const [activeTab, setActiveTab] = useState("dashboard");
@@ -64,7 +66,7 @@ const AdminPanel = () => {
 
    const exportToCSV = (data, fileName) => {
       if (!data || data.length === 0) {
-         alert("Eksport qilish uchun ma'lumot yo'q!");
+         alert(t('admin.inner.noDataToExport'));
          return;
       }
       
@@ -142,7 +144,7 @@ const AdminPanel = () => {
          setBookings(prev => prev.map(b => b.id === id ? { ...b, status: response.data.status } : b));
       } catch (err) {
          console.error(err);
-         alert("Xatolik yuz berdi!");
+         alert(t('admin.inner.generalError'));
       }
    };
 
@@ -154,7 +156,7 @@ const AdminPanel = () => {
          setUsers(usersRes.data.results || usersRes.data || []);
       } catch (err) {
          console.error(err);
-         alert("Xatolik!");
+         alert(t('admin.inner.kycError'));
       }
    };
 
@@ -180,18 +182,18 @@ const AdminPanel = () => {
          setMaintenanceModal({ isOpen: false, carId: null });
       } catch (err) {
          console.error(err);
-         alert("Xatolik! Sana formatini tekshiring.");
+         alert(t('admin.inner.maintenanceDateError'));
       }
    };
 
    const deleteCar = async (carId) => {
-      if (!window.confirm("Haqiqatan ham bu avtomobilni o'chirmoqchimisiz?")) return;
+      if (!window.confirm(t('admin.inner.deleteConfirm'))) return;
       try {
          await apiClient.delete(`/cars/${carId}/`);
          setCars(prev => prev.filter(c => c.id !== carId));
       } catch (err) {
          console.error(err);
-         alert("Xatolik yuz berdi! O'chirish imkonsiz bo'lishi mumkin.");
+         alert(t('admin.inner.deleteError'));
       }
    };
 
@@ -212,20 +214,20 @@ const AdminPanel = () => {
          setEditCarModal({ isOpen: false, car: null });
       } catch (err) {
          console.error(err);
-         alert("Xatolik yuz berdi!");
+         alert(t('admin.inner.generalError'));
       }
    };
 
    if (!user || !user.is_staff) return null;
 
    const tabs = [
-      { id: "dashboard", icon: <BarChart size={18} />, label: "Dashboard" },
-      { id: "bookings", icon: <ClipboardCheck size={18} />, label: "Bronlar" },
-      { id: "verifikatsiya", icon: <ShieldCheck size={18} />, label: "Verifikatsiya" },
-      { id: "payments", icon: <CreditCard size={18} />, label: "To'lovlar" },
-      { id: "crm", icon: <Users size={18} />, label: "Mijozlar" },
-      { id: "cars", icon: <Package size={18} />, label: "Flot" },
-      { id: "messages", icon: <MessageSquare size={18} />, label: "Xabarlar" },
+      { id: "dashboard", icon: <BarChart size={18} />, label: t("admin.tabs.dashboard") },
+      { id: "bookings", icon: <ClipboardCheck size={18} />, label: t("admin.tabs.bookings") },
+      { id: "verifikatsiya", icon: <ShieldCheck size={18} />, label: t("admin.tabs.verification") },
+      { id: "payments", icon: <CreditCard size={18} />, label: t("admin.tabs.payments") },
+      { id: "crm", icon: <Users size={18} />, label: t("admin.tabs.clients") },
+      { id: "cars", icon: <Package size={18} />, label: t("admin.tabs.fleet") },
+      { id: "messages", icon: <MessageSquare size={18} />, label: t("admin.tabs.messages") },
    ];
 
    const filteredUsers = users.filter(u => {
@@ -279,7 +281,7 @@ const AdminPanel = () => {
                      <Activity className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                     <h2 className="text-xl font-black text-white uppercase tracking-tighter leading-none">RIDELUX</h2>
+                     <h2 className="text-xl font-black text-white uppercase tracking-tighter leading-none">RENTAL CAR</h2>
                      <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mt-1">HQ v3.0</p>
                   </div>
                </div>
@@ -334,11 +336,11 @@ const AdminPanel = () => {
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
                <div>
                   <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-2 italic">
-                     {tabs.find(t => t.id === activeTab)?.label} <span className="text-white/20 not-italic">Moduli</span>
+                     {tabs.find(t => t.id === activeTab)?.label} <span className="text-white/20 not-italic">{t("admin.module")}</span>
                   </h1>
                   <div className="flex items-center gap-3 text-[10px] text-white/30 uppercase font-black tracking-widest">
                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                     Siz hozir admin rejimidasiz
+                     {t("admin.mode")}
                   </div>
                </div>
 
@@ -347,7 +349,7 @@ const AdminPanel = () => {
                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                      <input
                         type="text"
-                        placeholder="Qidiruv..."
+                        placeholder={t("admin.search")}
                         className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 text-sm focus:border-primary/50 outline-none"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -363,7 +365,7 @@ const AdminPanel = () => {
                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                      className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full mb-6"
                   />
-                  <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">API'dan ma'lumotlar olinmoqda...</p>
+                  <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">{t('admin.inner.loadingApi')}</p>
                </div>
             ) : (
                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
@@ -392,9 +394,9 @@ const AdminPanel = () => {
                                        <span className="text-[10px] text-green-500 font-black uppercase tracking-widest">+18.2%</span>
                                     </div>
                                  </div>
-                                 <p className="text-white/30 text-[11px] font-black uppercase tracking-[0.3em] mb-4">UMUMIY TUSHUM</p>
+                                 <p className="text-white/30 text-[11px] font-black uppercase tracking-[0.3em] mb-4">{t("admin.dashboard.totalRevenue")}</p>
                                  <h4 className="text-5xl font-black text-white italic tracking-tighter mb-4">{formatNarx(stats.total_revenue)}</h4>
-                                 <p className="text-[10px] text-white/20 font-medium max-w-[300px]">Oxirgi 30 kun ichidagi barcha tranzaksiyalarning umumiy summasi.</p>
+                                 <p className="text-[10px] text-white/20 font-medium max-w-[300px]">{t("admin.dashboard.revenueSub")}</p>
                               </div>
 
                               {/* Middle Stats Column */}
@@ -404,20 +406,20 @@ const AdminPanel = () => {
                                        <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-primary/10 transition-colors">
                                           <ClipboardCheck className="w-5 h-5 text-white/40 group-hover:text-primary transition-colors" />
                                        </div>
-                                       <span className="text-[10px] text-white/30 font-black uppercase tracking-widest">BRONLAR</span>
+                                       <span className="text-[10px] text-white/30 font-black uppercase tracking-widest">{t("admin.dashboard.bookings")}</span>
                                     </div>
                                     <h5 className="text-3xl font-black text-white italic tracking-tight">{stats.total_bookings}</h5>
-                                    <p className="text-[9px] text-white/10 uppercase font-bold mt-2 tracking-widest">Active reservations</p>
+                                    <p className="text-[9px] text-white/10 uppercase font-bold mt-2 tracking-widest">{t("admin.dashboard.activeRes")}</p>
                                  </div>
                                  <div className="bg-[#111]/60 backdrop-blur-3xl p-8 rounded-[40px] border border-white/5 relative overflow-hidden group hover:border-blue-500/30 transition-all duration-500">
                                     <div className="flex items-center gap-4 mb-6">
                                        <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-blue-500/10 transition-colors">
                                           <Package className="w-5 h-5 text-white/40 group-hover:text-blue-500 transition-colors" />
                                        </div>
-                                       <span className="text-[10px] text-white/30 font-black uppercase tracking-widest">FLOT</span>
+                                       <span className="text-[10px] text-white/30 font-black uppercase tracking-widest">{t("admin.dashboard.fleet")}</span>
                                     </div>
-                                    <h5 className="text-3xl font-black text-white italic tracking-tight">{stats.active_cars} <span className="text-base text-white/20 not-italic">avto</span></h5>
-                                    <p className="text-[9px] text-white/10 uppercase font-bold mt-2 tracking-widest">Available inventory</p>
+                                    <h5 className="text-3xl font-black text-white italic tracking-tight">{stats.active_cars} <span className="text-base text-white/20 not-italic">{t("admin.dashboard.avto")}</span></h5>
+                                    <p className="text-[9px] text-white/10 uppercase font-bold mt-2 tracking-widest">{t("admin.dashboard.availInv")}</p>
                                  </div>
                               </div>
 
@@ -427,11 +429,11 @@ const AdminPanel = () => {
                                     <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/5 group-hover:scale-110 transition-transform">
                                        <MessageSquare className="w-6 h-6 text-orange-500" />
                                     </div>
-                                    <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mb-2">XABARLAR</p>
+                                    <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mb-2">{t("admin.dashboard.messages")}</p>
                                     <h5 className="text-4xl font-black text-white italic">{stats.unread_messages}</h5>
                                  </div>
                                  <button onClick={() => setActiveTab('messages')} className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest mt-8 group/btn hover:gap-4 transition-all">
-                                    HAMMASI <ArrowUpRight className="w-4 h-4 group-hover/btn:rotate-45 transition-transform" />
+                                    {t("admin.dashboard.all")} <ArrowUpRight className="w-4 h-4 group-hover/btn:rotate-45 transition-transform" />
                                  </button>
                               </div>
                            </div>
@@ -442,8 +444,8 @@ const AdminPanel = () => {
                                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-transparent opacity-20" />
                                  <div className="flex items-center justify-between mb-12">
                                     <div>
-                                       <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-1">Oylik <span className="text-white/20">Dinamiqa</span></h3>
-                                       <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest">Revenue performance report</p>
+                                       <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-1">{t("admin.dashboard.monthlyDyn")} <span className="text-white/20">{t("admin.dashboard.monthlyDynSub")}</span></h3>
+                                       <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest">{t("admin.dashboard.revReport")}</p>
                                     </div>
                                     <div className="px-4 py-2 rounded-2xl bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">2024</div>
                                  </div>
@@ -479,8 +481,8 @@ const AdminPanel = () => {
                               <div className="bg-[#111]/40 backdrop-blur-xl p-10 rounded-[64px] border border-white/5 shadow-2xl relative overflow-hidden">
                                  <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-l from-primary/30 to-transparent opacity-20" />
                                  <div className="mb-12">
-                                    <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-1">Bron <span className="text-white/20">Strukturasi</span></h3>
-                                    <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest">Booking status distribution</p>
+                                    <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-1">{t("admin.dashboard.bookStruct")} <span className="text-white/20">{t("admin.dashboard.bookStructSub")}</span></h3>
+                                    <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest">{t("admin.dashboard.bookDist")}</p>
                                  </div>
                                  <div className="h-[360px] w-full relative flex items-center justify-center min-w-0">
                                     <ResponsiveContainer width="100%" height={360}>
@@ -525,7 +527,7 @@ const AdminPanel = () => {
                      {activeTab === "verifikatsiya" && (
                         <div key="verifikatsiya" className="space-y-8">
                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Hujjatlarni <span className="text-white/20">Tekshirish</span></h3>
+                              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">{t('admin.inner.docTitle')} <span className="text-white/20">{t('admin.inner.docSpan')}</span></h3>
                               <div className="px-4 py-2 bg-white/5 rounded-2xl border border-white/5 text-[10px] font-black text-white/40 uppercase tracking-widest leading-none">
                                  {kycSubmissions.length} ariza kutilmoqda
                               </div>
@@ -614,8 +616,8 @@ const AdminPanel = () => {
                                  <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-10">
                                     <ShieldCheck className="w-12 h-12 text-white/10" />
                                  </div>
-                                 <h3 className="text-2xl font-black uppercase tracking-tighter mb-4 text-white italic">Hamma hujjatlar <span className="text-white/20">tekshirilgan</span></h3>
-                                 <p className="text-xs font-medium max-w-sm text-white/30 tracking-wide uppercase leading-relaxed">Hozirda Moderatsiya navbatida yangi arizalar mavjud emas. Tizim to'liq nazorat ostida.</p>
+                                 <h3 className="text-2xl font-black uppercase tracking-tighter mb-4 text-white italic">{t('admin.inner.allDocsTitle')} <span className="text-white/20">{t('admin.inner.allDocsSpan')}</span></h3>
+                                 <p className="text-xs font-medium max-w-sm text-white/30 tracking-wide uppercase leading-relaxed">{t('admin.inner.allDocsSub')}</p>
                               </div>
                            )}
                         </div>
@@ -626,34 +628,34 @@ const AdminPanel = () => {
                         <div key="payments" className="space-y-10">
                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                               <div className="bg-green-500/10 border border-green-500/20 p-8 rounded-[32px]">
-                                 <p className="text-green-500/60 text-[9px] font-black uppercase tracking-[0.2em] mb-2">Tushgan to'lovlar (24h)</p>
+                                 <p className="text-green-500/60 text-[9px] font-black uppercase tracking-[0.2em] mb-2">{t('admin.inner.paymentsIn24h')}</p>
                                  <h4 className="text-2xl font-black text-green-500 italic">45,800,000 so'm</h4>
                               </div>
                               <div className="bg-orange-500/10 border border-orange-500/20 p-8 rounded-[32px]">
-                                 <p className="text-orange-500/60 text-[9px] font-black uppercase tracking-[0.2em] mb-2">Ushlab turilgan depozitlar</p>
+                                 <p className="text-orange-500/60 text-[9px] font-black uppercase tracking-[0.2em] mb-2">{t('admin.inner.heldDeposits')}</p>
                                  <h4 className="text-2xl font-black text-orange-500 italic">12,100,000 so'm</h4>
                               </div>
                            </div>
 
                            <div className="bg-[#111] rounded-[48px] border border-white/5 overflow-hidden">
                               <div className="px-10 py-8 border-b border-white/5 flex justify-between items-center">
-                                 <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Barcha <span className="text-white/20">Tranzaksiyalar</span></h3>
+                                 <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">{t('admin.inner.allTransactions')} <span className="text-white/20">{t('admin.inner.allTransactionsSpan')}</span></h3>
                                  <button 
                                     onClick={() => exportToCSV(filteredTransactions, 'tranzaksiyalar')}
                                     className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-2 hover:underline"
                                  >
-                                    <Download className="w-3.5 h-3.5" /> EKSPORT CSV
+                                    <Download className="w-3.5 h-3.5" /> {t('admin.inner.export')} CSV
                                  </button>
                               </div>
                               <table className="w-full text-left">
                                  <thead className="bg-white/[0.02]">
                                     <tr>
                                        <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-white/20 border-b border-white/5">ID</th>
-                                       <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-white/20 border-b border-white/5">MIJOZ</th>
-                                       <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-white/20 border-b border-white/5">SANA</th>
-                                       <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-white/20 border-b border-white/5">TUR</th>
-                                       <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-white/20 border-b border-white/5">SUMMA</th>
-                                       <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-white/20 border-b border-white/5 text-right">STATUS</th>
+                                       <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-white/20 border-b border-white/5">{t('admin.inner.txClient')}</th>
+                                       <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-white/20 border-b border-white/5">{t('admin.inner.txDate')}</th>
+                                       <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-white/20 border-b border-white/5">{t('admin.inner.txType')}</th>
+                                       <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-white/20 border-b border-white/5">{t('admin.inner.txAmount')}</th>
+                                       <th className="px-10 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-white/20 border-b border-white/5 text-right">{t('admin.inner.txStatus')}</th>
                                     </tr>
                                  </thead>
                                  <tbody className="divide-y divide-white/5">
@@ -662,7 +664,7 @@ const AdminPanel = () => {
                                           <td className="px-10 py-6 text-[10px] font-black text-white/40">#{tx.id.toString().padStart(6, '0')}</td>
                                           <td className="px-10 py-6">
                                              <div className="text-xs font-bold text-white mb-0.5">#{tx.user}</div>
-                                             <div className="text-[8px] text-white/20 uppercase font-black tracking-widest">User ID Reference</div>
+                                             <div className="text-[8px] text-white/20 uppercase font-black tracking-widest">{t('admin.inner.txUserRef')}</div>
                                           </td>
                                           <td className="px-10 py-6 text-[10px] font-bold text-white/40">{new Date(tx.created_at).toLocaleDateString()}</td>
                                           <td className="px-10 py-6">
@@ -686,14 +688,14 @@ const AdminPanel = () => {
                      {activeTab === "crm" && (
                         <div key="crm" className="space-y-8">
                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Mijozlar <span className="text-white/20">Boshqaruvi</span></h3>
+                              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">{t('admin.inner.clientTitle')} <span className="text-white/20">{t('admin.inner.clientSpan')}</span></h3>
                               <div className="flex gap-4">
                                  <div className="relative">
                                     <button 
                                        onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                                        className={`flex items-center gap-2 px-4 py-2 rounded-2xl border text-[9px] font-black uppercase transition-all ${showFilterDropdown ? 'bg-primary border-primary text-white' : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10'}`}
                                     >
-                                       <Filter className="w-3.5 h-3.5" /> FILTRLAR
+                                       <Filter className="w-3.5 h-3.5" /> {t('admin.inner.filters')}
                                     </button>
                                     <AnimatePresence>
                                        {showFilterDropdown && (
@@ -709,7 +711,7 @@ const AdminPanel = () => {
                                                    onClick={() => { setStatusFilter(f); setShowFilterDropdown(false); }}
                                                    className={`w-full text-left px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-primary text-white' : 'text-white/40 hover:bg-white/5 hover:text-white'}`}
                                                 >
-                                                   {f === 'all' ? 'HAMMASI' : f.toUpperCase()}
+                                                   {f === 'all' ? t('admin.inner.filterAll') : f.toUpperCase()}
                                                 </button>
                                              ))}
                                           </motion.div>
@@ -720,7 +722,7 @@ const AdminPanel = () => {
                                     onClick={() => exportToCSV(filteredUsers, 'mijozlar')}
                                     className="flex items-center gap-2 px-4 py-2 bg-primary/20 rounded-2xl border border-primary/20 text-[9px] font-black text-primary uppercase hover:bg-primary/30 transition-all"
                                  >
-                                    <Download className="w-3.5 h-3.5" /> EKSPORT
+                                    <Download className="w-3.5 h-3.5" /> {t('admin.inner.export')}
                                  </button>
                               </div>
                            </div>
@@ -751,11 +753,11 @@ const AdminPanel = () => {
 
                                     <div className="grid grid-cols-2 gap-4 w-full pt-8 border-t border-white/5">
                                        <div className="text-center border-r border-white/5">
-                                          <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-1">Bronlar</p>
+                                          <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-1">{t('admin.inner.cardBookings')}</p>
                                           <p className="text-sm font-bold text-white">{userBookingsCount}</p>
                                        </div>
                                        <div className="text-center">
-                                          <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-1">Puan</p>
+                                          <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-1">{t('admin.inner.cardPoints')}</p>
                                           <p className="text-sm font-bold text-primary italic">{u.loyalty_points || 0}</p>
                                        </div>
                                     </div>
@@ -768,7 +770,7 @@ const AdminPanel = () => {
                                        }}
                                        className="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                                     >
-                                       <User size={12} className="text-primary" /> PROFIL
+                                       <User size={12} className="text-primary" /> {t('admin.inner.cardProfile')}
                                     </button>
                                     <button 
                                        onClick={() => {
@@ -776,7 +778,7 @@ const AdminPanel = () => {
                                        }}
                                        className="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                                     >
-                                       <History size={12} className="text-primary" /> TARIX
+                                       <History size={12} className="text-primary" /> {t('admin.inner.cardHistory')}
                                     </button>
                                  </div>
                               </div>
@@ -790,14 +792,14 @@ const AdminPanel = () => {
                      {activeTab === "bookings" && (
                         <div key="bookings" className="space-y-8">
                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Barcha <span className="text-white/20">Buyurtmalar</span></h3>
+                              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">{t('admin.inner.allBookingsTitle')} <span className="text-white/20">{t('admin.inner.allBookingsSpan')}</span></h3>
                               <div className="flex gap-4">
                                  <div className="relative">
                                     <button 
                                        onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                                        className={`flex items-center gap-2 px-4 py-2 rounded-2xl border text-[9px] font-black uppercase transition-all ${showFilterDropdown ? 'bg-primary border-primary text-white' : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10'}`}
                                     >
-                                       <Filter className="w-3.5 h-3.5" /> FILTRLAR
+                                       <Filter className="w-3.5 h-3.5" /> {t('admin.inner.filters')}
                                     </button>
                                     <AnimatePresence>
                                        {showFilterDropdown && (
@@ -813,7 +815,7 @@ const AdminPanel = () => {
                                                    onClick={() => { setStatusFilter(f); setShowFilterDropdown(false); }}
                                                    className={`w-full text-left px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-primary text-white' : 'text-white/40 hover:bg-white/5 hover:text-white'}`}
                                                 >
-                                                   {f === 'all' ? 'HAMMASI' : f.toUpperCase()}
+                                                   {f === 'all' ? t('admin.inner.filterAll') : f.toUpperCase()}
                                                 </button>
                                              ))}
                                           </motion.div>
@@ -824,7 +826,7 @@ const AdminPanel = () => {
                                     onClick={() => exportToCSV(filteredBookings, 'bronlar')}
                                     className="flex items-center gap-2 px-4 py-2 bg-primary/20 rounded-2xl border border-primary/20 text-[9px] font-black text-primary uppercase hover:bg-primary/30 transition-all"
                                  >
-                                    <Download className="w-3.5 h-3.5" /> EKSPORT
+                                    <Download className="w-3.5 h-3.5" /> {t('admin.inner.export')}
                                  </button>
                               </div>
                            </div>
@@ -856,7 +858,7 @@ const AdminPanel = () => {
                                                    <div className="w-9 h-9 rounded-2xl bg-white/5 flex items-center justify-center text-white/30 border border-white/5"><Wallet size={16} /></div>
                                                    <div>
                                                       <p className="text-xs font-black text-primary italic leading-none">{Number(b.total_price).toLocaleString()} so'm</p>
-                                                      <p className="text-[10px] text-white/20 font-bold uppercase mt-1">To'lov</p>
+                                                      <p className="text-[10px] text-white/20 font-bold uppercase mt-1">{t('admin.inner.bookingPayment')}</p>
                                                    </div>
                                                 </div>
                                              </div>
@@ -867,13 +869,18 @@ const AdminPanel = () => {
                                                    b.status === 'pending' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20 shadow-orange-500/10' :
                                                       'bg-red-500/10 text-red-500 border border-red-500/20'
                                                 }`}>
-                                                {b.status === 'confirmed' ? 'TASDIQLANGAN' :
-                                                   b.status === 'payment_pending' ? 'TO\'LOV KUTILMOQDA' :
-                                                      b.status === 'pending' ? 'MODERATSIYA' : b.status.toUpperCase()}
+                                                {b.status === 'confirmed' ? t('admin.inner.statusConfirmed') :
+                                                   b.status === 'payment_pending' ? t('admin.inner.statusPayment') :
+                                                      b.status === 'pending' ? t('admin.inner.statusMod') : 
+                                                         b.status === 'approved' ? t('admin.inner.statusApproved') :
+                                                            b.status === 'completed' ? t('admin.inner.statusCompleted') :
+                                                               b.status === 'rejected' ? t('admin.inner.statusRejected') :
+                                                                  b.status === 'cancelled' ? t('admin.inner.statusCancelled') :
+                                                                     b.status.toUpperCase()}
                                              </div>
                                              {b.is_chauffeur && (
                                                 <div className="px-5 py-2 rounded-full bg-gradient-to-r from-primary to-orange-600 text-white text-[8px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-[0_0_20px_rgba(239,55,42,0.4)] border border-white/20 animate-pulse">
-                                                   <Sparkles className="w-3.5 h-3.5" /> HAYDOVCHI BILAN
+                                                   <Sparkles className="w-3.5 h-3.5" /> {t('admin.inner.withChauffeur')}
                                                 </div>
                                              )}
                                           </div>
@@ -882,14 +889,14 @@ const AdminPanel = () => {
                                        <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-6 pt-8 border-t border-white/5 mt-8">
                                           <div className="flex items-center gap-10">
                                              <div className="flex flex-col gap-1">
-                                                <p className="text-[9px] text-white/30 uppercase font-black tracking-widest italic">Qachondan</p>
+                                                <p className="text-[9px] text-white/30 uppercase font-black tracking-widest italic">{t('admin.inner.from')}</p>
                                                 <p className="text-xs font-bold text-white/80 flex items-center gap-2">
                                                    <Calendar className="w-3 h-3 text-primary" /> {b.start_datetime ? new Date(b.start_datetime).toLocaleDateString() : 'N/A'}
                                                 </p>
                                              </div>
                                              <div className="w-10 h-0.5 bg-white/5 rounded-full" />
                                              <div className="flex flex-col gap-1">
-                                                <p className="text-[9px] text-white/30 uppercase font-black tracking-widest italic">Qachongacha</p>
+                                                <p className="text-[9px] text-white/30 uppercase font-black tracking-widest italic">{t('admin.inner.to')}</p>
                                                 <p className="text-xs font-bold text-white/80 flex items-center gap-2">
                                                    <History className="w-3 h-3 text-primary" /> {b.end_datetime ? new Date(b.end_datetime).toLocaleDateString() : 'N/A'}
                                                 </p>
@@ -906,7 +913,7 @@ const AdminPanel = () => {
                                                    </button>
                                                    <button
                                                       onClick={() => {
-                                                         const reason = prompt("Rad etish sababini kiriting:");
+                                                         const reason = prompt(t('admin.inner.rejectPrompt'));
                                                          if (reason) updateBookingStatus(b.id, 'rejected', reason);
                                                       }}
                                                       className="h-14 w-14 bg-white/5 text-red-500 rounded-3xl hover:bg-red-500 hover:text-white transition-all duration-700 flex items-center justify-center border border-white/5 shadow-xl hover:shadow-red-500/30"
@@ -919,7 +926,7 @@ const AdminPanel = () => {
                                                 onClick={() => updateBookingStatus(b.id, 'completed')}
                                                 className="h-14 px-8 bg-white/5 text-white/40 rounded-3xl hover:bg-white/10 hover:text-white transition-all duration-700 text-[10px] font-black uppercase tracking-widest border border-white/5"
                                              >
-                                                YAKUNLASH
+                                                {t('admin.inner.completeBtn')}
                                              </button>
                                           </div>
                                        </div>
@@ -932,8 +939,8 @@ const AdminPanel = () => {
                                  <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-10">
                                     <ClipboardCheck className="w-12 h-12 text-white/10" />
                                  </div>
-                                 <h3 className="text-2xl font-black uppercase tracking-tighter italic text-white/60">Arxiv bo'sh <span className="text-white/20">holatda</span></h3>
-                                 <p className="text-xs font-medium max-w-sm text-white/20 mt-4 uppercase tracking-widest">Hozirda barcha buyurtmalar ko'rib chiqilgan.</p>
+                                 <h3 className="text-2xl font-black uppercase tracking-tighter italic text-white/60">{t('admin.inner.emptyArchive')} <span className="text-white/20">{t('admin.inner.emptyArchiveSpan')}</span></h3>
+                                 <p className="text-xs font-medium max-w-sm text-white/20 mt-4 uppercase tracking-widest">{t('admin.inner.emptyArchiveSub')}</p>
                               </div>
                            )}
                         </div>
@@ -943,14 +950,14 @@ const AdminPanel = () => {
                      {activeTab === "cars" && (
                         <div key="cars">
                            <div className="flex items-center justify-between mb-8">
-                              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Avtomobillar <span className="text-white/20">Ro'yxati</span></h3>
+                              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">{t('admin.inner.fleetTitle')} <span className="text-white/20">{t('admin.inner.fleetSpan')}</span></h3>
                               <div className="flex gap-4">
                                  <div className="relative">
                                     <button 
                                        onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                                        className={`flex items-center gap-2 px-4 py-2 rounded-2xl border text-[9px] font-black uppercase transition-all ${showFilterDropdown ? 'bg-primary border-primary text-white' : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10'}`}
                                     >
-                                       <Filter className="w-3.5 h-3.5" /> FILTRLAR
+                                       <Filter className="w-3.5 h-3.5" /> {t('admin.inner.filters')}
                                     </button>
                                     <AnimatePresence>
                                        {showFilterDropdown && (
@@ -966,7 +973,7 @@ const AdminPanel = () => {
                                                    onClick={() => { setStatusFilter(f); setShowFilterDropdown(false); }}
                                                    className={`w-full text-left px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-primary text-white' : 'text-white/40 hover:bg-white/5 hover:text-white'}`}
                                                 >
-                                                   {f === 'all' ? 'HAMMASI' : f.toUpperCase()}
+                                                   {f === 'all' ? t('admin.inner.filterAll') : f.toUpperCase()}
                                                 </button>
                                              ))}
                                           </motion.div>
@@ -977,7 +984,7 @@ const AdminPanel = () => {
                                     onClick={() => exportToCSV(filteredCars, 'avtomobillar')}
                                     className="flex items-center gap-2 px-4 py-2 bg-primary/20 rounded-2xl border border-primary/20 text-[9px] font-black text-primary uppercase hover:bg-primary/30 transition-all"
                                  >
-                                    <Download className="w-3.5 h-3.5" /> EKSPORT
+                                    <Download className="w-3.5 h-3.5" /> {t('admin.inner.export')}
                                  </button>
                               </div>
                            </div>
@@ -990,7 +997,7 @@ const AdminPanel = () => {
                                           {formatNarx(car.daily_price)}
                                        </div>
                                        <div className={`absolute top-6 left-6 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${car.is_available ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
-                                          {car.is_available ? 'BO\'SH' : 'BAND'}
+                                          {car.is_available ? t('admin.inner.available') : t('admin.inner.rented')}
                                        </div>
                                     </div>
                                     <div className="p-10">
@@ -1010,10 +1017,10 @@ const AdminPanel = () => {
 
                                        <div className="flex flex-wrap items-center gap-3">
                                           <button onClick={() => setEditCarModal({ isOpen: true, car })} className="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all text-white/60 hover:text-white flex items-center justify-center gap-2">
-                                             <Edit size={14} /> TAHRIRLASH
+                                             <Edit size={14} /> {t('admin.inner.edit')}
                                           </button>
                                           <button onClick={() => setMaintenanceModal({ isOpen: true, carId: car.id })} className="flex-1 py-4 bg-orange-500/10 hover:bg-orange-500/20 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all text-orange-500 flex items-center justify-center gap-2">
-                                             <Clock size={14} /> MAINTENANCE
+                                             <Clock size={14} /> {t('admin.inner.maintenance')}
                                           </button>
                                           <button onClick={() => deleteCar(car.id)} className="w-14 h-14 bg-white/5 hover:bg-red-500/10 hover:text-red-500 rounded-2xl text-white/40 transition-all flex items-center justify-center border border-white/5">
                                              <Trash2 size={18} />
@@ -1046,11 +1053,11 @@ const AdminPanel = () => {
                                  </div>
                                  <p className="text-sm font-medium text-white/60 leading-relaxed italic border-l-2 border-primary/30 pl-8 mb-6">"{m.message}"</p>
                                  <div className="flex justify-end">
-                                    <button className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-all">JAVOB QAYTARISH</button>
+                                    <button className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-all">{t('admin.inner.replyBtn')}</button>
                                  </div>
                               </div>
                            ))}
-                           {messages.length === 0 && <p className="text-gray-500 text-center py-20 bg-[#1e1f22] rounded-3xl border border-gray-800">No messages found.</p>}
+                           {messages.length === 0 && <p className="text-gray-500 text-center py-20 bg-[#1e1f22] rounded-3xl border border-gray-800">{t('admin.inner.noMessages')}</p>}
                         </div>
                      )}
 
@@ -1066,22 +1073,22 @@ const AdminPanel = () => {
                         <button onClick={() => setEditCarModal({ isOpen: false, car: null })} className="absolute top-6 right-6 text-white/30 hover:text-white transition-colors">
                            <X size={20} />
                         </button>
-                        <h3 className="text-xl font-black text-white italic tracking-tighter uppercase mb-6">Tahrirlash: {editCarModal.car?.brand} {editCarModal.car?.model} <span className="text-white/40 text-sm">({editCarModal.car?.plate_number})</span></h3>
+                        <h3 className="text-xl font-black text-white italic tracking-tighter uppercase mb-6">{t('admin.inner.editCarTitle')} {editCarModal.car?.brand} {editCarModal.car?.model} <span className="text-white/40 text-sm">({editCarModal.car?.plate_number})</span></h3>
                         <form onSubmit={submitEditCar} className="space-y-6 flex-1 flex flex-col">
                            <div>
-                              <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Kunlik narx (so'm)</label>
+                              <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">{t('admin.inner.editDailyPrice')}</label>
                               <input type="number" name="daily_price" defaultValue={editCarModal.car?.daily_price} required className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm font-bold text-white focus:border-primary/50 focus:outline-none" />
                            </div>
                            <div>
-                              <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Status</label>
+                              <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">{t('admin.inner.editStatus')}</label>
                               <select name="status" defaultValue={editCarModal.car?.status || 'available'} className="w-full bg-[#1A1A1A] border border-white/5 rounded-2xl p-4 text-sm font-bold text-white focus:border-primary/50 focus:outline-none pb-3 appearance-none">
-                                 <option value="available">Available (Bo'sh)</option>
-                                 <option value="rented">Rented (Band)</option>
-                                 <option value="maintenance">Maintenance (Ta'mirda)</option>
-                                 <option value="hidden">Hidden (Yashirin)</option>
+                                 <option value="available">{t('admin.inner.optAvailable')}</option>
+                                 <option value="rented">{t('admin.inner.optRented')}</option>
+                                 <option value="maintenance">{t('admin.inner.optMaintenance')}</option>
+                                 <option value="hidden">{t('admin.inner.optHidden')}</option>
                               </select>
                            </div>
-                           <button type="submit" className="w-full py-4 mt-auto bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-orange-600 transition-colors">SAQLASH</button>
+                           <button type="submit" className="w-full py-4 mt-auto bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-orange-600 transition-colors">{t('admin.inner.saveBtn')}</button>
                         </form>
                      </motion.div>
                   </motion.div>
@@ -1093,23 +1100,23 @@ const AdminPanel = () => {
                         <button onClick={() => setMaintenanceModal({ isOpen: false, carId: null })} className="absolute top-6 right-6 text-white/30 hover:text-white transition-colors">
                            <X size={20} />
                         </button>
-                        <h3 className="text-xl font-black text-orange-500 italic tracking-tighter uppercase mb-6">TEXNIK XIZMAT</h3>
+                        <h3 className="text-xl font-black text-orange-500 italic tracking-tighter uppercase mb-6">{t('admin.inner.maintTitle')}</h3>
                         <form onSubmit={submitMaintenance} className="space-y-6 flex-1 flex flex-col">
                            <div>
-                              <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Sabab</label>
-                              <input type="text" name="reason" placeholder="Masalan: Moy almashtirish..." required className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm font-bold text-white focus:border-orange-500/50 focus:outline-none" />
+                              <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">{t('admin.inner.maintReason')}</label>
+                              <input type="text" name="reason" placeholder={t('admin.inner.maintReasonPh')} required className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm font-bold text-white focus:border-orange-500/50 focus:outline-none" />
                            </div>
                            <div className="grid grid-cols-2 gap-4">
                               <div>
-                                 <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Boshlanish</label>
+                                 <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">{t('admin.inner.maintStart')}</label>
                                  <input type="datetime-local" name="start_datetime" required className="w-full bg-white/5 border border-white/5 rounded-xl p-3 text-[11px] font-bold text-white focus:border-orange-500/50 focus:outline-none" />
                               </div>
                               <div>
-                                 <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Tugash</label>
+                                 <label className="block text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">{t('admin.inner.maintEnd')}</label>
                                  <input type="datetime-local" name="end_datetime" required className="w-full bg-white/5 border border-white/5 rounded-xl p-3 text-[11px] font-bold text-white focus:border-orange-500/50 focus:outline-none" />
                               </div>
                            </div>
-                           <button type="submit" className="w-full py-4 mt-auto bg-orange-500 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-orange-600 transition-colors shadow-[0_0_20px_rgba(249,115,22,0.1)]">TASDIQLASH</button>
+                           <button type="submit" className="w-full py-4 mt-auto bg-orange-500 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-orange-600 transition-colors shadow-[0_0_20px_rgba(249,115,22,0.1)]">{t('admin.inner.maintConfirm')}</button>
                         </form>
                      </motion.div>
                   </motion.div>
@@ -1147,13 +1154,13 @@ const AdminPanel = () => {
                               onClick={() => setUserModal(prev => ({ ...prev, view: 'profile' }))}
                               className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${userModal.view === 'profile' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 text-white/30 hover:bg-white/10'}`}
                            >
-                              Profil Ma'lumotlari
+                              {t('admin.inner.profileTabBtn')}
                            </button>
                            <button 
                               onClick={() => setUserModal(prev => ({ ...prev, view: 'history' }))}
                               className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${userModal.view === 'history' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 text-white/30 hover:bg-white/10'}`}
                            >
-                              Bronlar Tarixi ({bookings.filter(b => b.user === userModal.user?.id || b.user_email === userModal.user?.email).length})
+                              {t('admin.inner.historyTabBtn')} ({bookings.filter(b => b.user === userModal.user?.id || b.user_email === userModal.user?.email).length})
                            </button>
                         </div>
                      </div>
@@ -1163,23 +1170,23 @@ const AdminPanel = () => {
                            <div className="space-y-8">
                               <div className="grid grid-cols-2 gap-8">
                                  <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/5">
-                                    <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-2">Telefon Raqami</p>
-                                    <p className="text-sm font-bold text-white flex items-center gap-2"><Phone size={14} className="text-primary" /> {userModal.user?.phone_number || 'Noma\'lum'}</p>
+                                    <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-2">{t('admin.inner.phoneLabel')}</p>
+                                    <p className="text-sm font-bold text-white flex items-center gap-2"><Phone size={14} className="text-primary" /> {userModal.user?.phone_number || t('admin.inner.unknown')}</p>
                                  </div>
                                  <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/5">
-                                    <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-2">Loyallik Puanlari</p>
+                                    <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-2">{t('admin.inner.loyaltyLabel')}</p>
                                     <p className="text-sm font-bold text-primary italic flex items-center gap-2"><Star size={14} fill="currentColor" /> {userModal.user?.loyalty_points || 0} XP</p>
                                  </div>
                               </div>
                               <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/5">
-                                 <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-2">Yashash Manzili</p>
-                                 <p className="text-sm font-bold text-white flex items-center gap-2"><MapPin size={14} className="text-primary" /> {userModal.user?.address || 'Noma\'lum'}</p>
+                                 <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-2">{t('admin.inner.addressLabel')}</p>
+                                 <p className="text-sm font-bold text-white flex items-center gap-2"><MapPin size={14} className="text-primary" /> {userModal.user?.address || t('admin.inner.unknown')}</p>
                               </div>
                               <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/5">
-                                 <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-2">Status</p>
+                                 <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mb-2">{t('admin.inner.editStatus')}</p>
                                  <div className="flex items-center gap-3">
                                     <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase ${userModal.user?.verification_status === 'verified' ? 'bg-green-500/20 text-green-500' : 'bg-white/10 text-white/40'}`}>
-                                       {userModal.user?.verification_status === 'verified' ? 'TASDIQLANGAN' : 'TASDIQLANMAGAN'}
+                                       {userModal.user?.verification_status === 'verified' ? t('admin.inner.statusConfirmed') : t('admin.inner.notVerified')}
                                     </span>
                                     <span className="text-[10px] text-white/20 italic">ID #{userModal.user?.id}</span>
                                  </div>
@@ -1210,7 +1217,7 @@ const AdminPanel = () => {
                                     <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 opacity-20">
                                        <History size={24} />
                                     </div>
-                                    <p className="text-xs text-white/20 font-black uppercase tracking-widest italic">Hech qanday buyurtma topilmadi</p>
+                                    <p className="text-xs text-white/20 font-black uppercase tracking-widest italic">{t('admin.inner.noBookingsFound')}</p>
                                  </div>
                               )}
                            </div>

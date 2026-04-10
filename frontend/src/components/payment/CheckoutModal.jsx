@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Check } from 'lucide-react';
 import { usePaymentFlow } from './hooks/usePaymentFlow';
@@ -8,11 +9,11 @@ import Step4_OTP from './steps/Step4_OTP';
 import Step5_Success from './steps/Step5_Success';
 
 const STEPS = [
-  { id: 1, label: 'Xulosa' },
-  { id: 2, label: "Sug'urta" },
-  { id: 3, label: "To'lov" },
-  { id: 4, label: 'OTP' },
-  { id: 5, label: 'Tayyor' }
+  { id: 1, labelKey: 'checkoutModal.step1' },
+  { id: 2, labelKey: 'checkoutModal.step2' },
+  { id: 3, labelKey: 'checkoutModal.step3' },
+  { id: 4, labelKey: 'checkoutModal.step4' },
+  { id: 5, labelKey: 'checkoutModal.step5' }
 ];
 
 const STEP_TITLES = {
@@ -60,6 +61,7 @@ const CheckoutModal = ({ isOpen, onClose, booking }) => {
     ? (selectedMethod?.masked_pan || '').replace(/\D/g, '').slice(-4)
     : cardData.number?.replace(/\s/g, '').slice(-4);
 
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   const stepComponents = {
@@ -148,7 +150,7 @@ const CheckoutModal = ({ isOpen, onClose, booking }) => {
                            {!isCompleted && !isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-white/30" />}
                         </div>
                         <span className={`text-[9px] font-black uppercase tracking-widest ${isCurrent || isCompleted ? 'text-primary' : 'text-white/30'}`}>
-                          {s.label}
+                          {t(s.labelKey)}
                         </span>
                       </div>
                     );

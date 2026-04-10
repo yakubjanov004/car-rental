@@ -1,14 +1,8 @@
 import React from 'react';
 import { ShieldCheck, Target, Users, Award, ChevronRight, Zap, Star, ArrowRight, Heart, Globe, MousePointer2 } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import ScrollReveal from '../components/ScrollReveal';
-
-const stats = [
-  { label: 'Years Experience', value: '10+', color: '#3B82F6' },
-  { label: 'Happy Clients', value: '5K+', color: '#00D97E' },
-  { label: 'Fleet Size', value: '150+', color: '#F59E0B' },
-  { label: 'Rating', value: '4.9', color: '#EF4444' },
-];
 
 const team = [
   { name: 'Jamshid Karimov', role: 'Founder & CEO', img: '/images/assets/team_ceo.jpg' },
@@ -18,6 +12,15 @@ const team = [
 ];
 
 const AboutUs = () => {
+  const { t } = useTranslation();
+
+  const stats = [
+    { label: t('about.yearsExp'), value: '10+', color: '#3B82F6' },
+    { label: t('about.happyClients'), value: '5K+', color: '#00D97E' },
+    { label: t('about.fleetSize'), value: '150+', color: '#F59E0B' },
+    { label: t('about.rating'), value: '4.9', color: '#EF4444' },
+  ];
+
   return (
     <div className="bg-[#0A0A0A] min-h-screen pt-32 pb-32 overflow-hidden">
       
@@ -29,15 +32,14 @@ const AboutUs = () => {
           <ScrollReveal direction="up">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-8">
               <Globe className="w-3.5 h-3.5" />
-              Your journey — our goal 
+              {t('about.tagline')} 
             </div>
             <h1 className="font-display text-6xl md:text-8xl font-extrabold tracking-tighter mb-8 leading-[0.9]">
-              Premium <span className="text-white/40 italic">Quality</span><br />
-              Mobility
+              {t('about.title1')} <span className="text-white/40 italic">{t('about.title2')}</span><br />
+              {t('about.title3')}
             </h1>
             <p className="max-w-2xl mx-auto text-white/40 text-lg md:text-xl font-light leading-relaxed mb-12">
-              We are the most innovative car rental platform in Uzbekistan.
-              Our goal is to turn every journey into an unforgettable premium experience.
+              {t('about.description')}
             </p>
           </ScrollReveal>
         </div>
@@ -81,25 +83,24 @@ const AboutUs = () => {
             
             <div className="space-y-10">
               <ScrollReveal direction="right">
-                <div className="text-[11px] text-primary font-bold uppercase tracking-widest">— Our Philosophy</div>
-                <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight">Simplicity and <span className="text-white/40">Innovation</span></h2>
+                <div className="text-[11px] text-primary font-bold uppercase tracking-widest">{t('about.philosophyBadge')}</div>
+                <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight">{t('about.philosophyTitle1')} <span className="text-white/40">{t('about.philosophyTitle2')}</span></h2>
                 <p className="text-white/50 text-lg font-light leading-relaxed italic">
-                  "We don't just provide cars; we give you freedom and time.
-                  Booking any car in 3 minutes via our digital platform — this is the way we chose."
+                  "{t('about.philosophyDesc')}"
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
                   <div className="flex gap-4 p-6 rounded-3xl bg-white/[0.03] border border-white/5">
                     <Target className="w-6 h-6 text-primary shrink-0" />
                     <div>
-                      <h4 className="font-bold mb-1">Mission</h4>
-                      <p className="text-xs text-white/40">Raising mobility standards in Uzbekistan to the highest level.</p>
+                      <h4 className="font-bold mb-1">{t('about.mission')}</h4>
+                      <p className="text-xs text-white/40">{t('about.missionDesc')}</p>
                     </div>
                   </div>
                   <div className="flex gap-4 p-6 rounded-3xl bg-white/[0.03] border border-white/5">
                     <Heart className="w-6 h-6 text-primary shrink-0" />
                     <div>
-                      <h4 className="font-bold mb-1">Values</h4>
-                      <p className="text-xs text-white/40">Customer trust — our highest reward.</p>
+                      <h4 className="font-bold mb-1">{t('about.values')}</h4>
+                      <p className="text-xs text-white/40">{t('about.valuesDesc')}</p>
                     </div>
                   </div>
                 </div>
@@ -114,8 +115,8 @@ const AboutUs = () => {
         <div className="max-w-7xl mx-auto">
           <ScrollReveal direction="up">
             <div className="text-center mb-16">
-              <h2 className="font-display text-4xl md:text-6xl font-extrabold tracking-tighter mb-4">Mutaxassislar <span className="text-white/40">Jamoasi</span></h2>
-              <p className="text-white/40 text-sm tracking-widest uppercase font-medium">Sizga xizmat ko'rsatuvchi professionallar</p>
+              <h2 className="font-display text-4xl md:text-6xl font-extrabold tracking-tighter mb-4">{t('about.teamTitle1')} <span className="text-white/40">{t('about.teamTitle2')}</span></h2>
+              <p className="text-white/40 text-sm tracking-widest uppercase font-medium">{t('about.teamSubtitle')}</p>
             </div>
           </ScrollReveal>
           
@@ -142,14 +143,14 @@ const AboutUs = () => {
              <div className="glass p-12 md:p-24 text-center rounded-[48px] relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-full bg-primary/[0.03] blur-[120px] pointer-events-none" />
                 <h3 className="font-display text-5xl md:text-7xl font-extrabold tracking-tighter mb-8 leading-none max-w-3xl mx-auto">
-                  Reach new <span className="text-primary italic">Horizons</span> with us
+                  {t('about.ctaTitle1')} <span className="text-primary italic">{t('about.ctaTitle2')}</span> {t('about.ctaTitle3')}
                 </h3>
                 <p className="max-w-md mx-auto text-white/40 text-lg font-light mb-12">
-                  Join our premium fleet and feel what real service is.
+                  {t('about.ctaDesc')}
                 </p>
                 <div className="flex flex-wrap justify-center gap-4">
-                  <a href="/fleet" className="btn-primary px-10 py-5 text-sm font-bold uppercase tracking-widest">VIEW FLEET</a>
-                  <a href="/contact" className="btn-secondary px-10 py-5 text-sm font-bold uppercase tracking-widest">CONTACT US</a>
+                  <a href="/fleet" className="btn-primary px-10 py-5 text-sm font-bold uppercase tracking-widest">{t('about.viewFleet')}</a>
+                  <a href="/contact" className="btn-secondary px-10 py-5 text-sm font-bold uppercase tracking-widest">{t('about.contactUs')}</a>
                 </div>
              </div>
           </ScrollReveal>

@@ -11,6 +11,10 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
+  const lang = localStorage.getItem('rentalcar_lang') || 'uz'; // Dynamic language for backend translation
+  
+  config.headers['Accept-Language'] = lang;
+  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

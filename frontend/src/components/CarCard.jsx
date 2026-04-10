@@ -5,6 +5,7 @@ import { Star, MapPin, Users, Fuel, Settings2, Heart, Zap, ArrowRight, ArrowLeft
 import { formatNarx } from '../utils/formatPrice';
 import { MEDIA_BASE_URL } from '../utils/api';
 import { useComparison } from '../context/ComparisonContext';
+import { useTranslation } from 'react-i18next';
 
 const YOQILGI_RANGI = {
   elektro: { bg: 'rgba(0,217,126,0.12)', text: '#00D97E', label: '⚡ Elektro' },
@@ -14,6 +15,7 @@ const YOQILGI_RANGI = {
 };
 
 const CarCard = ({ car, index = 0 }) => {
+  const { t } = useTranslation();
   const [liked, setLiked] = useState(false);
   const [hovered, setHovered] = useState(false);
   const { addToComparison, removeFromComparison, isInComparison } = useComparison();
@@ -148,7 +150,7 @@ const CarCard = ({ car, index = 0 }) => {
 
         {car.unit_count > 1 && (
           <div className="absolute bottom-4 right-4 z-30 px-3 py-1.5 rounded-xl bg-primary/20 backdrop-blur-xl border border-primary/20 text-[9px] font-black text-primary uppercase tracking-[0.15em]">
-            {car.unit_count} MAVJUD
+            {car.unit_count} {t('carCard.available').toUpperCase()}
           </div>
         )}
       </div>
@@ -181,7 +183,7 @@ const CarCard = ({ car, index = 0 }) => {
                {car.dynamic_price && car.dynamic_price !== price && (
                  <span className="text-[8px] text-primary font-black uppercase italic line-through opacity-40">{formatNarx(price)}</span>
                )}
-               <div className="text-[10px] text-white/35 font-medium uppercase tracking-tighter">/ kun</div>
+               <div className="text-[10px] text-white/35 font-medium uppercase tracking-tighter">{t('carCard.perDay')}</div>
             </div>
           </div>
         </div>
@@ -206,7 +208,7 @@ const CarCard = ({ car, index = 0 }) => {
           className="mt-auto flex items-center justify-between w-full px-5 py-3.5 rounded-2xl bg-white/5 hover:bg-primary/20 border border-white/5 hover:border-primary/50 transition-all duration-300 group/btn"
         >
           <span className="text-[11px] font-bold uppercase tracking-widest text-white/60 group-hover/btn:text-white transition-colors">
-            BATAFSIL
+            {t('carCard.details').toUpperCase()}
           </span>
           <ArrowRight className="w-4 h-4 text-white/30 group-hover/btn:text-primary group-hover/btn:translate-x-1 transition-all duration-300" />
         </Link>

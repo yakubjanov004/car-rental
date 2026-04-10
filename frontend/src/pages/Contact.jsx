@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Send, MapPin, Phone, Mail, Instagram, Facebook, Clock, Plus, Minus, ArrowRight, MessageSquare, Twitter } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import ScrollReveal from '../components/ScrollReveal';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -15,14 +16,16 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const contactInfo = [
-  { icon: MapPin, label: 'Manzil', val: 'Toshkent sh., Chilonzor tumani', color: '#3B82F6' },
-  { icon: Phone, label: 'Telefon', val: '+998 90 123 45 67', color: '#00D97E' },
-  { icon: Mail, label: 'Email', val: 'info@ridelux.uz', color: '#F59E0B' },
-  { icon: Clock, label: 'Ish vaqti', val: '24/7 Xizmat', color: '#EF4444' },
-];
-
 const Contact = () => {
+  const { t } = useTranslation();
+
+  const contactInfo = [
+    { icon: MapPin, label: t('contact.address'), val: t('contact.addressVal'), color: '#3B82F6' },
+    { icon: Phone, label: t('contact.phone'), val: '+998 90 123 45 67', color: '#00D97E' },
+    { icon: Mail, label: t('contact.email'), val: 'info@rentalcar.uz', color: '#F59E0B' },
+    { icon: Clock, label: t('contact.workHours'), val: t('contact.workHoursVal'), color: '#EF4444' },
+  ];
+
   return (
     <div className="bg-[#0A0A0A] min-h-screen pt-32 pb-32 overflow-hidden">
       
@@ -34,14 +37,13 @@ const Contact = () => {
           <ScrollReveal direction="up">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-8">
               <MessageSquare className="w-3.5 h-3.5" />
-              Biz har doim aloqadamiz
+              {t('contact.tagline')}
             </div>
             <h1 className="font-display text-6xl md:text-8xl font-extrabold tracking-tighter mb-8 leading-none">
-              Biz bilan <span className="text-white/40 italic">Bog'laning</span>
+              {t('contact.title1')} <span className="text-white/40 italic">{t('contact.title2')}</span>
             </h1>
             <p className="max-w-2xl mx-auto text-white/40 text-lg md:text-xl font-light leading-relaxed mb-12">
-              Savollaringiz bormi? Jamoamiz istalgan vaqtda yordam berishga tayyor.
-              Quyidagi formani to'ldiring yoki bizga qo'ng'iroq qiling.
+              {t('contact.description')}
             </p>
           </ScrollReveal>
         </div>
@@ -74,19 +76,19 @@ const Contact = () => {
                <div className="glass p-10 md:p-16 relative overflow-hidden border-white/10 border shardow-2xl">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[60px] pointer-events-none" />
                   
-                  <h2 className="font-display text-3xl font-extrabold mb-10 tracking-tight">Xabar yuborish</h2>
+                  <h2 className="font-display text-3xl font-extrabold mb-10 tracking-tight">{t('contact.sendMessage')}</h2>
                   
                   <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
                     <div className="space-y-2">
-                       <label className="text-[10px] text-white/30 uppercase font-bold tracking-widest ml-1">Ism</label>
+                       <label className="text-[10px] text-white/30 uppercase font-bold tracking-widest ml-1">{t('contact.nameLabel')}</label>
                        <input 
                          type="text" 
                          className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 px-4 text-sm focus:border-primary/50 outline-none transition-colors"
-                         placeholder="Ismingiz..."
+                         placeholder={t('contact.namePlaceholder')}
                        />
                     </div>
                     <div className="space-y-2">
-                       <label className="text-[10px] text-white/30 uppercase font-bold tracking-widest ml-1">Email</label>
+                       <label className="text-[10px] text-white/30 uppercase font-bold tracking-widest ml-1">{t('contact.emailLabel')}</label>
                        <input 
                          type="email" 
                          className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 px-4 text-sm focus:border-primary/50 outline-none transition-colors"
@@ -94,15 +96,15 @@ const Contact = () => {
                        />
                     </div>
                     <div className="space-y-2">
-                       <label className="text-[10px] text-white/30 uppercase font-bold tracking-widest ml-1">Xabar</label>
+                       <label className="text-[10px] text-white/30 uppercase font-bold tracking-widest ml-1">{t('contact.messageLabel')}</label>
                        <textarea 
                          rows="5"
                          className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 px-4 text-sm focus:border-primary/50 outline-none transition-colors"
-                         placeholder="Xabaringiz..."
+                         placeholder={t('contact.messagePlaceholder')}
                        />
                     </div>
                     <button className="btn-primary w-full py-4 rounded-2xl text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 group">
-                       XABAR YUBORISH
+                       {t('contact.sendBtn')}
                        <Send className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </button>
                   </form>
@@ -112,7 +114,7 @@ const Contact = () => {
             {/* Socials & CTA */}
             <div className="space-y-12">
                <ScrollReveal direction="right">
-                  <h3 className="font-display text-2xl font-extrabold mb-8 tracking-tight">Bizni <span className="text-white/40">Kuzating</span></h3>
+                  <h3 className="font-display text-2xl font-extrabold mb-8 tracking-tight">{t('contact.followUs')} <span className="text-white/40">{t('contact.followUsHighlight')}</span></h3>
                   <div className="grid grid-cols-2 gap-4">
                     {[
                       { icon: Send, label: 'Telegram', link: '#', color: '#0088CC' },
@@ -133,9 +135,9 @@ const Contact = () => {
 
                <ScrollReveal direction="right" delay={0.2}>
                   <div className="p-10 rounded-[32px] bg-primary/5 border border-primary/20 flex flex-col items-center text-center">
-                     <p className="text-xs text-primary font-bold uppercase tracking-widest mb-4">Tezkor Bog'lanish</p>
+                     <p className="text-xs text-primary font-bold uppercase tracking-widest mb-4">{t('contact.quickContact')}</p>
                      <h4 className="font-display text-3xl font-extrabold mb-6">+998 (90) 123-45-67</h4>
-                     <a href="tel:+998901234567" className="btn-primary px-8 py-4 text-xs font-bold uppercase">Hozir qo'ng'iroq qilish</a>
+                     <a href="tel:+998901234567" className="btn-primary px-8 py-4 text-xs font-bold uppercase">{t('contact.callNow')}</a>
                   </div>
                </ScrollReveal>
             </div>
@@ -153,12 +155,12 @@ const Contact = () => {
              />
              <Marker position={[41.2995, 69.2401]}>
                <Popup>
-                 Bizning bosh ofisimiz. Sizni kutamiz!
+                 {t('contact.mapPopup1')}
                </Popup>
              </Marker>
              <Marker position={[41.32, 69.28]}>
                <Popup>
-                 Yunusobod filiali (Tez kunda!)
+                 {t('contact.mapPopup2')}
                </Popup>
              </Marker>
            </MapContainer>

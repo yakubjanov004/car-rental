@@ -1,9 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 
 const ProfileSettings = ({ profileForm, onChange, onSave, uploading }) => {
    return (
       <div className="max-w-2xl">
-         <h2 className="text-2xl font-bold tracking-tight mb-8">Profil Sozlamalari</h2>
+         <h2 className="text-2xl font-bold tracking-tight mb-8">{t('profileComps.profileSettings')}</h2>
          <form onSubmit={onSave} className="glass p-10 space-y-10 border-white/10">
             <div className="grid md:grid-cols-2 gap-8">
                <div className="space-y-2">
@@ -48,7 +49,7 @@ const ProfileSettings = ({ profileForm, onChange, onSave, uploading }) => {
                </div>
             </div>
             <div className="space-y-2">
-               <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">Manzil</label>
+               <label className="text-[10px] text-white/30 uppercase font-black tracking-widest ml-1">{t('profileComps.addressLabel')}</label>
                <input 
                   type="text" 
                   value={profileForm.address} 

@@ -1,12 +1,13 @@
 from django.contrib import admin
-from .models import Car, CarModel, CarImage
+from modeltranslation.admin import TranslationAdmin
+from .models import Car, CarModel, CarImage, Amenity
 
 class CarImageInline(admin.TabularInline):
     model = CarImage
     extra = 1
 
 @admin.register(CarModel)
-class CarModelAdmin(admin.ModelAdmin):
+class CarModelAdmin(TranslationAdmin):
     list_display = ('brand', 'model_name', 'category', 'model_group')
     search_fields = ('brand', 'model_name')
     inlines = [CarImageInline]
@@ -24,3 +25,7 @@ class CarAdmin(admin.ModelAdmin):
 @admin.register(CarImage)
 class CarImageAdmin(admin.ModelAdmin):
     list_display = ('car_model', 'slot', 'sort_order', 'is_active')
+
+@admin.register(Amenity)
+class AmenityAdmin(TranslationAdmin):
+    list_display = ('name', 'code', 'icon_name')

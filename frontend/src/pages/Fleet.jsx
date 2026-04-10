@@ -6,22 +6,15 @@ import {
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { TOSHKENT_TUMANLARI } from '../data/districts';
 import CarCard from '../components/CarCard';
 import ScrollReveal from '../components/ScrollReveal';
 import { fetchCarModels } from '../utils/api';
 import { BASE_ORIGIN as MEDIA_BASE_URL } from '../services/api/apiClient';
 
-const CATEGORIES = [
-  { id: 'all', label: 'Barchasi' },
-  { id: 'sedan', label: 'Sedan' },
-  { id: 'crossover', label: 'Krossover' },
-  { id: 'suv', label: 'SUV' },
-  { id: 'premium', label: 'Premium' },
-  { id: 'elektro', label: '⚡ Elektro' },
-];
-
 const Fleet = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +24,15 @@ const Fleet = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+
+  const CATEGORIES = [
+    { id: 'all', label: t('fleet.all') },
+    { id: 'sedan', label: t('fleet.sedan') },
+    { id: 'crossover', label: t('fleet.crossover') },
+    { id: 'suv', label: t('fleet.suv') },
+    { id: 'premium', label: t('fleet.premium') },
+    { id: 'elektro', label: t('fleet.electric') },
+  ];
 
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
@@ -77,16 +79,16 @@ const Fleet = () => {
         setCars([]);
         setTotalPages(1);
         setTotalCount(0);
-        setError("Database is empty. Please check admin panel car models.");
+        setError(t('fleet.dbEmpty'));
       }
     } catch (err) {
       console.error("Backend fetch failed:", err);
-      setError("Error connecting to the backend.");
+      setError(t('fleet.backendError'));
       setCars([]);
     } finally {
       setLoading(false);
     }
-  }, [filters.search, filters.sortBy]);
+  }, [filters.search, filters.sortBy, t]);
 
   // Load cars when page or relevant filters change
   useEffect(() => {
@@ -213,14 +215,14 @@ const Fleet = () => {
             <ScrollReveal direction="left">
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-8 h-px bg-primary" />
-                <div className="text-[11px] text-primary font-black uppercase tracking-[0.4em]">RideLux Fleet 2026</div>
+                <div className="text-[11px] text-primary font-black uppercase tracking-[0.4em]">{t('fleet.badge')}</div>
               </div>
               <h1 className="font-display text-7xl md:text-[120px] font-extrabold tracking-tighter leading-[0.8] mb-8">
-                Tanlov <br />
-                <span className="text-white/20 italic">Erkinligi</span>
+                {t('fleet.title1')} <br />
+                <span className="text-white/20 italic">{t('fleet.title2')}</span>
               </h1>
               <p className="text-white/40 text-[14px] font-medium max-w-sm leading-relaxed border-l-2 border-primary/30 pl-8">
-                O'zbekistondagi eng sara premium va elektro avtomobillar to'plami. Har bir safar — yangi hissiyot va to'liq erkinlik.
+                {t('fleet.description')}
               </p>
             </ScrollReveal>
             
@@ -268,13 +270,13 @@ const Fleet = () => {
             
             {/* Search */}
             <div className="space-y-4">
-              <label className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] ml-1">Qidiruv</label>
+              <label className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] ml-1">{t('fleet.search')}</label>
               <div className="relative group">
                 <input 
                   type="text" 
                   value={filters.search}
                   onChange={(e) => setFilters(f => ({...f, search: e.target.value}))}
-                  placeholder="Brend yoki model..."
+                  placeholder={t('fleet.searchPlaceholder')}
                   className="w-full bg-[#111] border border-white/5 rounded-2xl py-4.5 pl-12 pr-4 text-sm focus:border-primary/50 transition-all outline-none"
                 />
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
@@ -283,15 +285,15 @@ const Fleet = () => {
 
             {/* Tuman */}
             <div className="space-y-4">
-              <label className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] ml-1">Tumanlar</label>
+              <label className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] ml-1">{t('fleet.districts')}</label>
               <select 
                 className="w-full bg-[#111] border border-white/5 rounded-2xl py-4.5 px-6 text-sm outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
                 value={filters.tuman}
                 onChange={(e) => setFilters(f => ({...f, tuman: e.target.value}))}
               >
-                <option value="" className="bg-[#111]">Barcha tumanlar</option>
-                {TOSHKENT_TUMANLARI.map(t => (
-                  <option key={t.id} value={t.id} className="bg-[#111]">{t.nomi}</option>
+                <option value="" className="bg-[#111]">{t('fleet.allDistricts')}</option>
+                {TOSHKENT_TUMANLARI.map(tuman => (
+                  <option key={tuman.id} value={tuman.id} className="bg-[#111]">{tuman.nomi}</option>
                 ))}
               </select>
             </div>
@@ -299,8 +301,8 @@ const Fleet = () => {
             {/* Narx Oralig'i */}
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <label className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] ml-1">Narx (kunlik)</label>
-                <span className="text-[10px] text-primary font-bold">{filters.priceRange[1].toLocaleString()} so'm</span>
+                <label className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] ml-1">{t('fleet.priceDaily')}</label>
+                <span className="text-[10px] text-primary font-bold">{filters.priceRange[1].toLocaleString()} {t('fleet.sum')}</span>
               </div>
               <div className="px-2">
                 <input 
@@ -321,12 +323,12 @@ const Fleet = () => {
 
             {/* Price Sorting */}
             <div className="space-y-4">
-              <label className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] ml-1">Saralash</label>
+              <label className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] ml-1">{t('fleet.sort')}</label>
               <div className="grid grid-cols-1 gap-3">
                 {[
-                  { id: 'reyting', label: '⭐ Eng yuqori reyting' },
-                  { id: 'narx_osh', label: '📈 Narx: Arzonroq' },
-                  { id: 'narx_tush', label: '📉 Narx: Qimmatroq' },
+                  { id: 'reyting', label: t('fleet.sortRating') },
+                  { id: 'narx_osh', label: t('fleet.sortPriceAsc') },
+                  { id: 'narx_tush', label: t('fleet.sortPriceDesc') },
                 ].map(opt => (
                   <button
                     key={opt.id}
@@ -345,7 +347,7 @@ const Fleet = () => {
 
             {/* Yoqilg'i */}
             <div className="space-y-4">
-              <label className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] ml-1">Yoqilg'i turi</label>
+              <label className="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] ml-1">{t('fleet.fuelType')}</label>
               <div className="flex flex-wrap gap-2">
                 {['benzin', 'elektro', 'gibrid', 'gaz'].map(y => (
                   <button
@@ -368,7 +370,7 @@ const Fleet = () => {
               className="w-full flex items-center justify-center gap-2 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-white transition-colors border border-dashed border-white/10 rounded-2xl group"
             >
               <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
-              Filtrlarni tozalash
+              {t('fleet.resetFilters')}
             </button>
           </div>
           </aside>
@@ -378,10 +380,10 @@ const Fleet = () => {
              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                <div className="text-[11px] text-white/30 font-bold uppercase tracking-[0.2em] flex items-center gap-3">
                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                 Topildi: <span className="text-white">{totalCount}</span> ta premium model
+                 {t('fleet.found')}: <span className="text-white">{totalCount}</span> {t('fleet.premiumModels')}
                  {totalPages > 1 && (
                    <span className="text-white/20 ml-2">
-                     (Sahifa {currentPage}/{totalPages})
+                     ({t('fleet.page')} {currentPage}/{totalPages})
                    </span>
                  )}
                </div>
@@ -393,7 +395,7 @@ const Fleet = () => {
                      onClick={() => setFilters(f => ({...f, kategoriya: 'all'}))}
                      className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/60 hover:text-white flex items-center gap-2 transition-all hover:bg-white/10"
                    >
-                     <span>Kategoriya: {filters.kategoriya}</span>
+                     <span>{t('fleet.category')}: {filters.kategoriya}</span>
                      <X className="w-3 h-3" />
                    </button>
                  )}
@@ -402,7 +404,7 @@ const Fleet = () => {
                      onClick={() => setFilters(f => ({...f, tuman: ''}))}
                      className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/60 hover:text-white flex items-center gap-2 transition-all hover:bg-white/10"
                    >
-                     <span>Tuman: {TOSHKENT_TUMANLARI.find(t => t.id == filters.tuman)?.nomi}</span>
+                     <span>{t('fleet.district')}: {TOSHKENT_TUMANLARI.find(tuman => tuman.id == filters.tuman)?.nomi}</span>
                      <X className="w-3 h-3" />
                    </button>
                  )}
@@ -411,7 +413,7 @@ const Fleet = () => {
                      onClick={() => setFilters(f => ({...f, yoqilgi: ''}))}
                      className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-white/60 hover:text-white flex items-center gap-2 transition-all hover:bg-white/10"
                    >
-                     <span>Yoqilg'i: {filters.yoqilgi}</span>
+                     <span>{t('fleet.fuel')}: {filters.yoqilgi}</span>
                      <X className="w-3 h-3" />
                    </button>
                  )}
@@ -539,7 +541,7 @@ const Fleet = () => {
 
                           {/* Page info text */}
                           <div className="text-[10px] text-white/20 font-bold uppercase tracking-[0.2em]">
-                            {((currentPage - 1) * 40) + 1} — {Math.min(currentPage * 40, totalCount)} / {totalCount} ta model
+                            {((currentPage - 1) * 40) + 1} — {Math.min(currentPage * 40, totalCount)} / {totalCount} {t('fleet.models')}
                           </div>
                         </div>
                       )}
@@ -549,11 +551,11 @@ const Fleet = () => {
                       <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-10 border border-white/5">
                         <AlertCircle className="w-10 h-10 text-white/20" />
                       </div>
-                      <h2 className="text-3xl font-bold mb-4 tracking-tighter">Mashinalar topilmadi</h2>
+                      <h2 className="text-3xl font-bold mb-4 tracking-tighter">{t('fleet.notFound')}</h2>
                       <p className="text-white/40 max-w-sm mb-12 text-sm font-light">
-                        Qidiruvingiz bo'yicha hech qanday natija chiqmadi. Filtrlarni o'zgartirib ko'ring.
+                        {t('fleet.notFoundDesc')}
                       </p>
-                      <button onClick={resetFilters} className="btn-primary px-12 h-14">Barcha mashinalarni ko'rish</button>
+                      <button onClick={resetFilters} className="btn-primary px-12 h-14">{t('fleet.viewAll')}</button>
                     </div>
                   )}
                 </>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   CreditCard, ShieldCheck, CheckCircle2, ChevronRight, 
    Calendar, MapPin, QrCode, Lock, Zap, Clock, ArrowRight,
@@ -21,6 +22,7 @@ import clickLogo from '../assets/icons/click-logo.svg';
 import paymeLogo from '../assets/icons/payme-logo.svg';
 
 const Checkout = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
@@ -213,7 +215,7 @@ const Checkout = () => {
    const nextStep = async () => {
       if (step === 1) {
          if (!user?.kyc || user.kyc.status !== 'approved') {
-            alert("Sizning profilingiz hali tasdiqlanmagan. Bron qilish uchun 'Tasdiqlangan' (APPROVED) holatida bo'lishingiz shart.");
+            alert(t('checkout.kycError'));
             navigate('/profile');
             return;
          }
@@ -229,7 +231,7 @@ const Checkout = () => {
                start_datetime: bookingMeta.startDate,
                end_datetime: bookingMeta.endDate,
                total_price: totalAmount,
-               full_name: cardData.holder || `${user?.first_name} ${user?.last_name || ''}`.trim() || 'Guest Client',
+               full_name: cardData.holder || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : '') || t('checkout.guest'),
                phone_number: user?.phone_number || '998901234567',
             });
 
@@ -289,7 +291,7 @@ const Checkout = () => {
               setStep(4);
             }
          } catch (err) {
-            alert(err?.response?.data?.error || 'To\'lovni boshlashda xatolik yuz berdi');
+            alert(err?.response?.data?.error || t('checkout.payError'));
          } finally {
             setIsProcessing(false);
          }
@@ -298,7 +300,7 @@ const Checkout = () => {
 
       if (step === 3 && paymentMethod === 'card') {
          if ((userInputOTP || '').length !== 6) {
-            setOtpError('6 xonali kodni kiriting.');
+            setOtpError(t('checkout.enter6Digit'));
             return;
          }
 
@@ -312,7 +314,7 @@ const Checkout = () => {
             setIsSMSModalOpen(false);
             setStep(4);
          } catch (err) {
-            setOtpError(err?.response?.data?.error || 'OTP tasdiqlashda xatolik');
+            setOtpError(err?.response?.data?.error || t('checkout.otpError'));
          } finally {
             setIsProcessing(false);
          }
@@ -373,7 +375,7 @@ const Checkout = () => {
             </div>
             
             <h1 className="font-display text-5xl md:text-6xl font-extrabold tracking-tighter">
-              Zakazni <span className="text-white/30 italic">rasmiylashtirish.</span>
+              {t('checkout.title1')} <span className="text-white/30 italic">{t('checkout.title2')}</span>
             </h1>
 
             <div className="flex gap-2 max-w-md pt-4">
@@ -403,15 +405,15 @@ const Checkout = () => {
                           <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">{car.brand} {car.model}</h2>
                           <div className="flex items-center gap-4 text-white/40 text-xs font-bold">
                              <div className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5" /> <span>{days} kun</span></div>
-                             <div className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> <span>Toshkent</span></div>
+                             <div className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> <span>{t('checkout.location')}</span></div>
                           </div>
                           <div className="pt-6 grid grid-cols-2 gap-4">
                              <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                <p className="text-[10px] text-white/20 uppercase font-bold tracking-widest mb-1">Olish sanasi</p>
+                                <p className="text-[10px] text-white/20 uppercase font-bold tracking-widest mb-1">{t('checkout.pickup')}</p>
                                 <p className="text-sm font-bold text-white">{bookingMeta.startDate}</p>
                              </div>
                              <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                <p className="text-[10px] text-white/20 uppercase font-bold tracking-widest mb-1">Qaytarish sanasi</p>
+                                <p className="text-[10px] text-white/20 uppercase font-bold tracking-widest mb-1">{t('checkout.return')}</p>
                                 <p className="text-sm font-bold text-white">{bookingMeta.endDate}</p>
                              </div>
                           </div>
@@ -419,7 +421,7 @@ const Checkout = () => {
                     </div>
                  </div>
                  <div className="flex justify-end">
-                    <button onClick={nextStep} className="btn-primary py-5 px-12 rounded-2xl flex items-center gap-3 text-[11px] font-black tracking-widest uppercase">To'lovga o'tish <ArrowRight className="w-4 h-4" /></button>
+                    <button onClick={nextStep} className="btn-primary py-5 px-12 rounded-2xl flex items-center gap-3 text-[11px] font-black tracking-widest uppercase">{t('checkout.nextToPay')} <ArrowRight className="w-4 h-4" /></button>
                  </div>
                </motion.div>
              )}
@@ -431,7 +433,7 @@ const Checkout = () => {
                  animate={{ opacity: 1, x: 0 }} 
                  className="space-y-8"
                >
-                 <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-8">To'lov turini tanlang</h2>
+                 <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-8">{t('checkout.payTypeTitle')}</h2>
                  
                  <div className="grid grid-cols-2 gap-6">
                     <button 
@@ -442,8 +444,8 @@ const Checkout = () => {
                           <CreditCard className="w-6 h-6" />
                        </div>
                        <div>
-                          <h3 className="text-xl font-black text-white uppercase italic">Plastik Karta</h3>
-                          <p className="text-xs text-white/30 mt-1">Uzcard, Humo, Visa (OTP bilan)</p>
+                          <h3 className="text-xl font-black text-white uppercase italic">{t('checkout.cardTitle')}</h3>
+                          <p className="text-xs text-white/30 mt-1">{t('checkout.cardSub')}</p>
                        </div>
                     </button>
 
@@ -455,8 +457,8 @@ const Checkout = () => {
                           <span className="text-white font-black text-lg">P</span>
                        </div>
                        <div>
-                          <h3 className="text-xl font-black text-white uppercase italic">Payme QR</h3>
-                          <p className="text-xs text-white/30 mt-1">Ilovada scan qilib to'lash</p>
+                          <h3 className="text-xl font-black text-white uppercase italic">{t('checkout.paymeTitle')}</h3>
+                          <p className="text-xs text-white/30 mt-1">{t('checkout.paymeSub')}</p>
                        </div>
                     </button>
 
@@ -468,8 +470,8 @@ const Checkout = () => {
                           <span className="text-white font-black text-sm">C</span>
                        </div>
                        <div>
-                          <h3 className="text-xl font-black text-white uppercase italic">Click QR</h3>
-                          <p className="text-xs text-white/30 mt-1">Click orqali tezkor to'lov</p>
+                          <h3 className="text-xl font-black text-white uppercase italic">{t('checkout.clickTitle')}</h3>
+                          <p className="text-xs text-white/30 mt-1">{t('checkout.clickSub')}</p>
                        </div>
                     </button>
 
@@ -481,8 +483,8 @@ const Checkout = () => {
                           <span className="text-white font-black text-sm">U</span>
                        </div>
                        <div>
-                          <h3 className="text-xl font-black text-white uppercase italic">Uzum Bank</h3>
-                          <p className="text-xs text-white/30 mt-1">QR orqali tezkor to'lov</p>
+                          <h3 className="text-xl font-black text-white uppercase italic">{t('checkout.uzumTitle')}</h3>
+                          <p className="text-xs text-white/30 mt-1">{t('checkout.uzumSub')}</p>
                        </div>
                     </button>
                  </div>
@@ -515,20 +517,20 @@ const Checkout = () => {
                      <div className="text-center space-y-2">
                        <p className="text-white font-black text-2xl">{formatNarx(totalAmount)}</p>
                        <p className="text-white/30 text-xs font-bold uppercase tracking-widest">
-                         To'lov ID: {paymentRef || 'RL-' + Math.random().toString(36).slice(2, 8).toUpperCase()}
+                         {t('checkout.payId')} {paymentRef || 'RL-' + Math.random().toString(36).slice(2, 8).toUpperCase()}
                        </p>
                      </div>
 
                      <div className="text-center space-y-1">
                        <p className="text-white/50 text-sm">
                          {paymentMethod === 'payme'
-                           ? '1. Payme ilovasini oching'
+                           ? t('checkout.paymeStep1')
                            : paymentMethod === 'click'
-                           ? '1. Click ilovasini oching'
-                           : '1. Uzum ilovasini oching'}
+                           ? t('checkout.clickStep1')
+                           : t('checkout.uzumStep1')}
                        </p>
-                       <p className="text-white/50 text-sm">2. QR kodni scan qiling</p>
-                       <p className="text-white/50 text-sm">3. To'lovni tasdiqlang</p>
+                       <p className="text-white/50 text-sm">{t('checkout.step2')}</p>
+                       <p className="text-white/50 text-sm">{t('checkout.step3')}</p>
                      </div>
                    </motion.div>
                  )}
@@ -590,7 +592,7 @@ const Checkout = () => {
                                           </div>
                                        )}
                           <div className="space-y-2">
-                             <label className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-1">Karta raqami</label>
+                             <label className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-1">{t('checkout.cardNumber')}</label>
                                            <input
                                               type="text"
                                               placeholder="8600 **** **** ****"
@@ -601,30 +603,30 @@ const Checkout = () => {
                                            />
                           </div>
                           <div className="space-y-2">
-                             <label className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-1">Karta EGASI</label>
+                             <label className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-1">{t('checkout.cardHolder')}</label>
                              <input type="text" placeholder="NAME SURNAME" className="w-full bg-[#111] border border-white/5 rounded-2xl p-5 text-sm outline-none focus:border-primary/50 uppercase" value={cardData.holder} onChange={e => setCardData({...cardData, holder: e.target.value})} />
                           </div>
                           <div className="space-y-2">
-                              <label className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-1">Amal qilish muddati</label>
+                              <label className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-1">{t('checkout.expiryDate')}</label>
                               <input type="text" placeholder="MM/YY" className="w-full bg-[#111] border border-white/5 rounded-2xl p-5 text-sm outline-none focus:border-primary/50" value={cardData.expiry} onChange={e => setCardData({...cardData, expiry: e.target.value})} maxLength={5} />
                           </div>
                           <div className="space-y-2">
-                              <label className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-1">CVV / CVC</label>
+                              <label className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-1">{t('checkout.cvv')}</label>
                               <input type="password" placeholder="***" className="w-full bg-[#111] border border-white/5 rounded-2xl p-5 text-sm outline-none focus:border-primary/50" value={cardData.cvv} onChange={e => setCardData({...cardData, cvv: e.target.value})} maxLength={3} />
                           </div>
                        </div>
                        )}
                        <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 text-[9px] font-bold text-primary uppercase tracking-widest">
                           <ShieldCheck className="w-4 h-4" /> 
-                          Sizning Ma'lumotlaringiz shifrlanadi va xavfsiz saqlanadi.
+                          {t('checkout.secureText')}
                        </div>
                     </motion.div>
                  )}
 
                          <div className="glass p-10 border-white/5 rounded-[40px] space-y-6 mt-6">
                               <div className="flex items-center justify-between">
-                                 <h4 className="text-lg font-black text-white uppercase italic tracking-tighter">Sug'urta Paketi</h4>
-                                 <span className="text-[10px] text-white/30 font-black uppercase tracking-widest">Ixtiyoriy</span>
+                                 <h4 className="text-lg font-black text-white uppercase italic tracking-tighter">{t('checkout.insuranceTitle')}</h4>
+                                 <span className="text-[10px] text-white/30 font-black uppercase tracking-widest">{t('checkout.optional')}</span>
                               </div>
                               <div className="grid md:grid-cols-2 gap-4">
                                  <button
@@ -632,8 +634,8 @@ const Checkout = () => {
                                     onClick={() => setSelectedInsuranceId(null)}
                                     className={`p-5 rounded-2xl border text-left transition-all ${selectedInsuranceId === null ? 'border-primary bg-primary/10' : 'border-white/10 hover:border-white/30'}`}
                                  >
-                                    <p className="text-sm font-black text-white uppercase">Sug'urtasiz</p>
-                                    <p className="text-[10px] text-white/40 mt-2 uppercase tracking-widest">Faqat depozit himoyasi</p>
+                                    <p className="text-sm font-black text-white uppercase">{t('checkout.noInsurance')}</p>
+                                    <p className="text-[10px] text-white/40 mt-2 uppercase tracking-widest">{t('checkout.onlyDeposit')}</p>
                                  </button>
                                  {insurancePlans.map((plan) => (
                                     <button
@@ -650,7 +652,7 @@ const Checkout = () => {
                          </div>
 
                  <div className="flex justify-between items-center mt-12">
-                    <button onClick={() => setStep(1)} className="text-white/40 hover:text-white transition-colors text-xs font-black uppercase tracking-widest">Orqaga</button>
+                    <button onClick={() => setStep(1)} className="text-white/40 hover:text-white transition-colors text-xs font-black uppercase tracking-widest">{t('checkout.back')}</button>
                     <button 
                        disabled={
                          !paymentMethod ||
@@ -664,7 +666,7 @@ const Checkout = () => {
                          (paymentMethod === 'card' && !savedMethods.length && (!cardData.number || !cardData.holder))
                        ) ? 'opacity-30 cursor-not-allowed' : ''}`}
                     >
-                      {isProcessing ? 'Yuklanmoqda...' : paymentMethod === 'card' ? "OTP olish" : "QR tayyorlash"}
+                      {isProcessing ? t('checkout.loading') : paymentMethod === 'card' ? t('checkout.getOtp') : t('checkout.prepQr')}
                       <ArrowRight className="w-4 h-4" />
                     </button>
                  </div>
@@ -689,11 +691,11 @@ const Checkout = () => {
                     <Lock className="w-8 h-8 text-primary" />
                  </div>
                  
-                 <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">Kod tasdiqlash</h3>
-                 <p className="text-xs text-white/30 max-w-xs mb-10">Sizning telefon raqamingizga yuborilgan 6-xonali kodni kiriting.</p>
+                 <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">{t('checkout.codeConfirm')}</h3>
+                 <p className="text-xs text-white/30 max-w-xs mb-10">{t('checkout.otpDesc')}</p>
                  
                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-10">
-                    <span className="text-[10px] text-white/20 uppercase font-black block mb-3">Simulyatsiya (OTP):</span>
+                    <span className="text-[10px] text-white/20 uppercase font-black block mb-3">{t('checkout.simulation')}</span>
                     <span className="text-4xl font-display font-black text-primary tracking-[0.4em] blur-[1px] hover:blur-none transition-all">{randomOTP}</span>
                  </div>
 
@@ -712,8 +714,8 @@ const Checkout = () => {
                  {otpError && <p className="mt-4 text-xs font-bold text-red-500">{otpError}</p>}
 
                  <div className="flex gap-4 mt-20">
-                    <button onClick={() => setStep(2)} className="px-8 py-4 glass rounded-xl text-[10px] font-black uppercase text-white/40">Orqaga</button>
-                    <button disabled={isProcessing} onClick={nextStep} className="px-12 py-4 btn-primary rounded-xl text-[10px] font-black uppercase shadow-lg shadow-primary/20 disabled:opacity-50">{isProcessing ? 'Tekshirilmoqda...' : 'TASDIQLASH'}</button>
+                    <button onClick={() => setStep(2)} className="px-8 py-4 glass rounded-xl text-[10px] font-black uppercase text-white/40">{t('checkout.back')}</button>
+                    <button disabled={isProcessing} onClick={nextStep} className="px-12 py-4 btn-primary rounded-xl text-[10px] font-black uppercase shadow-lg shadow-primary/20 disabled:opacity-50">{isProcessing ? t('checkout.loading2') : 'TASDIQLASH'}</button>
                  </div>
                </motion.div>
              )}
@@ -725,12 +727,12 @@ const Checkout = () => {
                  animate={{ opacity: 1, x: 0 }} 
                  className="space-y-10"
                >
-                  <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter border-l-4 border-primary pl-6">Yakuniy Xulosa</h2>
+                  <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter border-l-4 border-primary pl-6">{t('checkout.finalSummary')}</h2>
                   
                   <div className="glass p-10 border-white/5 rounded-[48px] space-y-8 bg-white/[0.02]">
                      <div className="grid md:grid-cols-2 gap-10">
                         <div className="space-y-4">
-                           <p className="text-[10px] text-white/20 uppercase font-black tracking-widest italic">To'lov ma'lumoti</p>
+                           <p className="text-[10px] text-white/20 uppercase font-black tracking-widest italic">{t('checkout.payInfo')}</p>
                            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
                               <CreditCard className="w-5 h-5 text-primary" />
                               <div>
@@ -741,12 +743,12 @@ const Checkout = () => {
                                         : `CARD: **** ${cardData.number.slice(-4)}`)
                                                        : `${paymentMethod.toUpperCase()} QR PAYMENT`}
                                  </p>
-                                 <p className="text-[10px] text-white/30 uppercase font-black">{paymentMethod === 'card' && useSavedCard ? (savedMethods.find((m) => m.id === selectedMethodId)?.card_holder || 'Saved card') : (cardData.holder || 'Guest')}</p>
+                                 <p className="text-[10px] text-white/30 uppercase font-black">{paymentMethod === 'card' && useSavedCard ? (savedMethods.find((m) => m.id === selectedMethodId)?.card_holder || 'Saved card') : (cardData.holder || t('checkout.guest'))}</p>
                               </div>
                            </div>
                         </div>
                         <div className="space-y-4">
-                           <p className="text-[10px] text-white/20 uppercase font-black tracking-widest italic">Summa tasdiqlash</p>
+                           <p className="text-[10px] text-white/20 uppercase font-black tracking-widest italic">{t('checkout.sumConfirm')}</p>
                            <h4 className="text-4xl font-black text-primary italic tracking-tighter">{formatNarx(totalAmount)}</h4>
                         </div>
                      </div>
@@ -754,11 +756,11 @@ const Checkout = () => {
                      <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row gap-6 items-center italic">
                         <div className="flex items-center gap-3 text-white/40 text-xs font-medium">
                            <ShieldCheck className="w-5 h-5 text-green-500" />
-                           Barcha sanalar muvaffaqiyatli band qilindi.
+                           {t('checkout.datesConfirmed')}
                         </div>
                         <div className="flex items-center gap-3 text-white/40 text-xs font-medium lg:ml-auto">
                            <Clock className="w-5 h-5 text-orange-500" />
-                           24/7 Qo'llab-quvvatlash tizimi faol.
+                           {t('checkout.support')}
                         </div>
                      </div>
                   </div>
@@ -786,12 +788,12 @@ const Checkout = () => {
                                     </div>
 
                                     <div className="text-center space-y-2">
-                                       <p className="text-sm text-white/40 uppercase tracking-widest font-black">To'lov ID: {paymentRef || '-'}</p>
+                                       <p className="text-sm text-white/40 uppercase tracking-widest font-black">{t('checkout.payId')} {paymentRef || '-'}</p>
                                        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-black ${
                                           countdown < 60 ? 'border-red-500/30 text-red-500 bg-red-500/10' : 'border-white/10 text-white/60'
                                        }`}>
                                           <Clock className="w-4 h-4" />
-                                          {countdown > 0 ? formatCountdown(countdown) : 'QR eskirdi'}
+                                          {countdown > 0 ? formatCountdown(countdown) : t('checkout.qrExpired')}
                                        </div>
                                     </div>
 
@@ -822,7 +824,7 @@ const Checkout = () => {
                            )}
 
                            <button disabled={isProcessing || (isQrMethod && countdown === 0)} onClick={handleBookingConfirm} className="w-full btn-primary py-6 rounded-[32px] text-base font-black italic tracking-tighter flex items-center justify-center gap-4 shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
-                               {isProcessing ? 'Tekshirilmoqda...' : isQrMethod ? "TO'LOV TASDIQLASH" : 'YAKUNLASH'} <ArrowRight className="w-5 h-5" />
+                               {isProcessing ? t('checkout.loading2') : isQrMethod ? "TO'LOV TASDIQLASH" : 'YAKUNLASH'} <ArrowRight className="w-5 h-5" />
                   </button>
                </motion.div>
              )}
@@ -869,7 +871,7 @@ const Checkout = () => {
                   </p>
                   
                   <div className="flex gap-4">
-                     <button onClick={() => navigate('/profile')} className="px-12 py-5 btn-primary rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20">PROFILGA O'TISH</button>
+                     <button onClick={() => navigate('/profile')} className="px-12 py-5 btn-primary rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20">{t('checkout.goToProfile')}</button>
                      <button onClick={() => navigate('/')} className="px-12 py-5 glass rounded-2xl text-[10px] font-black uppercase tracking-widest border-white/10">BOSH SAHIFA</button>
                   </div>
                </motion.div>
@@ -978,7 +980,7 @@ const Checkout = () => {
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">YANGI XABAR</span>
                     <span className="text-[9px] text-black/20 font-bold">HOZIR</span>
                   </div>
-                  <h4 className="text-sm font-black text-black">RIDELUX VERIFICATION</h4>
+                  <h4 className="text-sm font-black text-black">RENTAL CAR VERIFICATION</h4>
                   <p className="text-xs text-black/60 leading-relaxed font-medium">
                     Sizning to'lovni tasdiqlash kodingiz: <span className="font-black text-black text-lg ml-1 tracking-widest">{randomOTP}</span>
                   </p>

@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Lock, Mail, Phone, ChevronRight, Car, UserCircle, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import ScrollReveal from '../components/ScrollReveal';
 
 const SignUp = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -22,18 +24,18 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirm_password) {
-       alert("Parollar mos kelmadi!");
+       alert(t('signUp.passwordMismatch'));
        return;
     }
     
     try {
       const { confirm_password, ...regData } = formData;
       await register(regData);
-      alert("Ro'yxatdan muvaffaqiyatli o'tdingiz! Endi kirishingiz mumkin.");
+      alert(t('signUp.success'));
       navigate('/signin');
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.username?.[0] || err.response?.data?.detail || "Ro'yxatdan o'tishda xatolik yuz berdi.");
+      alert(err.response?.data?.username?.[0] || err.response?.data?.detail || t('signUp.error'));
     }
   };
 
@@ -52,9 +54,9 @@ const SignUp = () => {
                </div>
             </Link>
             <h1 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-              Ro'yxatdan <span className="text-white/40">o'tish</span>
+              {t('signUp.title')} <span className="text-white/40">{t('signUp.titleHighlight')}</span>
             </h1>
-            <p className="text-white/40 text-sm font-medium">RIDELUX oilasiga qo'shiling va premium xizmatlardan bahramand bo'ling.</p>
+            <p className="text-white/40 text-sm font-medium">{t('signUp.subtitle')}</p>
           </div>
         </ScrollReveal>
 
@@ -63,29 +65,29 @@ const SignUp = () => {
             <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSubmit}>
               
               <div className="space-y-2">
-                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">Ism</label>
+                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">{t('signUp.firstName')}</label>
                 <input 
                   type="text" 
                   required
                   className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 px-4 text-sm focus:border-primary/50 transition-all outline-none"
-                  placeholder="Ismingiz..."
+                  placeholder={t('signUp.firstNamePlaceholder')}
                   onChange={(e) => setFormData({...formData, first_name: e.target.value})}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">Familiya</label>
+                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">{t('signUp.lastName')}</label>
                 <input 
                   type="text" 
                   required
                   className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 px-4 text-sm focus:border-primary/50 transition-all outline-none"
-                  placeholder="Familiyangiz..."
+                  placeholder={t('signUp.lastNamePlaceholder')}
                   onChange={(e) => setFormData({...formData, last_name: e.target.value})}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">Email</label>
+                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">{t('signUp.email')}</label>
                 <input 
                   type="email" 
                   required
@@ -96,7 +98,7 @@ const SignUp = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">Telefon</label>
+                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">{t('signUp.phone')}</label>
                 <input 
                   type="tel" 
                   required
@@ -107,18 +109,18 @@ const SignUp = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">Login</label>
+                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">{t('signUp.login')}</label>
                 <input 
                   type="text" 
                   required
                   className="w-full bg-[#111] border border-white/5 rounded-2xl py-4 px-4 text-sm focus:border-primary/50 transition-all outline-none"
-                  placeholder="Login..."
+                  placeholder={t('signUp.loginPlaceholder')}
                   onChange={(e) => setFormData({...formData, username: e.target.value})}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">Parol</label>
+                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">{t('signUp.password')}</label>
                 <input 
                   type="password" 
                   required
@@ -129,7 +131,7 @@ const SignUp = () => {
               </div>
 
               <div className="md:col-span-2 space-y-2">
-                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">Parolni tasdiqlash</label>
+                <label className="text-[10px] text-white/30 uppercase font-bold tracking-[0.2em] ml-1">{t('signUp.confirmPassword')}</label>
                 <input 
                   type="password" 
                   required
@@ -141,7 +143,7 @@ const SignUp = () => {
 
               <div className="md:col-span-2 pt-4">
                 <button className="btn-primary w-full py-4 rounded-2xl text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 group">
-                  RO'YXATDAN O'TISH
+                  {t('signUp.submitBtn')}
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </button>
               </div>
@@ -149,9 +151,9 @@ const SignUp = () => {
 
             <div className="mt-10 pt-8 border-t border-white/5 text-center">
               <p className="text-xs text-white/30 font-medium">
-                Akkauntingiz bormi?
+                {t('signUp.hasAccount')}
                 <Link to="/signin" className="text-primary font-bold ml-2 hover:text-white transition-colors">
-                  Kirish
+                  {t('signUp.signIn')}
                 </Link>
               </p>
             </div>
