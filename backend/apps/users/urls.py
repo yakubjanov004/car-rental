@@ -1,10 +1,10 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import RegisterView, UserProfileViewSet, LogoutView, AdminUserViewSet, NotificationViewSet
 from .kyc_views import KYCProfileViewSet, AdminKYCViewSet
 
-router = DefaultRouter()
+router = SimpleRouter()
 router.register('admin/users', AdminUserViewSet, basename='admin_users')
 router.register('admin/kyc', AdminKYCViewSet, basename='admin_kyc')
 router.register('notifications', NotificationViewSet, basename='notifications')

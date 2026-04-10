@@ -72,8 +72,8 @@ const Compare = () => {
                 >
                   <X className="w-4 h-4" />
                 </button>
-                <div className="aspect-[16/10] rounded-3xl overflow-hidden border border-white/10 bg-[#111]">
-                   <img src={car.media?.card_main || car.main_image || car.rasm} className="w-full h-full object-cover" alt="" />
+                <div className="aspect-[16/10] rounded-3xl overflow-hidden border border-white/10" style={{ background: 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)' }}>
+                   <img src={car.media?.card_main || car.main_image || car.rasm} className="w-full h-full object-contain" alt="" />
                 </div>
                 <div className="text-center">
                    <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">{car.brand} {car.model}</h3>

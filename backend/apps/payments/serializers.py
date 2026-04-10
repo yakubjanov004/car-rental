@@ -8,11 +8,11 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'is_verified', 'created_at']
 
 class PaymentTransactionSerializer(serializers.ModelSerializer):
-    payment_method = PaymentMethodSerializer(read_only=True)
+    payment_type = serializers.CharField(source='method', read_only=True)
     
     class Meta:
         model = PaymentTransaction
-        fields = ['id', 'booking', 'amount', 'payment_type', 'payment_method', 'status', 'created_at']
+        fields = ['id', 'user', 'booking', 'amount', 'payment_type', 'status', 'created_at']
         read_only_fields = ['id', 'status', 'created_at']
 
 class BillingInvoiceSerializer(serializers.ModelSerializer):

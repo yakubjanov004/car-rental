@@ -25,7 +25,7 @@ class AdminStatsView(APIView):
         status_counts = list(Booking.objects.values('status').annotate(count=Count('id')))
         monthly_revenue = list(
             Booking.objects.filter(status__in=['approved', 'completed'])
-            .annotate(month=TruncMonth('start_date'))
+            .annotate(month=TruncMonth('start_datetime'))
             .values('month')
             .annotate(revenue=Sum('total_price'))
             .order_by('month')

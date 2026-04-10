@@ -1,8 +1,8 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 from .views import LoyaltyTierViewSet, LoyaltyAccountViewSet
 
-router = DefaultRouter()
+router = SimpleRouter()
 router.register(r'tiers', LoyaltyTierViewSet, basename='loyalty-tiers')
 router.register(r'accounts', LoyaltyAccountViewSet, basename='loyalty-accounts')
 

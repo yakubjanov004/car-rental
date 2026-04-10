@@ -14,8 +14,12 @@ const SignIn = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(username, password);
-      navigate('/profile');
+      const userData = await login(username, password);
+      if (userData.is_staff) {
+         navigate('/admin');
+      } else {
+         navigate('/profile');
+      }
     } catch (err) {
       alert("Login yoki parol xato.");
     }

@@ -396,8 +396,8 @@ const Checkout = () => {
                >
                  <div className="glass p-10 border-white/10 rounded-[48px] relative overflow-hidden bg-white/[0.02]">
                     <div className="flex flex-col md:flex-row gap-10">
-                       <div className="w-full md:w-64 aspect-[16/10] rounded-3xl overflow-hidden border border-white/5">
-                          <img src={car.media?.booking_cover || car.media?.card_main || car.main_image} className="w-full h-full object-cover" alt="" />
+                       <div className="w-full md:w-64 aspect-[16/10] rounded-3xl overflow-hidden border border-white/5" style={{ background: 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)' }}>
+                          <img src={car.media?.booking_cover || car.media?.card_main || car.main_image} className="w-full h-full object-contain" alt="" />
                        </div>
                        <div className="flex-1 space-y-4">
                           <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">{car.brand} {car.model}</h2>

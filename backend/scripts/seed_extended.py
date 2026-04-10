@@ -786,19 +786,21 @@ def seed_cars():
                 CarImage.objects.create(car_model=model, image=content, slot=slot, sort_order=idx)
                 STATS['car_images'] += 1
 
-        # Units — create 2-4 per model with varied statuses
         num_units = random.randint(2, 4)
         for idx in range(num_units):
             district = ensure_district(random.choice(cfg['districts']))
             color = random.choice(cfg['colors'])
             inv = f"{cfg['brand'][:3].upper()}-{abs(hash(code+str(idx))) % 9000 + 1000}-{idx}"
-            plate = f"{random.randint(10,99)} {random.randint(100,999)} {chr(65+random.randint(0,25))}{chr(65+random.randint(0,25))}{chr(65+random.randint(0,25))}"
+            region = random.choice(['01', '10'])
+            char1 = chr(65 + random.randint(0, 25))
+            num = random.randint(100, 999)
+            char2 = chr(65 + random.randint(0, 25))
+            plate = f"{region}{char1}{num}{char2}A"
 
             car_status = random.choice(statuses_pool)
             is_available = car_status == 'available'
-            is_featured = idx == 0 and random.random() < 0.3  # ~30% of first units featured
+            is_featured = idx == 0 and random.random() < 0.3  
 
-            # Vary price slightly for individual units
             price_variation = Decimal(str(1.0 + random.uniform(-0.05, 0.10)))
             unit_price = (Decimal(cfg['base_daily_price']) * price_variation).quantize(Decimal('1.00'))
             unit_deposit = Decimal(cfg['base_deposit'])

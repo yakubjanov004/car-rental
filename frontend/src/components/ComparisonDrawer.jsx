@@ -28,7 +28,7 @@ const ComparisonDrawer = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 className="relative group w-14 h-14 rounded-2xl border-2 border-[#111] overflow-hidden bg-[#111]"
               >
-                <img src={car.media?.card_main} className="w-full h-full object-cover" alt="" />
+                <img src={car.media?.card_main} className="w-full h-full object-contain" alt="" />
                 <button
                   onClick={() => removeFromComparison(car.id)}
                   className="absolute inset-0 bg-red-600/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"

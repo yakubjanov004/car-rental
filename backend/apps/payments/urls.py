@@ -1,5 +1,5 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 from .views import (
     PaymentMethodViewSet, PaymentTransactionViewSet, DepositHoldViewSet, 
     PromoCodeViewSet, BillingInvoiceViewSet, PaymentReceiptViewSet, RefundRequestViewSet,
@@ -7,7 +7,7 @@ from .views import (
 )
 from .webhooks import PaymeWebhookView, ClickWebhookView
 
-router = DefaultRouter()
+router = SimpleRouter()
 router.register(r'methods', PaymentMethodViewSet, basename='payment-methods')
 router.register(r'transactions', PaymentTransactionViewSet, basename='payment-transactions')
 router.register(r'deposits', DepositHoldViewSet, basename='deposit-holds')

@@ -5,6 +5,12 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     address = models.TextField(blank=True, null=True)
+    ROLE_CHOICES = [
+        ('client', 'Mijoz'),
+        ('operator', 'Operator'),
+        ('admin', 'Admin'),
+    ]
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='client')
     
     # CRM & Scoring fields
     passport_number = models.CharField(max_length=20, blank=True, null=True)
@@ -27,6 +33,14 @@ class User(AbstractUser):
     # B2B / Corporate
     is_corporate = models.BooleanField(default=False)
     company_name = models.CharField(max_length=255, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.role == 'admin':
+            self.is_staff = True
+            self.is_superuser = True
+        elif self.role == 'operator':
+            self.is_staff = True
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.username

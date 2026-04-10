@@ -302,14 +302,16 @@ const Navbar = () => {
                   </AnimatePresence>
                 </div>
 
-                <Link to="/profile" className="btn-secondary text-[10px] uppercase font-black tracking-widest px-4 py-2.5">
-                  <User className="w-3.5 h-3.5" />
-                  Profil
-                </Link>
+                {!user.is_staff && (
+                  <Link to="/profile" className="btn-secondary text-[10px] uppercase font-black tracking-widest px-4 py-2.5">
+                    <User className="w-3.5 h-3.5" />
+                    Profil
+                  </Link>
+                )}
                 {user.is_staff && (
                   <Link to="/admin" className="btn-primary text-[10px] font-black uppercase tracking-widest px-4 py-2.5 flex items-center gap-2">
                     <LayoutDashboard className="w-3.5 h-3.5" />
-                    Admin
+                    Admin Panel
                   </Link>
                 )}
                 <button onClick={logout} className="p-2 text-white/40 hover:text-primary transition-colors">
@@ -370,7 +372,11 @@ const Navbar = () => {
               </nav>
               <div className="mt-6 flex gap-3">
                 {user ? (
-                  <Link to="/profile" className="btn-secondary flex-1 text-sm py-3.5">Profil</Link>
+                  user.is_staff ? (
+                    <Link to="/admin" className="btn-primary flex-1 text-sm py-3.5">Admin Panel</Link>
+                  ) : (
+                    <Link to="/profile" className="btn-secondary flex-1 text-sm py-3.5">Profil</Link>
+                  )
                 ) : (
                   <>
                     <Link to="/signin" className="btn-secondary flex-1 text-sm py-3.5">Kirish</Link>

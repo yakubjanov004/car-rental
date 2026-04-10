@@ -3,6 +3,15 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+import django.urls.converters
+
+_original_register_converter = django.urls.converters.register_converter
+def patched_register_converter(converter, type_name):
+    try:
+        _original_register_converter(converter, type_name)
+    except ValueError:
+        pass
+django.urls.converters.register_converter = patched_register_converter
 
 urlpatterns = [
     path('admin/', admin.site.urls),

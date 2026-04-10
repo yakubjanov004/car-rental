@@ -56,6 +56,8 @@ class PaymentTransactionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if self.request.user.is_staff:
+            return PaymentTransaction.objects.all().select_related('booking', 'user').order_by('-created_at')
         return PaymentTransaction.objects.filter(user=self.request.user).select_related('booking', 'user').order_by('-created_at')
 
     def perform_create(self, serializer):
