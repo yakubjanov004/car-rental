@@ -329,7 +329,18 @@
     "perDay": "/ day",
     "details": "Details",
     "available": "Available",
-    "units": "units"
+    "units": "units",
+    "seats": "{{count}} seats",
+    "transAuto": "Auto",
+    "transManual": "Manual",
+    "fuelBenzin": "Petrol",
+    "fuelElektro": "Electric",
+    "fuelGibrid": "Hybrid",
+    "fuelGaz": "Gas",
+    "fuelElektroBadge": "⚡ Electric",
+    "fuelGibridBadge": "⚡ Hybrid",
+    "fuelBenzinBadge": "⛽ Petrol",
+    "fuelGazBadge": "🔵 Gas"
   },
   "common": {
     "loading": "Loading...",

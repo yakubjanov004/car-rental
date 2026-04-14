@@ -329,7 +329,18 @@
     "perDay": "/ kun",
     "details": "Batafsil",
     "available": "Mavjud",
-    "units": "dona"
+    "units": "dona",
+    "seats": "{{count}} o'rin",
+    "transAuto": "Avto",
+    "transManual": "Mexanika",
+    "fuelBenzin": "Benzin",
+    "fuelElektro": "Elektro",
+    "fuelGibrid": "Gibrid",
+    "fuelGaz": "Gaz",
+    "fuelElektroBadge": "⚡ Elektro",
+    "fuelGibridBadge": "⚡ Gibrid",
+    "fuelBenzinBadge": "⛽ Benzin",
+    "fuelGazBadge": "🔵 Gaz"
   },
   "common": {
     "loading": "Yuklanmoqda...",

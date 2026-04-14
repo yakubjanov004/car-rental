@@ -8,10 +8,10 @@ import { useComparison } from '../context/ComparisonContext';
 import { useTranslation } from 'react-i18next';
 
 const YOQILGI_RANGI = {
-  elektro: { bg: 'rgba(0,217,126,0.12)', text: '#00D97E', label: '⚡ Elektro' },
-  gibrid:  { bg: 'rgba(245,158,11,0.12)', text: '#F59E0B', label: '⚡ Gibrid' },
-  benzin:  { bg: 'rgba(255,255,255,0.06)', text: 'rgba(255,255,255,0.5)', label: '⛽ Benzin' },
-  gaz:     { bg: 'rgba(255,255,255,0.06)', text: 'rgba(255,255,255,0.5)', label: '🔵 Gaz' },
+  elektro: { bg: 'rgba(0,217,126,0.12)', text: '#00D97E', labelKey: 'carCard.fuelElektroBadge' },
+  gibrid:  { bg: 'rgba(245,158,11,0.12)', text: '#F59E0B', labelKey: 'carCard.fuelGibridBadge' },
+  benzin:  { bg: 'rgba(255,255,255,0.06)', text: 'rgba(255,255,255,0.5)', labelKey: 'carCard.fuelBenzinBadge' },
+  gaz:     { bg: 'rgba(255,255,255,0.06)', text: 'rgba(255,255,255,0.5)', labelKey: 'carCard.fuelGazBadge' },
 };
 
 const CarCard = ({ car, index = 0 }) => {
@@ -138,7 +138,7 @@ const CarCard = ({ car, index = 0 }) => {
             className="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.1em] border border-white/5 backdrop-blur-xl inline-block"
             style={{ background: fuel.bg, color: fuel.text }}
           >
-            {fuel.label}
+            {t(fuel.labelKey)}
           </div>
         </div>
 
@@ -192,9 +192,9 @@ const CarCard = ({ car, index = 0 }) => {
 
         <div className="flex items-center justify-between mb-6">
           {[
-            { icon: Users, label: `${seats} o'rin` },
-            { icon: Settings2, label: transmission === 'automatic' ? 'Avto' : 'Mexanika' },
-            { icon: Fuel, label: fuelType },
+            { icon: Users, label: t('carCard.seats', { count: seats }) },
+            { icon: Settings2, label: transmission === 'automatic' ? t('carCard.transAuto') : t('carCard.transManual') },
+            { icon: Fuel, label: t(`carCard.fuel${fuelType.charAt(0).toUpperCase() + fuelType.slice(1)}`, { defaultValue: fuelType }) },
           ].map(({ icon: Icon, label }, i) => (
             <div key={i} className="flex items-center gap-1.5 text-white/40 text-[11px] font-medium">
               <Icon className="w-3.5 h-3.5 text-primary/70 shrink-0" />

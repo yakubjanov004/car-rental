@@ -32,4 +32,5 @@ export default i18n;
 i18n.on('languageChanged', (lng) => {
   const lang = lng.split('-')[0];
   document.documentElement.lang = lang;
+  localStorage.setItem('rentalcar_lang', lang);
 });

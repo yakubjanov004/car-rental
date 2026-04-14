@@ -371,10 +371,10 @@ const CarDetail = () => {
           </Reveal>
 
           <div className="cd-info-grid">
-            <InfoCard icon={Zap} label={t('carDetail.power')} val={`${car.power || '600'} OT`} delay={0} />
+            <InfoCard icon={Zap} label={t('carDetail.power')} val={`${car.power || '600'} ${t('carDetail.hp', { defaultValue: 'HP' })}`} delay={0} />
             <InfoCard icon={ShieldCheck} label={t('carDetail.acceleration')} val={car.acceleration || "4.5s"} delay={0.1} />
             <InfoCard icon={Fuel} label={t('carDetail.consumption')} val={car.fuel_consumption || "12.5 L"} delay={0.15} />
-            <InfoCard icon={Users} label={t('carDetail.seatsNum')} val={`${car.seats || 5} TA`} delay={0.2} />
+            <InfoCard icon={Users} label={t('carDetail.seatsNum')} val={`${car.seats || 5}`} delay={0.2} />
           </div>
         </div>
       </section>

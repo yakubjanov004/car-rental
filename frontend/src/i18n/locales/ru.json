@@ -329,7 +329,18 @@
     "perDay": "/ день",
     "details": "Подробнее",
     "available": "Доступно",
-    "units": "шт."
+    "units": "шт.",
+    "seats": "{{count}} мест",
+    "transAuto": "Автомат",
+    "transManual": "Механика",
+    "fuelBenzin": "Бензин",
+    "fuelElektro": "Электро",
+    "fuelGibrid": "Гибрид",
+    "fuelGaz": "Газ",
+    "fuelElektroBadge": "⚡ Электро",
+    "fuelGibridBadge": "⚡ Гибрид",
+    "fuelBenzinBadge": "⛽ Бензин",
+    "fuelGazBadge": "🔵 Газ"
   },
   "common": {
     "loading": "Загрузка...",
