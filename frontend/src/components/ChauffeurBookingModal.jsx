@@ -67,14 +67,16 @@ const ChauffeurBookingModal = ({ car, isOpen, onClose }) => {
         phone_number: formData.phoneNumber,
         is_chauffeur: true,
         chauffeur_details: chauffeurDetails,
-        total_price: totalPrice // Backend also handles this, but for consistency
+        total_price: totalPrice 
       });
-      setStep(4); // Success step
+      setStep(4); 
     } catch (err) {
       console.error(err);
-      const backendError = err.response?.data?.non_field_errors?.[0] || 
-                           err.response?.data?.[0] || 
-                           (typeof err.response?.data === 'string' ? err.response?.data : null) || 
+      const data = err.response?.data;
+      const backendError = (data?.message && data.message !== 'Xatolik yuz berdi' ? data.message : null) ||
+                           data?.errors?.non_field_errors?.[0] ||
+                           data?.non_field_errors?.[0] || 
+                           (typeof data === 'string' ? data : null) || 
                            t('chauffeurModal.bookingError');
       setError(backendError);
     } finally {

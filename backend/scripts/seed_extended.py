@@ -288,16 +288,16 @@ DEMO_USERS = [
     ("Shaxzoda", "Umarova", "shaxzoda.vip", "user", "approved", "verified"),
     ("Aziz", "Nematov", "aziz_ride", "user", "approved", "verified"),
     ("Kamola", "Abdullayeva", "kamola_lux", "user", "approved", "verified"),
-    # KYC Pending users
-    ("Anvar", "Karimov", "anvar_taxi", "user", "submitted", "pending"),
-    ("Nodir", "Sodiqov", "nodir.dev", "user", "under_review", "pending"),
-    ("Shahlo", "Rahimova", "shahlo_2026", "user", "submitted", "pending"),
-    # KYC Rejected user
-    ("Malika", "Saidova", "malika_queen", "user", "rejected", "unverified"),
-    ("Bobur", "Ergashev", "bobur_fail", "user", "rejected", "unverified"),
-    # New users (no KYC)
-    ("Feruza", "Normatova", "feruza_lux", "user", "draft", "unverified"),
-    ("Otabek", "Iskandarov", "otabek_new", "user", "draft", "unverified"),
+    # Previously Pending — now approved
+    ("Anvar", "Karimov", "anvar_taxi", "user", "approved", "verified"),
+    ("Nodir", "Sodiqov", "nodir.dev", "user", "approved", "verified"),
+    ("Shahlo", "Rahimova", "shahlo_2026", "user", "approved", "verified"),
+    # Previously Rejected — now approved
+    ("Malika", "Saidova", "malika_queen", "user", "approved", "verified"),
+    ("Bobur", "Ergashev", "bobur_fail", "user", "approved", "verified"),
+    # Previously Draft — now approved
+    ("Feruza", "Normatova", "feruza_lux", "user", "approved", "verified"),
+    ("Otabek", "Iskandarov", "otabek_new", "user", "approved", "verified"),
     # Corporate user
     ("Xurshid", "Toshmatov", "xurshid_b2b", "user", "approved", "verified"),
     ("Zarina", "Mirzayeva", "zarina_corp", "user", "approved", "verified"),
@@ -1585,13 +1585,13 @@ def run():
     print("║  ✅ User:      shaxzoda.vip / demo123            ║")
     print("║  ✅ User:      aziz_ride / demo123               ║")
     print("║  ✅ User:      kamola_lux / demo123              ║")
-    print("║  ⏳ Pending:   anvar_taxi / demo123              ║")
-    print("║  ⏳ Pending:   nodir.dev / demo123               ║")
-    print("║  ⏳ Pending:   shahlo_2026 / demo123             ║")
-    print("║  ❌ Rejected:  malika_queen / demo123            ║")
-    print("║  ❌ Rejected:  bobur_fail / demo123              ║")
-    print("║  📋 Draft:     feruza_lux / demo123              ║")
-    print("║  📋 Draft:     otabek_new / demo123              ║")
+    print("║  ✅ User:      anvar_taxi / demo123              ║")
+    print("║  ✅ User:      nodir.dev / demo123               ║")
+    print("║  ✅ User:      shahlo_2026 / demo123             ║")
+    print("║  ✅ User:      malika_queen / demo123            ║")
+    print("║  ✅ User:      bobur_fail / demo123              ║")
+    print("║  ✅ User:      feruza_lux / demo123              ║")
+    print("║  ✅ User:      otabek_new / demo123              ║")
     print("║  🏢 Corporate: xurshid_b2b / demo123             ║")
     print("║  🏢 Corporate: zarina_corp / demo123             ║")
     print("║  💎 VIP:       alisher_shark / demo123            ║")

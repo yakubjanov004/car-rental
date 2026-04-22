@@ -263,17 +263,29 @@ const CarDetail = () => {
     } catch (error) {
       let errMsg = "Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.";
       let isKycError = false;
-      if (error.response?.data) {
-        if (Array.isArray(error.response.data.non_field_errors)) {
-          errMsg = error.response.data.non_field_errors[0];
-        } else if (typeof error.response.data === 'string') {
-          errMsg = error.response.data;
-        } else if (Array.isArray(error.response.data)) {
-          errMsg = error.response.data[0];
-        } else if (typeof error.response.data === 'object') {
-          const firstKey = Object.keys(error.response.data)[0];
-          errMsg = error.response.data[firstKey];
-          if (Array.isArray(errMsg)) errMsg = errMsg[0];
+      const data = error.response?.data;
+      if (data) {
+        // Backend uses custom exception handler: { status, message, code, errors }
+        if (data.message && typeof data.message === 'string' && data.message !== 'Xatolik yuz berdi') {
+          errMsg = data.message;
+        } else if (data.errors) {
+          // Fallback: parse the nested errors object
+          const errors = data.errors;
+          if (Array.isArray(errors.non_field_errors)) {
+            errMsg = errors.non_field_errors[0];
+          } else if (typeof errors === 'string') {
+            errMsg = errors;
+          } else if (Array.isArray(errors)) {
+            errMsg = errors[0];
+          } else if (typeof errors === 'object') {
+            const firstKey = Object.keys(errors)[0];
+            const val = errors[firstKey];
+            errMsg = Array.isArray(val) ? `${firstKey}: ${val[0]}` : val;
+          }
+        } else if (typeof data === 'string') {
+          errMsg = data;
+        } else if (Array.isArray(data.non_field_errors)) {
+          errMsg = data.non_field_errors[0];
         }
       }
       // Detect KYC-related errors
@@ -283,7 +295,7 @@ const CarDetail = () => {
       if (isKycError) {
         setKycWarning(errMsg);
       } else {
-        alert(errMsg);
+        setDateError(errMsg);
       }
     }
   };

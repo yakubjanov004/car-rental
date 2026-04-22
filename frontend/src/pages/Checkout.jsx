@@ -60,8 +60,8 @@ const Checkout = () => {
    const [selectedMethodId, setSelectedMethodId] = useState(null);
    const [qrSeed, setQrSeed] = useState(0);
    const [checkoutUrl, setCheckoutUrl] = useState('');
+   const [bookingError, setBookingError] = useState('');
 
-  // Booking data from navigation state if available
   const bookingMeta = location.state || {
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date(Date.now() + 86400000).toISOString().split('T')[0]
@@ -225,6 +225,7 @@ const Checkout = () => {
          if (!paymentMethod) return;
 
          setIsProcessing(true);
+         setBookingError('');
          try {
             const startDt = bookingMeta.startDate.includes('T')
                ? bookingMeta.startDate
@@ -282,7 +283,6 @@ const Checkout = () => {
             setRandomOTP(initResult._dev_otp || '');
             setOtpError('');
 
-            // Store checkout URL for Payme/Click QR
             if (initResult.checkout_url) {
               setCheckoutUrl(initResult.checkout_url);
             }
@@ -296,30 +296,31 @@ const Checkout = () => {
               setStep(4);
             }
          } catch (err) {
-            // Parse DRF validation error response
             let errMsg = t('checkout.payError');
             const data = err?.response?.data;
             if (data) {
-              if (typeof data === 'string') {
+              if (data.message && typeof data.message === 'string' && data.message !== 'Xatolik yuz berdi') {
+                errMsg = data.message;
+              } else if (data.errors) {
+                const errors = data.errors;
+                if (Array.isArray(errors.non_field_errors)) {
+                  errMsg = errors.non_field_errors[0];
+                } else if (errors.error) {
+                  errMsg = errors.error;
+                } else if (typeof errors === 'object') {
+                  const firstKey = Object.keys(errors)[0];
+                  if (firstKey) {
+                    const val = errors[firstKey];
+                    errMsg = Array.isArray(val) ? val[0] : val;
+                  }
+                }
+              } else if (typeof data === 'string') {
                 errMsg = data;
-              } else if (Array.isArray(data)) {
-                errMsg = data[0];
-              } else if (data.non_field_errors) {
-                errMsg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
               } else if (data.error) {
                 errMsg = data.error;
-              } else if (data.detail) {
-                errMsg = data.detail;
-              } else {
-                // Field-specific errors: grab the first one
-                const firstKey = Object.keys(data)[0];
-                if (firstKey) {
-                  const val = data[firstKey];
-                  errMsg = Array.isArray(val) ? val[0] : val;
-                }
               }
             }
-            alert(errMsg);
+            setBookingError(errMsg);
          } finally {
             setIsProcessing(false);
          }
@@ -679,8 +680,15 @@ const Checkout = () => {
                               </div>
                          </div>
 
+
+                 {bookingError && (
+                    <div className="mt-6 p-5 rounded-2xl bg-red-500/10 border border-red-500/20 text-center">
+                       <p className="text-red-400 text-sm font-bold">{bookingError}</p>
+                    </div>
+                 )}
+
                  <div className="flex justify-between items-center mt-12">
-                    <button onClick={() => setStep(1)} className="text-white/40 hover:text-white transition-colors text-xs font-black uppercase tracking-widest">{t('checkout.back')}</button>
+                    <button onClick={() => { setStep(1); setBookingError(''); }} className="text-white/40 hover:text-white transition-colors text-xs font-black uppercase tracking-widest">{t('checkout.back')}</button>
                     <button 
                        disabled={
                          !paymentMethod ||
