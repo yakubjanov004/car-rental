@@ -10,9 +10,9 @@ export const FavoritesProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      fetchMyFavorites().then(res => {
-        setFavorites(res.map(f => f.car));
-      });
+      fetchMyFavorites().then(items => {
+        setFavorites(Array.isArray(items) ? items.map(f => f.car) : []);
+      }).catch(() => setFavorites([]));
     } else {
       setFavorites([]);
     }

@@ -185,7 +185,10 @@ export const toggleFavorite = async (carId) => {
 export const fetchMyFavorites = async () => {
   try {
     const response = await apiClient.get('/favorites/my/');
-    return response.data;
+    const data = response.data;
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.results)) return data.results;
+    return [];
   } catch (error) {
     console.error("Error fetching favorites:", error);
     return [];

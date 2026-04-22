@@ -72,7 +72,7 @@ const Profile = () => {
    useEffect(() => {
       const fetchProfileData = async () => {
          try {
-            const [bookingsResult, methodsResult, loyaltyResult, tiersResult, kycResult, invoicesResult, notificationsResult] = await Promise.allSettled([
+            const [bookingsResult, methodsResult, loyaltyResult, tiersResult, kycResult, invoicesResult, notificationsResult, favoritesResult] = await Promise.allSettled([
                apiClient.get('/bookings/my/'),
                apiClient.get('/payments/methods/'),
                fetchMyLoyaltyAccount(),
