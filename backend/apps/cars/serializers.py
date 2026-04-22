@@ -34,13 +34,14 @@ class CarModelSerializer(serializers.ModelSerializer):
     year = serializers.SerializerMethodField()
     available_districts = serializers.SerializerMethodField()
     slug = serializers.SerializerMethodField()
+    first_unit_id = serializers.SerializerMethodField()
     amenities = AmenitySerializer(many=True, read_only=True)
     images = CarImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = CarModel
         fields = [
-            'id', 'brand', 'model', 'category', 'model_group', 'slug',
+            'id', 'brand', 'model', 'category', 'model_group', 'slug', 'first_unit_id',
             'daily_price', 'short_tagline', 'media', 'transmission', 
             'fuel_type', 'seats', 'unit_count', 'rating', 'review_count',
             'year', 'available_districts', 'allows_chauffeur', 'amenities',
@@ -53,6 +54,10 @@ class CarModelSerializer(serializers.ModelSerializer):
     def get_slug(self, obj):
         unit = obj.units.filter(status='available').first() or obj.units.first()
         return unit.slug if unit else None
+
+    def get_first_unit_id(self, obj):
+        unit = obj.units.filter(status='available').first() or obj.units.first()
+        return unit.id if unit else None
 
     def get_unit_count(self, obj):
         return obj.units.filter(status='available').count()

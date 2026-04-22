@@ -165,4 +165,31 @@ export const validatePromoCode = async (code) => {
   }
 };
 
+export const toggleFavorite = async (carId) => {
+  try {
+    const response = await apiClient.post(`/favorites/${carId}/`);
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 405 || error.response?.status === 400 || error.response?.data?.detail === "Allaqachon sevimlilar ro'yxatida.") {
+       try {
+         const delRes = await apiClient.delete(`/favorites/${carId}/`);
+         return { removed: true, detail: "Sevimlilardan olib tashlandi" };
+       } catch (err) {
+         throw err;
+       }
+    }
+    throw error;
+  }
+};
+
+export const fetchMyFavorites = async () => {
+  try {
+    const response = await apiClient.get('/favorites/my/');
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching favorites:", error);
+    return [];
+  }
+};
+
 export default apiClient;

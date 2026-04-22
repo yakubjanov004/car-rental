@@ -7,7 +7,7 @@ import {
   ShieldCheck, ArrowRight, Clock, AlertCircle, Zap, Sparkles,
   LayoutGrid, Gauge, Car
 } from 'lucide-react';
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'framer-motion';
 import { formatNarx } from '../utils/formatPrice';
 import { kunlarFarqi } from '../utils/dateUtils';
 import { useAuth } from '../context/AuthContext';
@@ -127,6 +127,7 @@ const CarDetail = () => {
   const [dateError, setDateError] = useState('');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [currentBooking, setCurrentBooking] = useState(null);
+  const [kycWarning, setKycWarning] = useState(null);
 
   /* Scroll-driven transforms */
   const containerRef = useRef(null);
@@ -219,11 +220,13 @@ const CarDetail = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  /* ─── Date validation & booking ─── */
   const isDateBooked = (dateStr) => availability.booked_dates.includes(dateStr);
 
   const validateDates = (start, end) => {
-    if (!start || !end) return true;
+    if (!start || !end) {
+      setDateError(t('carDetail.selectDates', { defaultValue: 'Iltimos sanalarni tanlang' }));
+      return false;
+    }
     const s = new Date(start), e = new Date(end);
     if (e <= s) { setDateError(t('carDetail.returnDateError')); return false; }
     let cur = new Date(s);
@@ -244,7 +247,7 @@ const CarDetail = () => {
     
     const digits = bookingData.phone_number.replace(/\D/g, '');
     if (digits.length !== 12) {
-      alert(t('carDetail.enterPhone'));
+      alert(t('carDetail.enterPhone', { defaultValue: 'Telefon raqamni to\'g\'ri kiriting (+998)' }));
       return;
     }
 
@@ -257,7 +260,32 @@ const CarDetail = () => {
         phone_number: bookingData.phone_number,
       });
       if (res?.id) { setCurrentBooking(res); setIsCheckoutOpen(true); }
-    } catch { alert("Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring."); }
+    } catch (error) {
+      let errMsg = "Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.";
+      let isKycError = false;
+      if (error.response?.data) {
+        if (Array.isArray(error.response.data.non_field_errors)) {
+          errMsg = error.response.data.non_field_errors[0];
+        } else if (typeof error.response.data === 'string') {
+          errMsg = error.response.data;
+        } else if (Array.isArray(error.response.data)) {
+          errMsg = error.response.data[0];
+        } else if (typeof error.response.data === 'object') {
+          const firstKey = Object.keys(error.response.data)[0];
+          errMsg = error.response.data[firstKey];
+          if (Array.isArray(errMsg)) errMsg = errMsg[0];
+        }
+      }
+      // Detect KYC-related errors
+      const kycKeywords = ['tasdiqlanmagan', 'kyc', 'hujjat', 'tekshiruv', 'verify', 'approved'];
+      isKycError = kycKeywords.some(kw => errMsg.toLowerCase().includes(kw));
+      
+      if (isKycError) {
+        setKycWarning(errMsg);
+      } else {
+        alert(errMsg);
+      }
+    }
   };
 
   /* Loading / Error states */
@@ -668,6 +696,83 @@ const CarDetail = () => {
         onClose={() => { setIsCheckoutOpen(false); navigate('/profile'); }}
         booking={currentBooking}
       />
+
+      {/* KYC Warning Modal */}
+      <AnimatePresence>
+        {kycWarning && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setKycWarning(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              className="relative w-full max-w-lg bg-[#111] border border-white/10 rounded-[48px] shadow-2xl p-10 text-center"
+            >
+              <div className="w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-yellow-500/20">
+                <ShieldCheck className="w-10 h-10 text-yellow-500" />
+              </div>
+              <h3 className="text-2xl font-black tracking-tighter uppercase mb-3 text-white">
+                Hujjatlar tasdiqlanmagan
+              </h3>
+              <p className="text-sm text-white/40 mb-8 max-w-sm mx-auto leading-relaxed">
+                Avtomobilni o'zingiz haydash uchun shaxsingizni tasdiqlash zarur. 
+                Bu oddiy jarayon — pasport va haydovchilik guvohnomangizni yuklang, admin tekshirib tasdiqlagandan so'ng bron qilishingiz mumkin.
+              </p>
+
+              <div className="bg-white/5 border border-white/5 rounded-3xl p-6 mb-8 text-left space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-primary text-xs font-black">1</span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white/70">Profil → Hujjatlar bo'limiga o'ting</p>
+                    <p className="text-[10px] text-white/30 mt-1">Pasport va pravasini yuklang</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-primary text-xs font-black">2</span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white/70">"Tekshirish uchun yuborish" tugmasini bosing</p>
+                    <p className="text-[10px] text-white/30 mt-1">Admin 24 soat ichida tekshiradi</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white/70">Tasdiqlangach — bron qiling!</p>
+                    <p className="text-[10px] text-white/30 mt-1">Barcha mashinalar sizga ochiq bo'ladi</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setKycWarning(null)}
+                  className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white/40 hover:bg-white/10 transition-all"
+                >
+                  Yopish
+                </button>
+                <button
+                  onClick={() => { setKycWarning(null); navigate('/profile'); }}
+                  className="flex-[2] py-4 bg-primary rounded-2xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all"
+                >
+                  Hujjatlarni yuklash →
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { Star, MapPin, Users, Fuel, Settings2, Heart, Zap, ArrowRight, ArrowLeft
 import { formatNarx } from '../utils/formatPrice';
 import { MEDIA_BASE_URL } from '../utils/api';
 import { useComparison } from '../context/ComparisonContext';
+import { useFavorites } from '../context/FavoritesContext';
 import { useTranslation } from 'react-i18next';
 
 const YOQILGI_RANGI = {
@@ -16,9 +17,12 @@ const YOQILGI_RANGI = {
 
 const CarCard = ({ car, index = 0 }) => {
   const { t } = useTranslation();
-  const [liked, setLiked] = useState(false);
   const [hovered, setHovered] = useState(false);
   const { addToComparison, removeFromComparison, isInComparison } = useComparison();
+  const { toggleFavorite, isFavorite } = useFavorites();
+
+  const actualCarId = car.first_unit_id || car.id;
+  const liked = isFavorite(actualCarId);
 
   const inCompare = isInComparison(car.id);
 
@@ -115,7 +119,7 @@ const CarCard = ({ car, index = 0 }) => {
         <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
           <motion.button
             whileTap={{ scale: 0.8 }}
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLiked(!liked); }}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(actualCarId); }}
             className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all bg-black/40 backdrop-blur-xl border border-white/5 hover:border-white/20"
             style={{ color: liked ? '#ef4444' : 'white' }}
           >

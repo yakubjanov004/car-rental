@@ -38,6 +38,7 @@ const Profile = () => {
    const [kycData, setKycData] = useState(null);
    const [invoices, setInvoices] = useState([]);
    const [notifications, setNotifications] = useState([]);
+   const [favorites, setFavorites] = useState([]);
    const [downloadingInvoice, setDownloadingInvoice] = useState(null);
    const [showOtpModal, setShowOtpModal] = useState(false);
    const [randomOTP, setRandomOTP] = useState('');
@@ -79,6 +80,7 @@ const Profile = () => {
                fetchMyKyc(),
                fetchInvoices(),
                apiClient.get('/users/notifications/'),
+               apiClient.get('/favorites/my/')
             ]);
 
             if (bookingsResult.status === 'fulfilled') {
@@ -101,6 +103,9 @@ const Profile = () => {
             }
             if (notificationsResult.status === 'fulfilled') {
                setNotifications(extractCollection(notificationsResult.value.data));
+            }
+            if (favoritesResult.status === 'fulfilled') {
+               setFavorites(extractCollection(favoritesResult.value.data));
             }
          } catch (error) {
             console.error('Error loading profile data:', error);
@@ -357,7 +362,7 @@ const Profile = () => {
                               loyaltyAccount={loyaltyAccount} 
                               loyaltyTiers={loyaltyTiers} 
                               bookingsCount={bookings.length}
-                              favoriteCount={0}
+                              favoriteCount={favorites.length}
                            />
                            <BookingHistory bookings={bookings} onSelectDetail={setSelectedBooking} />
                         </motion.div>
@@ -408,10 +413,47 @@ const Profile = () => {
                      {activeTab === 'sevimlilar' && (
                         <motion.div key="sevimlilar" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                            <h2 className="text-2xl font-bold tracking-tight mb-8">{t('profile.favorites.title')}</h2>
-                           <div className="flex flex-col items-center justify-center py-24 glass rounded-[48px] border-white/5">
-                              <Heart className="w-16 h-16 text-white/5 mb-6" />
-                              <p className="text-white/20 font-bold uppercase tracking-widest text-xs">{t('profile.favorites.empty')}</p>
-                           </div>
+                           
+                           {favorites.length === 0 ? (
+                              <div className="flex flex-col items-center justify-center py-24 glass rounded-[48px] border-white/5">
+                                 <Heart className="w-16 h-16 text-white/5 mb-6" />
+                                 <p className="text-white/20 font-bold uppercase tracking-widest text-xs">{t('profile.favorites.empty')}</p>
+                              </div>
+                           ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                 {favorites.map((fav) => (
+                                    <div key={fav.id} className="glass p-6 rounded-3xl border border-white/10 flex items-center gap-6 group hover:border-primary/20 transition-all">
+                                       <div className="w-32 h-24 rounded-2xl bg-white/5 overflow-hidden border border-white/5 relative">
+                                          <img 
+                                             src={getImageUrl(fav.car_info?.main_image || fav.car_info?.media?.card_main)} 
+                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                             alt="" 
+                                          />
+                                       </div>
+                                       <div className="flex-1">
+                                          <p className="text-[10px] text-white/30 uppercase font-black tracking-widest mb-1 italic">{fav.car_info?.brand || 'Brand'}</p>
+                                          <h4 className="text-lg font-bold uppercase tracking-tighter mb-2 text-white group-hover:text-primary transition-colors">{fav.car_info?.model || 'Model'}</h4>
+                                          <div className="flex items-center justify-between">
+                                             <span className="text-[10px] font-black uppercase text-primary tracking-widest">{formatNarx(fav.car_info?.dynamic_price || 0)}</span>
+                                             <button 
+                                                onClick={async () => {
+                                                   try {
+                                                      await apiClient.delete(`/favorites/${fav.car}/`);
+                                                      setFavorites(prev => prev.filter(f => f.id !== fav.id));
+                                                   } catch (e) {
+                                                      console.error(e);
+                                                   }
+                                                }}
+                                                className="w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"
+                                             >
+                                                <Trash2 className="w-3 h-3" />
+                                             </button>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 ))}
+                              </div>
+                           )}
                         </motion.div>
                      )}
 
