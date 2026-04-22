@@ -81,6 +81,7 @@ export const createBooking = async (data) => {
     return response.data;
   } catch (error) {
     console.error("Error creating booking:", error);
+    console.error("Server response:", error.response?.status, error.response?.data);
     throw error;
   }
 };

@@ -234,7 +234,7 @@ const Checkout = () => {
                : bookingMeta.endDate + 'T10:00:00';
 
             const booking = await createBooking({
-               car: Number(id),
+               car: car.id,
                start_datetime: startDt,
                end_datetime: endDt,
                full_name: cardData.holder || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : '') || t('checkout.guest'),
