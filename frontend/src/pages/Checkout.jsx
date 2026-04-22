@@ -226,11 +226,17 @@ const Checkout = () => {
 
          setIsProcessing(true);
          try {
+            const startDt = bookingMeta.startDate.includes('T')
+               ? bookingMeta.startDate
+               : bookingMeta.startDate + 'T10:00:00';
+            const endDt = bookingMeta.endDate.includes('T')
+               ? bookingMeta.endDate
+               : bookingMeta.endDate + 'T10:00:00';
+
             const booking = await createBooking({
-               car: id,
-               start_datetime: bookingMeta.startDate,
-               end_datetime: bookingMeta.endDate,
-               total_price: totalAmount,
+               car: Number(id),
+               start_datetime: startDt,
+               end_datetime: endDt,
                full_name: cardData.holder || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : '') || t('checkout.guest'),
                phone_number: user?.phone_number || '998901234567',
             });
@@ -249,12 +255,11 @@ const Checkout = () => {
 
             setPendingBookingId(booking.id);
 
-            // Map frontend payment method to backend provider name
             const providerMap = {
-              card: 'mock',   // Card flow uses mock (OTP simulation) in dev
+              card: 'mock',
               payme: 'payme',
               click: 'click',
-              uzum: 'mock',   // Uzum uses mock for now
+              uzum: 'mock',
             };
 
             const initPayload = {
@@ -291,7 +296,30 @@ const Checkout = () => {
               setStep(4);
             }
          } catch (err) {
-            alert(err?.response?.data?.error || t('checkout.payError'));
+            // Parse DRF validation error response
+            let errMsg = t('checkout.payError');
+            const data = err?.response?.data;
+            if (data) {
+              if (typeof data === 'string') {
+                errMsg = data;
+              } else if (Array.isArray(data)) {
+                errMsg = data[0];
+              } else if (data.non_field_errors) {
+                errMsg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+              } else if (data.error) {
+                errMsg = data.error;
+              } else if (data.detail) {
+                errMsg = data.detail;
+              } else {
+                // Field-specific errors: grab the first one
+                const firstKey = Object.keys(data)[0];
+                if (firstKey) {
+                  const val = data[firstKey];
+                  errMsg = Array.isArray(val) ? val[0] : val;
+                }
+              }
+            }
+            alert(errMsg);
          } finally {
             setIsProcessing(false);
          }
