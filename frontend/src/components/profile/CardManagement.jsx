@@ -3,6 +3,7 @@ import React from 'react';
 import { CreditCard, Trash2, Zap } from 'lucide-react';
 
 const CardManagement = ({ paymentMethods, onRemoveCard, onShowAddModal }) => {
+   const { t } = useTranslation();
    return (
       <div className="space-y-8">
          <h2 className="text-2xl font-bold tracking-tight mb-8">{t('profileComps.paymentCards')}</h2>

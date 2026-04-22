@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Bell, CheckCircle, Info, AlertTriangle, AlertCircle, Clock } from 'lucide-react';
 
 const Notifications = ({ notifications, onMarkAsRead, onMarkAllAsRead, onDelete }) => {
+   const { t } = useTranslation();
    const getTypeStyles = (type) => {
       switch (type) {
          case 'booking_approved':

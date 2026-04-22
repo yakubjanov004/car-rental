@@ -5,6 +5,7 @@ import { FileText, Download } from 'lucide-react';
 import { formatNarx } from '../../utils/formatPrice';
 
 const BillingHistory = ({ invoices, downloadingInvoice, onDownload }) => {
+   const { t } = useTranslation();
    if (invoices.length === 0) {
       return (
          <div className="flex flex-col items-center justify-center py-24 glass rounded-[48px] border-white/5 border-dashed border-2">

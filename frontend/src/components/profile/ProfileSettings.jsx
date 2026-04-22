@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import React from 'react';
 
 const ProfileSettings = ({ profileForm, onChange, onSave, uploading }) => {
+   const { t } = useTranslation();
    return (
       <div className="max-w-2xl">
          <h2 className="text-2xl font-bold tracking-tight mb-8">{t('profileComps.profileSettings')}</h2>
