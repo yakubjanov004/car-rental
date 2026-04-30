@@ -7,6 +7,9 @@ import { FavoritesProvider } from './context/FavoritesContext'
 import './i18n'
 import './index.css'
 import App from './App.jsx'
+import LoggerService from './services/loggerService'
+
+LoggerService.init();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

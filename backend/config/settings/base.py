@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'apps.insurance',
     'apps.loyalty',
     'apps.pricing',
+    'apps.logs',
 ]
 
 MIDDLEWARE = [
@@ -237,6 +238,10 @@ JAZZMIN_UI_TWEAKS = {
     },
 }
 
+LOGS_DIR = os.path.join(BASE_DIR.parent, 'logs')
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -245,28 +250,48 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
             'style': '{',
         },
+        'simple': {
+            'format': '{levelname} {asctime} {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
+        'backend_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGS_DIR, 'backend.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
             'formatter': 'verbose',
+        },
+        'frontend_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGS_DIR, 'frontend.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'simple',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'backend_file'],
             'level': 'INFO',
             'propagate': True,
         },
         'apps': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'backend_file'],
             'level': 'INFO',
             'propagate': True,
+        },
+        'frontend': {
+            'handlers': ['frontend_file'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
     },
 }

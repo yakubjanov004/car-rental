@@ -21,9 +21,6 @@ frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
 
-# IDE / System
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
+# Logs
+logs/
 *.log
