@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'apps.insurance',
     'apps.loyalty',
     'apps.pricing',
-    'apps.logs',
 ]
 
 MIDDLEWARE = [
